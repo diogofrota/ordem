@@ -1,12 +1,17 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR" data-legacy-lang="en">
 
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Metadados anteriores preservados:
   <title>Users - NiceAdmin</title>
   <meta name="description" content="NiceAdmin - Bootstrap Admin Template">
   <meta name="keywords" content="admin, dashboard, bootstrap">
+  -->
+  <title>Consultar Ordens de Serviço - Ordena</title>
+  <meta name="description" content="Consulta e gerenciamento das Ordens de Serviço cadastradas no sistema Ordena">
+  <meta name="keywords" content="ordena, consulta, ordem de serviço, patrulhamento, operações especiais">
 
   <!-- Favicons -->
   <link href="assets/img/favicon.png" rel="icon">
@@ -33,6 +38,470 @@
   <!-- Template Main CSS File -->
   <link href="assets/css/main.css" rel="stylesheet">
 
+  <!-- Estilos localizados da página de consulta de Ordens de Serviço. -->
+  <style>
+    .service-order-query-intro {
+      max-width: 720px;
+      margin: 0;
+      color: var(--muted-color);
+      font-size: 0.9375rem;
+    }
+
+    .service-order-query-heading-actions {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: var(--spacing-sm);
+    }
+
+    .service-order-query-alert {
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .service-order-card-heading {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--spacing-sm);
+      min-width: 0;
+    }
+
+    .service-order-card-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      flex: 0 0 38px;
+      color: var(--accent-color);
+      background: color-mix(in srgb, var(--accent-color), transparent 90%);
+      border-radius: var(--radius-md);
+      font-size: 1.125rem;
+    }
+
+    .service-order-list-card .card-header {
+      align-items: flex-start;
+      gap: var(--spacing-md);
+    }
+
+    .service-order-list-tools {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: flex-end;
+      gap: var(--spacing-sm);
+    }
+
+    .service-order-search {
+      width: min(320px, 100%);
+    }
+
+    .service-order-search .input-group-text {
+      color: var(--muted-color);
+      background: var(--background-color);
+    }
+
+    .service-order-mobile-filter-button {
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .service-order-advanced-filter-panel .offcanvas-body,
+    .service-order-advanced-filter-form {
+      width: 100%;
+    }
+
+    .service-order-advanced-filter-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 0.7fr) minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 1.35fr) auto;
+      align-items: end;
+      gap: var(--spacing-sm);
+    }
+
+    .service-order-advanced-filter-field {
+      min-width: 0;
+    }
+
+    .service-order-advanced-filter-field .form-label {
+      margin-bottom: 6px;
+      color: var(--heading-color);
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .service-order-advanced-filter-field .input-group-text {
+      color: var(--muted-color);
+      background: var(--background-color);
+    }
+
+    .service-order-advanced-filter-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: var(--spacing-xs);
+      white-space: nowrap;
+    }
+
+    .service-order-advanced-filter-actions .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+    }
+
+    @media (min-width: 768px) {
+      .service-order-advanced-filter-panel {
+        width: 100%;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .service-order-advanced-filter-panel .offcanvas-body {
+        padding: var(--spacing-md) var(--spacing-lg);
+      }
+    }
+
+    .service-order-filter .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .service-order-filter .badge {
+      min-width: 22px;
+    }
+
+    .service-order-number {
+      display: inline-flex;
+      align-items: center;
+      min-width: 58px;
+      color: var(--accent-color);
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 700;
+    }
+
+    .service-order-mission strong,
+    .service-order-mission small {
+      display: block;
+    }
+
+    .service-order-mission strong {
+      color: var(--heading-color);
+      font-size: 0.875rem;
+      font-weight: 700;
+    }
+
+    .service-order-mission small {
+      margin-top: 2px;
+      color: var(--muted-color);
+      font-size: 0.75rem;
+    }
+
+    .service-order-time {
+      color: var(--default-color);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.8125rem;
+      white-space: nowrap;
+    }
+
+    .service-order-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 9px;
+      border-radius: var(--radius-full);
+      font-size: 0.75rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .service-order-status.is-active {
+      color: var(--success-color);
+      background: color-mix(in srgb, var(--success-color), transparent 88%);
+    }
+
+    .service-order-status.is-inactive {
+      color: var(--muted-color);
+      background: var(--background-color);
+      border: 1px solid var(--border-color);
+    }
+
+    .service-order-status.is-hidden {
+      color: var(--danger-color);
+      background: color-mix(in srgb, var(--danger-color), transparent 90%);
+    }
+
+    .service-order-list-card .table th:last-child,
+    .service-order-list-card .table td:last-child {
+      text-align: right;
+    }
+
+    .service-order-list-card .table-actions {
+      justify-content: flex-end;
+      flex-wrap: nowrap;
+    }
+
+    .service-order-empty-state {
+      padding: 3.25rem 1rem !important;
+      color: var(--muted-color);
+      text-align: center !important;
+    }
+
+    .service-order-empty-state > i {
+      display: block;
+      margin-bottom: var(--spacing-sm);
+      color: var(--light-color);
+      font-size: 2rem;
+    }
+
+    .service-order-empty-state strong,
+    .service-order-empty-state span {
+      display: block;
+    }
+
+    .service-order-empty-state strong {
+      margin-bottom: 4px;
+      color: var(--heading-color);
+    }
+
+    .service-order-results-note {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--spacing-sm);
+      padding: var(--spacing-sm) var(--spacing-md);
+      color: var(--muted-color);
+      background: var(--background-color);
+      border-top: 1px solid var(--border-color-light);
+      font-size: 0.8125rem;
+    }
+
+    .service-order-results-note strong {
+      color: var(--heading-color);
+    }
+
+    .service-order-modal-note {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--spacing-sm);
+      padding: var(--spacing-sm) var(--spacing-md);
+      color: var(--muted-color);
+      background: var(--background-color);
+      border: 1px solid var(--border-color-light);
+      border-radius: var(--radius-md);
+      font-size: 0.8125rem;
+    }
+
+    .service-order-modal-note i {
+      margin-top: 1px;
+      color: var(--accent-color);
+    }
+
+    .service-order-print-sheet {
+      display: none;
+    }
+
+    /* Empilhamento anterior em tablets preservado; o novo painel segue o breakpoint oficial da consulta de baseamento.
+    @media (max-width: 991px) {
+      .service-order-list-card .card-header,
+      .service-order-list-tools {
+        width: 100%;
+      }
+
+      .service-order-list-card .card-header {
+        flex-direction: column;
+      }
+
+      .service-order-list-tools {
+        justify-content: flex-start;
+      }
+    }
+    */
+
+    @media (max-width: 767px) {
+      .service-order-query-intro {
+        font-size: 0.875rem;
+      }
+
+      .service-order-list-card .card-header {
+        flex-direction: column;
+        gap: var(--spacing-md);
+      }
+
+      .service-order-query-heading-actions,
+      .service-order-query-heading-actions .btn,
+      .service-order-list-tools,
+      .service-order-search,
+      .service-order-filter {
+        width: 100%;
+      }
+
+      .service-order-query-heading-actions {
+        align-items: flex-start;
+      }
+
+      .service-order-filter .btn {
+        flex: 1 1 0;
+        padding-right: 0.55rem;
+        padding-left: 0.55rem;
+      }
+
+      .service-order-filter .btn > i {
+        display: none;
+      }
+
+      .service-order-mobile-filter-button {
+        display: flex;
+        width: 100%;
+      }
+
+      .service-order-advanced-filter-panel {
+        --bs-offcanvas-width: min(400px, 100vw);
+        background: var(--card-bg) !important;
+      }
+
+      .service-order-advanced-filter-panel .offcanvas-header {
+        align-items: flex-start;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .service-order-advanced-filter-panel .offcanvas-body {
+        display: block;
+        padding: var(--spacing-lg);
+      }
+
+      .service-order-advanced-filter-grid {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--spacing-md);
+      }
+
+      .service-order-advanced-filter-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        margin-top: var(--spacing-xs);
+      }
+
+      .service-order-list-card .table th,
+      .service-order-list-card .table td {
+        padding-right: var(--spacing-sm);
+        padding-left: var(--spacing-sm);
+      }
+
+      .service-order-list-card .table-actions .btn {
+        width: 36px;
+        min-width: 36px;
+        height: 36px;
+        padding: 0;
+        justify-content: center;
+      }
+
+      .service-order-list-card .table-actions .btn span {
+        display: none;
+      }
+
+      .service-order-results-note {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+
+    @media print {
+      @page {
+        size: A4 portrait;
+        margin: 14mm;
+      }
+
+      body > :not(.service-order-print-sheet) {
+        display: none !important;
+      }
+
+      .service-order-print-sheet[aria-hidden="false"] {
+        display: block !important;
+        color: #111827;
+        font-family: Arial, sans-serif;
+      }
+
+      .service-order-print-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 20px;
+        padding-bottom: 12px;
+        border-bottom: 2px solid #1d4ed8;
+      }
+
+      .service-order-print-brand {
+        color: #1e3a8a;
+        font-size: 20px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+      }
+
+      .service-order-print-title {
+        margin: 20px 0 14px;
+        font-size: 18px;
+        text-transform: uppercase;
+      }
+
+      .service-order-print-meta {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px 18px;
+        margin-bottom: 18px;
+        padding: 12px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+      }
+
+      .service-order-print-meta span,
+      .service-order-print-meta strong {
+        display: block;
+      }
+
+      .service-order-print-meta span {
+        color: #64748b;
+        font-size: 9px;
+        text-transform: uppercase;
+      }
+
+      .service-order-print-meta strong {
+        margin-top: 2px;
+        font-size: 11px;
+      }
+
+      .service-order-print-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 10px;
+      }
+
+      .service-order-print-table th,
+      .service-order-print-table td {
+        padding: 8px;
+        border: 1px solid #cbd5e1;
+        text-align: left;
+        vertical-align: top;
+      }
+
+      .service-order-print-table th {
+        color: #1e3a8a;
+        background: #eef3ff;
+        font-size: 9px;
+        text-transform: uppercase;
+      }
+
+      .service-order-print-footer {
+        margin-top: 18px;
+        color: #64748b;
+        font-size: 9px;
+        text-align: right;
+      }
+    }
+  </style>
+
   <!-- =======================================================
     * Template Name: NiceAdmin - Bootstrap Admin Template
     * Template URL: https://bootstrapmade.com/flex-admin-bootstrap-template/
@@ -42,7 +511,9 @@
     ======================================================== -->
 </head>
 
-<body>
+<body class="page-service-order-query-body">
+  <!-- Cabeçalho anterior preservado de forma inerte por segurança. -->
+  <template id="legacyUsersHeader">
   <!-- Header -->
   <header class="header">
     <div class="header-left">
@@ -394,8 +865,25 @@
       </a>
     </div>
   </div>
+  </template>
+
+  <!-- Cabeçalho operacional da consulta de Ordens de Serviço. -->
+  <header class="header">
+    <div class="header-left">
+      <button class="sidebar-toggle" type="button" title="Alternar menu lateral" aria-label="Alternar menu lateral">
+        <span class="menu-lines" aria-hidden="true"><span></span><span></span><span></span></span>
+      </button>
+
+      <a href="index.html" class="header-brand" aria-label="Página inicial do Ordena">
+        <span class="header-logo"><img src="assets/img/logo.webp" alt="Ordena"></span>
+        <span class="header-context"><strong class="header-context-title">Ordena</strong></span>
+      </a>
+    </div>
+  </header>
 
   <!-- Sidebar -->
+  <!-- Menu anterior preservado de forma inerte por segurança. -->
+  <template id="legacyUsersSidebar">
   <aside class="sidebar">
     <div class="sidebar-shell">
       <button class="sidebar-close" type="button" aria-label="Close sidebar">
@@ -744,11 +1232,96 @@
       </div>
     </div>
   </aside>
+  </template>
+
+  <!-- Menu operacional usado pelas páginas do projeto Ordena. -->
+  <aside class="sidebar">
+    <div class="sidebar-shell">
+      <button class="sidebar-close" type="button" aria-label="Fechar menu lateral">
+        <i class="bi bi-x-lg" aria-hidden="true"></i>
+      </button>
+
+      <nav class="sidebar-nav" aria-label="Navegação principal">
+        <ul class="nav-menu">
+          <li class="nav-item">
+            <a class="nav-link" href="index.html">
+              <span class="nav-icon"><i class="ph-light ph-squares-four" aria-hidden="true"></i></span>
+              <span class="nav-text">Painel Operacional</span>
+              <span class="nav-meta">Home</span>
+            </a>
+          </li>
+
+          <li class="nav-item has-submenu">
+            <a class="nav-link" href="#" aria-expanded="false">
+              <span class="nav-icon"><i class="ph-light ph-gauge" aria-hidden="true"></i></span>
+              <span class="nav-text">Cadastro</span>
+              <span class="nav-badge">5</span>
+              <span class="nav-arrow"><i class="bi bi-chevron-right" aria-hidden="true"></i></span>
+            </a>
+            <ul class="nav-submenu">
+              <li><a class="nav-link" href="dashboard-sales.html"><span class="nav-dot"></span>Viaturas</a></li>
+              <li><a class="nav-link" href="dashboard-analytics.html"><span class="nav-dot"></span>Pontos de Baseamento</a></li>
+              <li><a class="nav-link" href="dashboard-crm.html"><span class="nav-dot"></span>Locais de Patrulhamento</a></li>
+              <li><a class="nav-link" href="dashboard-marketing.html"><span class="nav-dot"></span>Tipos de Serviço</a></li>
+              <li><a class="nav-link" href="dashboard-projects.html"><span class="nav-dot"></span>Operações Especiais</a></li>
+            </ul>
+          </li>
+
+          <li class="nav-item has-submenu open">
+            <a class="nav-link" href="#" aria-expanded="true">
+              <span class="nav-icon"><i class="ph-light ph-magnifying-glass" aria-hidden="true"></i></span>
+              <span class="nav-text">Consultas</span>
+              <span class="nav-badge">6</span>
+              <span class="nav-arrow"><i class="bi bi-chevron-right" aria-hidden="true"></i></span>
+            </a>
+            <ul class="nav-submenu show">
+              <li><a class="nav-link" href="consulta-viaturas.html"><span class="nav-dot"></span>Viaturas</a></li>
+              <li><a class="nav-link" href="consulta-pontos-baseamento.html"><span class="nav-dot"></span>Pontos de Baseamento</a></li>
+              <li><a class="nav-link" href="consulta-locais-patrulhamento.html"><span class="nav-dot"></span>Locais de Patrulhamento</a></li>
+              <li><a class="nav-link" href="consulta-tipos-servico.html"><span class="nav-dot"></span>Tipos de Serviço</a></li>
+              <li><a class="nav-link" href="consulta-operacoes-especiais.html"><span class="nav-dot"></span>Operações Especiais</a></li>
+              <li><a class="nav-link active" href="users.html" aria-current="page"><span class="nav-dot"></span>Ordens de Serviço</a></li>
+            </ul>
+          </li>
+
+          <li class="nav-item has-submenu">
+            <a class="nav-link" href="#" aria-expanded="false">
+              <span class="nav-icon"><i class="ph-light ph-users-three" aria-hidden="true"></i></span>
+              <span class="nav-text">Ordens de Serviço</span>
+              <span class="nav-badge">1</span>
+              <span class="nav-arrow"><i class="bi bi-chevron-right" aria-hidden="true"></i></span>
+            </a>
+            <ul class="nav-submenu">
+              <!-- Link anterior preservado; a consulta agora pertence ao grupo Consultas.
+              <li><a class="nav-link active" href="users.html"><span class="nav-dot"></span>Consultar Ordens de Serviço</a></li>
+              -->
+              <li><a class="nav-link" href="users-view.html"><span class="nav-dot"></span>Criar Ordem de Serviço</a></li>
+            </ul>
+          </li>
+
+          <li class="nav-item has-submenu">
+            <a class="nav-link" href="#" aria-expanded="false">
+              <span class="nav-icon"><i class="ph-light ph-shield-check" aria-hidden="true"></i></span>
+              <span class="nav-text">Operação</span>
+              <span class="nav-badge">2</span>
+              <span class="nav-arrow"><i class="bi bi-chevron-right" aria-hidden="true"></i></span>
+            </a>
+            <ul class="nav-submenu">
+              <li><a class="nav-link" href="auth-login.html"><span class="nav-dot"></span>Ativação</a></li>
+              <li><a class="nav-link" href="auth-register.html"><span class="nav-dot"></span>Mapa Tático</a></li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </aside>
 
   <!-- Sidebar Overlay (Mobile) -->
   <div class="sidebar-overlay"></div>
 
   <!-- Main Content -->
+  <!-- Conteúdo anterior da página Users preservado de forma inerte por segurança. -->
+  <template id="legacyUsersContent">
   <main class="main">
     <div class="main-content page-users">
       <div class="page-users users-lab">
@@ -1258,6 +1831,205 @@
       </div>
     </footer>
   </main>
+  </template>
+
+  <main class="main">
+    <div class="main-content page-service-order-query">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Consultar Ordens de Serviço</h1>
+          <p class="service-order-query-intro">Localize, imprima e gerencie as Ordens de Serviço gravadas. Use uma OS existente como modelo quando precisar repetir um planejamento.</p>
+        </div>
+        <div class="service-order-query-heading-actions">
+          <a href="users-view.html" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>
+            Criar nova OS
+          </a>
+          <nav class="breadcrumb" aria-label="Navegação estrutural">
+            <a href="index.html" class="breadcrumb-item">Painel Operacional</a>
+            <span class="breadcrumb-item">Consultas</span>
+            <span class="breadcrumb-item active" aria-current="page">Ordens de Serviço</span>
+          </nav>
+        </div>
+      </div>
+
+      <div id="serviceOrderQueryAlert" class="alert service-order-query-alert d-none" role="status" aria-live="polite">
+        <div class="d-flex align-items-center gap-2">
+          <i id="serviceOrderQueryAlertIcon" class="bi" aria-hidden="true"></i>
+          <span id="serviceOrderQueryAlertMessage"></span>
+        </div>
+      </div>
+
+      <section class="section" aria-labelledby="serviceOrderListTitle">
+        <div class="card service-order-list-card">
+          <div class="card-header">
+            <div class="service-order-card-heading">
+              <span class="service-order-card-icon" aria-hidden="true"><i class="bi bi-archive"></i></span>
+              <div>
+                <h2 class="card-title" id="serviceOrderListTitle">Banco de Ordens de Serviço</h2>
+                <p class="card-subtitle" id="serviceOrderRecordCount" aria-live="polite">Buscando ordens no banco de dados...</p>
+              </div>
+            </div>
+
+            <div class="service-order-list-tools">
+              <!-- Busca única anterior preservada após adoção do painel padronizado de filtros.
+              <div class="input-group input-group-sm service-order-search">
+                <span class="input-group-text" id="serviceOrderSearchIcon"><i class="bi bi-search" aria-hidden="true"></i></span>
+                <input type="search" class="form-control" id="serviceOrderSearch" aria-label="Buscar Ordens de Serviço" aria-describedby="serviceOrderSearchIcon" placeholder="Buscar nº, missão, recurso, local ou operação" autocomplete="off">
+                <button type="button" class="btn btn-outline-secondary d-none" id="serviceOrderSearchClear" aria-label="Limpar busca" title="Limpar busca">
+                  <i class="bi bi-x-lg" aria-hidden="true"></i>
+                </button>
+              </div>
+              -->
+
+              <div class="btn-group service-order-filter" role="group" aria-label="Filtrar Ordens de Serviço por situação">
+                <button type="button" class="btn btn-sm btn-primary" data-service-order-filter="Ativa" aria-pressed="true">
+                  <i class="bi bi-check-circle" aria-hidden="true"></i>
+                  Ativas
+                  <span class="badge bg-light text-primary" id="activeServiceOrderCount">0</span>
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-primary" data-service-order-filter="Inativa" aria-pressed="false">
+                  <i class="bi bi-slash-circle" aria-hidden="true"></i>
+                  Inativas
+                  <span class="badge bg-light text-primary" id="inactiveServiceOrderCount">0</span>
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-primary" data-service-order-filter="Oculta" aria-pressed="false">
+                  <i class="bi bi-eye-slash" aria-hidden="true"></i>
+                  Ocultas
+                  <span class="badge bg-light text-primary" id="hiddenServiceOrderCount">0</span>
+                </button>
+              </div>
+
+              <button type="button" class="btn btn-sm btn-outline-primary d-md-none service-order-mobile-filter-button" id="serviceOrderMobileFilterButton" data-bs-toggle="offcanvas" data-bs-target="#serviceOrderAdvancedFilterPanel" aria-controls="serviceOrderAdvancedFilterPanel" aria-label="Abrir pesquisa e filtros das Ordens de Serviço">
+                <i class="bi bi-search" aria-hidden="true"></i>
+                Pesquisar e filtrar
+                <span class="badge bg-light text-primary d-none" id="serviceOrderAppliedFilterCount">0</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Um único formulário: barra horizontal no desktop e painel lateral no mobile. -->
+          <div class="offcanvas-md offcanvas-end service-order-advanced-filter-panel" tabindex="-1" id="serviceOrderAdvancedFilterPanel" aria-labelledby="serviceOrderAdvancedFilterTitle" aria-describedby="serviceOrderAdvancedFilterDescription">
+            <div class="offcanvas-header">
+              <div>
+                <h2 class="offcanvas-title fs-5" id="serviceOrderAdvancedFilterTitle"><i class="bi bi-search me-2" aria-hidden="true"></i>Pesquisar Ordens de Serviço</h2>
+                <p class="small text-muted mb-0 mt-1" id="serviceOrderAdvancedFilterDescription">Refine a consulta usando um ou mais campos.</p>
+              </div>
+              <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#serviceOrderAdvancedFilterPanel" aria-label="Fechar filtros"></button>
+            </div>
+            <div class="offcanvas-body">
+              <form class="service-order-advanced-filter-form" id="serviceOrderAdvancedFilterForm" autocomplete="off">
+                <div class="service-order-advanced-filter-grid">
+                  <div class="service-order-advanced-filter-field">
+                    <label class="form-label" for="serviceOrderFilterNumber">Nº da OS</label>
+                    <div class="input-group input-group-sm">
+                      <span class="input-group-text" aria-hidden="true"><i class="bi bi-search"></i></span>
+                      <input type="search" class="form-control" id="serviceOrderFilterNumber" name="number" inputmode="numeric" placeholder="Buscar nº">
+                    </div>
+                  </div>
+
+                  <div class="service-order-advanced-filter-field">
+                    <label class="form-label" for="serviceOrderFilterMission">Missão</label>
+                    <input type="search" class="form-control form-control-sm" id="serviceOrderFilterMission" name="mission" placeholder="Buscar missão">
+                  </div>
+
+                  <div class="service-order-advanced-filter-field">
+                    <label class="form-label" for="serviceOrderFilterResource">Recurso</label>
+                    <select class="form-select form-select-sm" id="serviceOrderFilterResource" name="resource">
+                      <option value="">Todos os recursos</option>
+                    </select>
+                  </div>
+
+                  <div class="service-order-advanced-filter-field">
+                    <label class="form-label" for="serviceOrderFilterActivity">Local ou operação</label>
+                    <input type="search" class="form-control form-control-sm" id="serviceOrderFilterActivity" name="activity" placeholder="Buscar local ou operação">
+                  </div>
+
+                  <div class="service-order-advanced-filter-actions">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" id="serviceOrderClearAdvancedFilters">
+                      <i class="bi bi-x-circle" aria-hidden="true"></i>
+                      Limpar
+                    </button>
+                    <button type="submit" class="btn btn-sm btn-primary">
+                      <i class="bi bi-funnel" aria-hidden="true"></i>
+                      Filtrar
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0" id="serviceOrderQueryTable" aria-busy="true">
+                <caption class="visually-hidden">Relação de Ordens de Serviço gravadas neste navegador</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Nº OS</th>
+                    <th scope="col">Missão</th>
+                    <th scope="col" class="d-none d-md-table-cell">Turno</th>
+                    <th scope="col" class="d-none d-lg-table-cell">Composição</th>
+                    <th scope="col">Situação</th>
+                    <th scope="col">Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="serviceOrderTableBody">
+                  <tr>
+                    <td colspan="6" class="service-order-empty-state">
+                      <span class="spinner-border spinner-border-sm text-primary mb-2" role="status" aria-hidden="true"></span>
+                      <span>Carregando ordens gravadas...</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="service-order-results-note">
+              <span><i class="bi bi-database me-1" aria-hidden="true"></i>Dados salvos neste navegador.</span>
+              <span id="serviceOrderVisibleCount" aria-live="polite"><strong>0</strong> resultados exibidos</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="modal fade" id="serviceOrderConfirmModal" tabindex="-1" aria-labelledby="serviceOrderConfirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h2 class="modal-title fs-5" id="serviceOrderConfirmModalLabel">Confirmar ação</h2>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+              <div class="service-order-modal-note mb-3">
+                <i class="bi bi-info-circle-fill" aria-hidden="true"></i>
+                <span id="serviceOrderConfirmNote">A ordem continuará preservada no armazenamento do navegador.</span>
+              </div>
+              <p class="mb-0" id="serviceOrderConfirmMessage"></p>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+              <button type="button" class="btn btn-primary" id="serviceOrderConfirmButton">Confirmar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="footer">
+      <div class="footer-content">
+        <div class="footer-links">
+          <a href="#">Documentação</a>
+          <a href="#">Privacidade</a>
+          <a href="#">Suporte</a>
+        </div>
+        <div class="footer-credits">
+          <div class="footer-copyright">&copy; 2026 <a href="index.html">Ordena</a></div>
+        </div>
+      </div>
+    </footer>
+  </main>
+
+  <section class="service-order-print-sheet" id="serviceOrderPrintSheet" aria-hidden="true"></section>
 
   <!-- Back to Top -->
   <a href="#" class="back-to-top">
@@ -1282,6 +2054,853 @@
 
   <!-- App Sidebar Toggle (for app pages with sidebars) -->
   <script src="assets/js/apps-sidebar-toggle.js"></script>
+
+  <!-- Comportamento localizado da consulta de Ordens de Serviço. -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const STORAGE_KEYS = {
+        orders: 'ordena.ordens-servico.v1',
+        legacyOrders: 'ordensServico',
+        legacyPrint: 'osImpressaoTemp'
+      };
+
+      const elements = {
+        alert: document.getElementById('serviceOrderQueryAlert'),
+        alertIcon: document.getElementById('serviceOrderQueryAlertIcon'),
+        alertMessage: document.getElementById('serviceOrderQueryAlertMessage'),
+        recordCount: document.getElementById('serviceOrderRecordCount'),
+        visibleCount: document.getElementById('serviceOrderVisibleCount'),
+        activeCount: document.getElementById('activeServiceOrderCount'),
+        inactiveCount: document.getElementById('inactiveServiceOrderCount'),
+        hiddenCount: document.getElementById('hiddenServiceOrderCount'),
+        filterButtons: document.querySelectorAll('[data-service-order-filter]'),
+        // Busca única anterior preservada:
+        // search: document.getElementById('serviceOrderSearch'),
+        // searchClear: document.getElementById('serviceOrderSearchClear'),
+        advancedFilterPanel: document.getElementById('serviceOrderAdvancedFilterPanel'),
+        advancedFilterForm: document.getElementById('serviceOrderAdvancedFilterForm'),
+        filterNumber: document.getElementById('serviceOrderFilterNumber'),
+        filterMission: document.getElementById('serviceOrderFilterMission'),
+        filterResource: document.getElementById('serviceOrderFilterResource'),
+        filterActivity: document.getElementById('serviceOrderFilterActivity'),
+        clearAdvancedFilters: document.getElementById('serviceOrderClearAdvancedFilters'),
+        mobileFilterButton: document.getElementById('serviceOrderMobileFilterButton'),
+        appliedFilterCount: document.getElementById('serviceOrderAppliedFilterCount'),
+        table: document.getElementById('serviceOrderQueryTable'),
+        tableBody: document.getElementById('serviceOrderTableBody'),
+        confirmModal: document.getElementById('serviceOrderConfirmModal'),
+        confirmTitle: document.getElementById('serviceOrderConfirmModalLabel'),
+        confirmNote: document.getElementById('serviceOrderConfirmNote'),
+        confirmMessage: document.getElementById('serviceOrderConfirmMessage'),
+        confirmButton: document.getElementById('serviceOrderConfirmButton'),
+        printSheet: document.getElementById('serviceOrderPrintSheet')
+      };
+
+      // Verificação anterior preservada:
+      // if (!elements.alert || !elements.tableBody || !elements.search || !elements.printSheet) { return; }
+      if (
+        !elements.alert || !elements.tableBody || !elements.printSheet ||
+        !elements.advancedFilterPanel || !elements.advancedFilterForm ||
+        !elements.filterNumber || !elements.filterMission || !elements.filterResource ||
+        !elements.filterActivity || !elements.clearAdvancedFilters ||
+        !elements.mobileFilterButton || !elements.appliedFilterCount
+      ) {
+        return;
+      }
+
+      const state = {
+        orders: [],
+        currentFilter: 'Ativa',
+        // Busca única anterior preservada: searchTerm: ''
+        appliedAdvancedFilters: {
+          number: '',
+          mission: '',
+          resource: '',
+          activity: ''
+        }
+      };
+
+      let alertTimeout = null;
+      let pendingConfirmation = null;
+
+      function normalizeWhitespace(value) {
+        return String(value || '').replace(/\s+/g, ' ').trim();
+      }
+
+      function normalizeUppercase(value) {
+        return normalizeWhitespace(value).toLocaleUpperCase('pt-BR');
+      }
+
+      function normalizeSearch(value) {
+        return normalizeUppercase(value).normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      }
+
+      function showAlert(message, type, autoHide) {
+        const alertType = type || 'success';
+        const iconByType = {
+          success: 'bi-check-circle-fill',
+          danger: 'bi-exclamation-triangle-fill',
+          warning: 'bi-exclamation-circle-fill',
+          info: 'bi-info-circle-fill'
+        };
+
+        window.clearTimeout(alertTimeout);
+        elements.alert.className = 'alert alert-' + alertType + ' service-order-query-alert';
+        elements.alert.setAttribute('role', alertType === 'danger' ? 'alert' : 'status');
+        elements.alert.setAttribute('aria-live', alertType === 'danger' ? 'assertive' : 'polite');
+        elements.alertIcon.className = 'bi ' + (iconByType[alertType] || iconByType.info);
+        elements.alertMessage.textContent = message;
+
+        if (autoHide !== false) {
+          alertTimeout = window.setTimeout(function() {
+            elements.alert.classList.add('d-none');
+          }, 6500);
+        }
+      }
+
+      function readArray(key, silent) {
+        try {
+          const storedValue = window.localStorage.getItem(key);
+          if (!storedValue) {
+            return [];
+          }
+          const parsedValue = JSON.parse(storedValue);
+          if (!Array.isArray(parsedValue)) {
+            if (!silent) {
+              showAlert('Os dados armazenados em “' + key + '” possuem um formato inválido e foram ignorados.', 'warning', false);
+            }
+            return [];
+          }
+          return parsedValue;
+        } catch (error) {
+          if (!silent) {
+            showAlert('Não foi possível carregar as Ordens de Serviço armazenadas neste navegador.', 'warning', false);
+          }
+          return [];
+        }
+      }
+
+      function writeArray(key, items) {
+        try {
+          window.localStorage.setItem(key, JSON.stringify(items));
+          return true;
+        } catch (error) {
+          return false;
+        }
+      }
+
+      function normalizeActivity(item, index) {
+        return {
+          id: String((item && item.id) || ('stored-activity-' + index)),
+          tipo: normalizeWhitespace(item && (item.tipo || item.type)) || 'Atividade',
+          inicio: String((item && (item.inicio || item.start)) || ''),
+          fim: String((item && (item.fim || item.end)) || ''),
+          local: normalizeWhitespace(item && (item.local || item.location)),
+          localId: String((item && item.localId) || ''),
+          localTipo: String((item && item.localTipo) || ''),
+          operacao: normalizeUppercase(item && (item.operacao || item.operation)),
+          operacaoId: String((item && item.operacaoId) || ''),
+          rua: normalizeWhitespace(item && (item.rua || item.road)) || '-',
+          numero: normalizeWhitespace(item && (item.numero || item.number)) || '-',
+          bairro: normalizeWhitespace(item && (item.bairro || item.district)) || '-',
+          cidade: normalizeWhitespace(item && (item.cidade || item.city)) || '-',
+          estado: normalizeUppercase(item && (item.estado || item.state)),
+          detalhes: normalizeWhitespace(item && (item.detalhes || item.detail || item.obs)) || '-',
+          gps: item && item.gps ? item.gps : null,
+          duracaoMinutos: Number(item && item.duracaoMinutos) || 0
+        };
+      }
+
+      function normalizeOrder(item, index) {
+        if (!item || typeof item !== 'object') {
+          return null;
+        }
+        const number = Number(item.numero);
+        const statusValue = normalizeUppercase(item.status);
+        const status = statusValue === 'INATIVA' || statusValue === 'INATIVO' ? 'Inativa' : 'Ativa';
+        const activities = Array.isArray(item.atividades) ? item.atividades.map(normalizeActivity) : [];
+        return Object.assign({}, item, {
+          id: String(item.id || ('order-' + (Number.isFinite(number) ? number : index))),
+          numero: Number.isFinite(number) ? number : 0,
+          criadoEm: String(item.criadoEm || ''),
+          status: status,
+          tipoOrdem: normalizeUppercase(item.tipoOrdem || item.tipoServico),
+          tipoServicoId: String(item.tipoServicoId || ''),
+          nomeOS: normalizeUppercase(item.nomeOS || item.missao),
+          tipoRecurso: normalizeWhitespace(item.tipoRecurso || item.recurso),
+          inicioGeral: String(item.inicioGeral || item.inicio || ''),
+          terminoGeral: String(item.terminoGeral || item.termino || ''),
+          atividades: activities,
+          ocultaNaTelaOS: item.ocultaNaTelaOS === true || item.ocultaNaTelaOS === 'true'
+        });
+      }
+
+      function loadOrders() {
+        const modernOrders = readArray(STORAGE_KEYS.orders).map(normalizeOrder).filter(Boolean);
+        const legacyOrders = readArray(STORAGE_KEYS.legacyOrders, true).map(normalizeOrder).filter(Boolean);
+        const uniqueOrders = [];
+        const ids = new Set();
+        const numbers = new Set();
+
+        modernOrders.concat(legacyOrders).forEach(function(order) {
+          const idKey = order.id ? String(order.id) : '';
+          const numberKey = order.numero ? String(order.numero) : '';
+          if ((idKey && ids.has(idKey)) || (numberKey && numbers.has(numberKey))) {
+            return;
+          }
+          if (idKey) ids.add(idKey);
+          if (numberKey) numbers.add(numberKey);
+          uniqueOrders.push(order);
+        });
+
+        return uniqueOrders;
+      }
+
+      function persistOrders(orders) {
+        const modernSaved = writeArray(STORAGE_KEYS.orders, orders);
+        const legacySaved = writeArray(STORAGE_KEYS.legacyOrders, orders);
+        if (!modernSaved || !legacySaved) {
+          showAlert('Não foi possível atualizar as Ordens de Serviço no armazenamento deste navegador.', 'danger', false);
+          return false;
+        }
+        state.orders = orders.map(normalizeOrder).filter(Boolean);
+        return true;
+      }
+
+      function createCell(row, className) {
+        const cell = document.createElement('td');
+        if (className) {
+          cell.className = className;
+        }
+        row.appendChild(cell);
+        return cell;
+      }
+
+      function appendTextBlock(container, primaryText, secondaryText, className) {
+        const wrapper = document.createElement('div');
+        const primary = document.createElement('strong');
+        wrapper.className = className || '';
+        primary.textContent = primaryText;
+        wrapper.appendChild(primary);
+        if (secondaryText) {
+          const secondary = document.createElement('small');
+          secondary.textContent = secondaryText;
+          wrapper.appendChild(secondary);
+        }
+        container.appendChild(wrapper);
+        return wrapper;
+      }
+
+      function activityDisplayName(type) {
+        const names = {
+          Baseamento: 'Baseamento (Ponto Fixo)',
+          Patrulhamento: 'Patrulhamento (Ronda)',
+          Intervalo: 'Intervalo / Refeição',
+          'Retorno Base': 'Retorno à Base'
+        };
+        return names[type] || type || 'Atividade';
+      }
+
+      function activityAddress(activity) {
+        const roadAndNumber = activity.rua && activity.rua !== '-'
+          ? activity.rua + (activity.numero && activity.numero !== '-' ? ', ' + activity.numero : '')
+          : '';
+        const cityAndState = [activity.cidade && activity.cidade !== '-' ? activity.cidade : '', activity.estado].filter(Boolean).join(' - ');
+        return [roadAndNumber, activity.bairro && activity.bairro !== '-' ? activity.bairro : '', cityAndState].filter(Boolean).join(' · ');
+      }
+
+      function orderSearchText(order) {
+        const activityText = order.atividades.map(function(activity) {
+          return [activity.tipo, activity.local, activity.operacao, activity.rua, activity.bairro, activity.cidade, activity.detalhes].join(' ');
+        }).join(' ');
+        return normalizeSearch([
+          order.numero,
+          order.nomeOS,
+          order.tipoOrdem,
+          order.tipoRecurso,
+          order.inicioGeral,
+          order.terminoGeral,
+          activityText
+        ].join(' '));
+      }
+
+      function createEmptyAdvancedFilters() {
+        return {
+          number: '',
+          mission: '',
+          resource: '',
+          activity: ''
+        };
+      }
+
+      function countAppliedAdvancedFilters() {
+        return Object.keys(state.appliedAdvancedFilters).reduce(function(total, field) {
+          return total + (normalizeSearch(state.appliedAdvancedFilters[field]) ? 1 : 0);
+        }, 0);
+      }
+
+      function updateAdvancedFilterIndicator() {
+        const filterCount = countAppliedAdvancedFilters();
+        const hasFilters = filterCount > 0;
+        elements.appliedFilterCount.textContent = String(filterCount);
+        elements.appliedFilterCount.classList.toggle('d-none', !hasFilters);
+        elements.mobileFilterButton.classList.toggle('btn-primary', hasFilters);
+        elements.mobileFilterButton.classList.toggle('btn-outline-primary', !hasFilters);
+        elements.mobileFilterButton.setAttribute(
+          'aria-label',
+          hasFilters
+            ? 'Abrir pesquisa e filtros das Ordens de Serviço. ' + filterCount + (filterCount === 1 ? ' filtro aplicado.' : ' filtros aplicados.')
+            : 'Abrir pesquisa e filtros das Ordens de Serviço'
+        );
+      }
+
+      function uniqueResourceValues() {
+        const valuesByNormalizedText = new Map();
+        state.orders.forEach(function(order) {
+          const value = normalizeWhitespace(order.tipoRecurso);
+          const normalizedValue = normalizeSearch(value);
+          if (normalizedValue && !valuesByNormalizedText.has(normalizedValue)) {
+            valuesByNormalizedText.set(normalizedValue, value);
+          }
+        });
+        return Array.from(valuesByNormalizedText.values()).sort(function(firstValue, secondValue) {
+          return firstValue.localeCompare(secondValue, 'pt-BR', { sensitivity: 'base' });
+        });
+      }
+
+      function replaceResourceFilterOptions(values, preferredValue) {
+        const preferredNormalizedValue = normalizeSearch(preferredValue);
+        const selectedValue = values.find(function(value) {
+          return normalizeSearch(value) === preferredNormalizedValue;
+        }) || '';
+        const placeholderOption = document.createElement('option');
+        placeholderOption.value = '';
+        placeholderOption.textContent = 'Todos os recursos';
+        elements.filterResource.replaceChildren(placeholderOption);
+
+        values.forEach(function(value) {
+          const option = document.createElement('option');
+          option.value = value;
+          option.textContent = value;
+          elements.filterResource.appendChild(option);
+        });
+
+        elements.filterResource.value = selectedValue;
+        return selectedValue;
+      }
+
+      function populateAdvancedFilterOptions() {
+        const resourceValues = uniqueResourceValues();
+        const preferredResource = elements.filterResource.value || state.appliedAdvancedFilters.resource;
+        const selectedResource = replaceResourceFilterOptions(resourceValues, preferredResource);
+        state.appliedAdvancedFilters.resource = selectedResource;
+        updateAdvancedFilterIndicator();
+      }
+
+      function normalizedAppliedFilters() {
+        return {
+          number: normalizeSearch(state.appliedAdvancedFilters.number),
+          mission: normalizeSearch(state.appliedAdvancedFilters.mission),
+          resource: normalizeSearch(state.appliedAdvancedFilters.resource),
+          activity: normalizeSearch(state.appliedAdvancedFilters.activity)
+        };
+      }
+
+      function orderActivityFilterText(order) {
+        return normalizeSearch(order.atividades.map(function(activity) {
+          return [
+            activity.local,
+            activity.operacao,
+            activity.rua,
+            activity.numero,
+            activity.bairro,
+            activity.cidade,
+            activity.estado
+            // Abrangência da busca única anterior preservada:
+            // activity.tipo,
+            // activity.detalhes
+          ].join(' ');
+        }).join(' '));
+      }
+
+      function orderMatchesAdvancedFilters(order, filters) {
+        return (!filters.number || normalizeSearch(order.numero).includes(filters.number)) &&
+          (!filters.mission || normalizeSearch(order.nomeOS).includes(filters.mission)) &&
+          (!filters.resource || normalizeSearch(order.tipoRecurso) === filters.resource) &&
+          (!filters.activity || orderActivityFilterText(order).includes(filters.activity));
+      }
+
+      function closeAdvancedFilterPanel() {
+        const isMobile = window.matchMedia('(max-width: 767.98px)').matches;
+        if (!isMobile || !window.bootstrap || !window.bootstrap.Offcanvas) {
+          return;
+        }
+        const offcanvasInstance = window.bootstrap.Offcanvas.getInstance(elements.advancedFilterPanel);
+        if (offcanvasInstance) {
+          offcanvasInstance.hide();
+        }
+      }
+
+      function applyAdvancedFilters() {
+        const number = normalizeWhitespace(elements.filterNumber.value);
+        const mission = normalizeWhitespace(elements.filterMission.value);
+        const activity = normalizeWhitespace(elements.filterActivity.value);
+        elements.filterNumber.value = number;
+        elements.filterMission.value = mission;
+        elements.filterActivity.value = activity;
+        state.appliedAdvancedFilters = {
+          number: number,
+          mission: mission,
+          resource: elements.filterResource.value,
+          activity: activity
+        };
+        updateAdvancedFilterIndicator();
+        renderOrders();
+      }
+
+      function clearAdvancedFilters() {
+        elements.filterNumber.value = '';
+        elements.filterMission.value = '';
+        elements.filterResource.value = '';
+        elements.filterActivity.value = '';
+        state.appliedAdvancedFilters = createEmptyAdvancedFilters();
+        updateAdvancedFilterIndicator();
+        renderOrders();
+      }
+
+      function currentStatusTotalLabel(count) {
+        const statusLabel = state.currentFilter === 'Ativa'
+          ? (count === 1 ? 'ativa' : 'ativas')
+          : (state.currentFilter === 'Inativa'
+            ? (count === 1 ? 'inativa' : 'inativas')
+            : (count === 1 ? 'oculta' : 'ocultas'));
+        return count === 1
+          ? '1 Ordem de Serviço ' + statusLabel
+          : count + ' Ordens de Serviço ' + statusLabel;
+      }
+
+      function updateFilterButtons() {
+        elements.filterButtons.forEach(function(button) {
+          const isSelected = button.dataset.serviceOrderFilter === state.currentFilter;
+          button.classList.toggle('btn-primary', isSelected);
+          button.classList.toggle('btn-outline-primary', !isSelected);
+          button.setAttribute('aria-pressed', String(isSelected));
+        });
+      }
+
+      function updateVisibleCount(count) {
+        const strong = document.createElement('strong');
+        strong.textContent = String(count);
+        elements.visibleCount.replaceChildren(strong, document.createTextNode(count === 1 ? ' resultado exibido' : ' resultados exibidos'));
+      }
+
+      function createActionButton(action, order, label, iconName, buttonClass) {
+        const button = document.createElement('button');
+        const icon = document.createElement('i');
+        const labelNode = document.createElement('span');
+        button.type = 'button';
+        button.className = 'btn btn-sm d-inline-flex align-items-center gap-1 ' + buttonClass;
+        button.dataset.serviceOrderAction = action;
+        button.dataset.serviceOrderId = String(order.id);
+        button.title = label + ' OS nº ' + order.numero;
+        button.setAttribute('aria-label', label + ' Ordem de Serviço nº ' + order.numero);
+        icon.className = 'bi ' + iconName;
+        icon.setAttribute('aria-hidden', 'true');
+        labelNode.textContent = label;
+        button.append(icon, labelNode);
+        return button;
+      }
+
+      function renderOrders() {
+        const activeOrders = state.orders.filter(function(order) { return !order.ocultaNaTelaOS && order.status === 'Ativa'; });
+        const inactiveOrders = state.orders.filter(function(order) { return !order.ocultaNaTelaOS && order.status === 'Inativa'; });
+        const hiddenOrders = state.orders.filter(function(order) { return order.ocultaNaTelaOS; });
+        const sourceOrders = state.currentFilter === 'Ativa'
+          ? activeOrders
+          : (state.currentFilter === 'Inativa' ? inactiveOrders : hiddenOrders);
+
+        /* Busca única anterior preservada:
+        const searchTerm = normalizeSearch(state.searchTerm);
+        const filteredOrders = sourceOrders.filter(function(order) {
+          return !searchTerm || orderSearchText(order).includes(searchTerm);
+        });
+        */
+        const filters = normalizedAppliedFilters();
+        const hasAdvancedFilters = countAppliedAdvancedFilters() > 0;
+        const filteredOrders = sourceOrders.filter(function(order) {
+          return orderMatchesAdvancedFilters(order, filters);
+        }).sort(function(first, second) {
+          const numberDifference = Number(second.numero) - Number(first.numero);
+          if (numberDifference) return numberDifference;
+          return String(second.criadoEm).localeCompare(String(first.criadoEm));
+        });
+
+        elements.activeCount.textContent = String(activeOrders.length);
+        elements.inactiveCount.textContent = String(inactiveOrders.length);
+        elements.hiddenCount.textContent = String(hiddenOrders.length);
+        // Controle anterior preservado: elements.searchClear.classList.toggle('d-none', !state.searchTerm);
+        /* Contador geral anterior preservado:
+        elements.recordCount.textContent = state.orders.length === 0
+          ? ''
+          : (state.orders.length === 1
+            ? '1 Ordem de Serviço encontrada neste navegador.'
+            : state.orders.length + ' Ordens de Serviço encontradas neste navegador.');
+        */
+        elements.recordCount.textContent = state.orders.length === 0
+          ? ''
+          : (hasAdvancedFilters
+            ? (filteredOrders.length === 1 ? '1 resultado' : filteredOrders.length + ' resultados') + ' em ' + currentStatusTotalLabel(sourceOrders.length)
+            : currentStatusTotalLabel(sourceOrders.length));
+        updateVisibleCount(filteredOrders.length);
+        elements.tableBody.replaceChildren();
+
+        if (!filteredOrders.length) {
+          const row = document.createElement('tr');
+          const cell = createCell(row, 'service-order-empty-state');
+          const icon = document.createElement('i');
+          const text = document.createElement('span');
+          const emptySearchResult = hasAdvancedFilters && sourceOrders.length > 0;
+          cell.colSpan = 6;
+          // Ícone anterior preservado: icon.className = state.searchTerm ? 'bi bi-search' : (...);
+          icon.className = emptySearchResult
+            ? 'bi bi-search'
+            : (state.currentFilter === 'Ativa' ? 'bi bi-clipboard2-check' : (state.currentFilter === 'Inativa' ? 'bi bi-archive' : 'bi bi-eye-slash'));
+          icon.setAttribute('aria-hidden', 'true');
+          // Mensagem anterior preservada: if (state.searchTerm) { ... corresponde à busca informada. }
+          if (emptySearchResult) {
+            text.textContent = 'Nenhuma Ordem de Serviço corresponde aos filtros informados.';
+          } else if (state.currentFilter === 'Ativa') {
+            text.textContent = 'Nenhuma Ordem de Serviço ativa foi gravada neste navegador.';
+          } else if (state.currentFilter === 'Inativa') {
+            text.textContent = 'Nenhuma Ordem de Serviço inativa foi encontrada.';
+          } else {
+            text.textContent = 'Nenhuma Ordem de Serviço está oculta.';
+          }
+          cell.append(icon, text);
+          elements.tableBody.appendChild(row);
+          elements.table.setAttribute('aria-busy', 'false');
+          updateFilterButtons();
+          return;
+        }
+
+        filteredOrders.forEach(function(order) {
+          const row = document.createElement('tr');
+          const numberCell = createCell(row);
+          const numberText = document.createElement('span');
+          numberText.className = 'service-order-number';
+          numberText.textContent = order.numero ? String(order.numero) : '—';
+          numberCell.appendChild(numberText);
+
+          const missionCell = createCell(row);
+          appendTextBlock(
+            missionCell,
+            order.nomeOS || 'Missão não informada',
+            [order.tipoOrdem || 'ROTINA', order.tipoRecurso || 'Recurso não informado'].join(' · '),
+            'service-order-mission'
+          );
+
+          const shiftCell = createCell(row, 'd-none d-md-table-cell');
+          const shiftText = document.createElement('span');
+          shiftText.className = 'service-order-time';
+          shiftText.textContent = (order.inicioGeral || '—') + ' – ' + (order.terminoGeral || '—');
+          shiftCell.appendChild(shiftText);
+
+          const compositionCell = createCell(row, 'd-none d-lg-table-cell');
+          const operations = Array.from(new Set(order.atividades.map(function(activity) { return activity.operacao; }).filter(Boolean)));
+          appendTextBlock(
+            compositionCell,
+            order.atividades.length + (order.atividades.length === 1 ? ' atividade' : ' atividades'),
+            operations.length ? operations.length + (operations.length === 1 ? ' operação vinculada' : ' operações vinculadas') : 'Rotina sem operação',
+            'service-order-mission'
+          );
+
+          const statusCell = createCell(row);
+          const status = order.ocultaNaTelaOS ? 'Oculta' : order.status;
+          const statusBadge = document.createElement('span');
+          const statusIcon = document.createElement('i');
+          statusBadge.className = 'service-order-status ' + (status === 'Ativa' ? 'is-active' : (status === 'Oculta' ? 'is-hidden' : 'is-inactive'));
+          statusIcon.className = 'bi ' + (status === 'Ativa' ? 'bi-check-circle-fill' : (status === 'Oculta' ? 'bi-eye-slash-fill' : 'bi-slash-circle'));
+          statusIcon.setAttribute('aria-hidden', 'true');
+          statusBadge.append(statusIcon, document.createTextNode(status));
+          statusCell.appendChild(statusBadge);
+
+          const actionsCell = createCell(row);
+          const actions = document.createElement('div');
+          actions.className = 'table-actions';
+          actions.appendChild(createActionButton('model', order, 'Usar como modelo', 'bi-copy', 'btn-outline-primary'));
+          actions.appendChild(createActionButton('print', order, 'Imprimir', 'bi-printer', 'btn-outline-info'));
+          if (order.ocultaNaTelaOS) {
+            actions.appendChild(createActionButton('restore', order, 'Restaurar', 'bi-eye', 'btn-outline-success'));
+          } else if (order.status === 'Ativa') {
+            actions.appendChild(createActionButton('inactivate', order, 'Inativar', 'bi-archive', 'btn-outline-secondary'));
+          } else {
+            actions.appendChild(createActionButton('reactivate', order, 'Reativar', 'bi-arrow-counterclockwise', 'btn-outline-success'));
+            actions.appendChild(createActionButton('hide', order, 'Ocultar', 'bi-eye-slash', 'btn-outline-danger'));
+          }
+          actionsCell.appendChild(actions);
+          elements.tableBody.appendChild(row);
+        });
+
+        elements.table.setAttribute('aria-busy', 'false');
+        updateFilterButtons();
+      }
+
+      function openConfirmation(options) {
+        pendingConfirmation = options.onConfirm;
+        elements.confirmTitle.textContent = options.title || 'Confirmar ação';
+        elements.confirmNote.textContent = options.note || 'A ordem continuará preservada no armazenamento do navegador.';
+        elements.confirmMessage.textContent = options.message || 'Deseja continuar?';
+        elements.confirmButton.textContent = options.confirmLabel || 'Confirmar';
+        elements.confirmButton.className = 'btn btn-' + (options.variant || 'primary');
+        window.bootstrap.Modal.getOrCreateInstance(elements.confirmModal).show();
+      }
+
+      function updateStoredOrder(order, changes, successMessage) {
+        const latestOrders = loadOrders();
+        const index = latestOrders.findIndex(function(item) {
+          return String(item.id) === String(order.id) || (item.numero && Number(item.numero) === Number(order.numero));
+        });
+        if (index === -1) {
+          showAlert('A Ordem de Serviço não foi encontrada. Atualize a página e tente novamente.', 'warning');
+          return;
+        }
+        Object.assign(latestOrders[index], changes);
+        if (!persistOrders(latestOrders)) {
+          return;
+        }
+        populateAdvancedFilterOptions();
+        renderOrders();
+        showAlert(successMessage, 'success');
+      }
+
+      function createPrintMeta(label, value) {
+        const item = document.createElement('div');
+        const labelNode = document.createElement('span');
+        const valueNode = document.createElement('strong');
+        labelNode.textContent = label;
+        valueNode.textContent = value || '—';
+        item.append(labelNode, valueNode);
+        return item;
+      }
+
+      function printOrder(order) {
+        elements.printSheet.replaceChildren();
+        const header = document.createElement('div');
+        const brand = document.createElement('div');
+        const headerMeta = document.createElement('div');
+        const title = document.createElement('h1');
+        const meta = document.createElement('div');
+        const table = document.createElement('table');
+        const tableHead = document.createElement('thead');
+        const headRow = document.createElement('tr');
+        const tableBody = document.createElement('tbody');
+        const footer = document.createElement('div');
+
+        header.className = 'service-order-print-header';
+        brand.className = 'service-order-print-brand';
+        headerMeta.style.textAlign = 'right';
+        brand.textContent = 'ORDENA';
+        appendTextBlock(headerMeta, 'ORDEM DE SERVIÇO Nº ' + (order.numero || '—'), 'Situação: ' + order.status, 'service-order-mission');
+        header.append(brand, headerMeta);
+
+        title.className = 'service-order-print-title';
+        title.textContent = order.nomeOS || 'Ordem de Serviço';
+        meta.className = 'service-order-print-meta';
+        meta.append(
+          createPrintMeta('Tipo de serviço', order.tipoOrdem || 'ROTINA'),
+          createPrintMeta('Patrulhamento', order.tipoRecurso),
+          createPrintMeta('Início', order.inicioGeral),
+          createPrintMeta('Término', order.terminoGeral)
+        );
+
+        table.className = 'service-order-print-table';
+        ['Atividade', 'Horário', 'Local / Operação', 'Detalhes'].forEach(function(label) {
+          const headerCell = document.createElement('th');
+          headerCell.scope = 'col';
+          headerCell.textContent = label;
+          headRow.appendChild(headerCell);
+        });
+        tableHead.appendChild(headRow);
+
+        if (!order.atividades.length) {
+          const emptyRow = document.createElement('tr');
+          const emptyCell = document.createElement('td');
+          emptyCell.colSpan = 4;
+          emptyCell.textContent = 'Nenhuma atividade registrada nesta Ordem de Serviço.';
+          emptyRow.appendChild(emptyCell);
+          tableBody.appendChild(emptyRow);
+        } else {
+          order.atividades.forEach(function(activity) {
+            const row = document.createElement('tr');
+            const cells = [
+              activityDisplayName(activity.tipo),
+              (activity.inicio || '—') + ' – ' + (activity.fim || '—'),
+              [activity.local || 'Sem local específico', activity.operacao ? 'OP: ' + activity.operacao : ''].filter(Boolean).join(' · '),
+              [activityAddress(activity), activity.detalhes && activity.detalhes !== '-' ? activity.detalhes : ''].filter(Boolean).join(' · ') || '—'
+            ];
+            cells.forEach(function(value) {
+              const cell = document.createElement('td');
+              cell.textContent = value;
+              row.appendChild(cell);
+            });
+            tableBody.appendChild(row);
+          });
+        }
+        table.append(tableHead, tableBody);
+
+        footer.className = 'service-order-print-footer';
+        footer.textContent = 'Documento gerado pelo Ordena em ' + new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' }).format(new Date());
+        elements.printSheet.append(header, title, meta, table, footer);
+        elements.printSheet.setAttribute('aria-hidden', 'false');
+
+        const printPayload = {
+          numero: order.numero,
+          nomeOS: order.nomeOS,
+          tipoRecurso: order.tipoRecurso,
+          inicioGeral: order.inicioGeral,
+          terminoGeral: order.terminoGeral,
+          status: order.status,
+          atividades: order.atividades
+        };
+        try {
+          window.localStorage.setItem(STORAGE_KEYS.legacyPrint, JSON.stringify(printPayload));
+        } catch (error) {
+          // A impressão local continua disponível mesmo sem a cópia temporária legada.
+        }
+
+        window.requestAnimationFrame(function() {
+          window.print();
+        });
+      }
+
+      function openAsModel(order) {
+        const target = 'users-view.html?modelo=' + encodeURIComponent(order.id);
+        window.location.assign(target);
+      }
+
+      elements.advancedFilterForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+        applyAdvancedFilters();
+        closeAdvancedFilterPanel();
+      });
+
+      elements.clearAdvancedFilters.addEventListener('click', function() {
+        clearAdvancedFilters();
+        closeAdvancedFilterPanel();
+        if (!window.matchMedia('(max-width: 767.98px)').matches) {
+          elements.filterNumber.focus();
+        }
+      });
+
+      elements.advancedFilterPanel.addEventListener('shown.bs.offcanvas', function() {
+        elements.filterNumber.focus();
+      });
+
+      elements.advancedFilterPanel.addEventListener('hidden.bs.offcanvas', function() {
+        elements.mobileFilterButton.focus();
+      });
+
+      elements.filterButtons.forEach(function(button) {
+        button.addEventListener('click', function() {
+          state.currentFilter = button.dataset.serviceOrderFilter;
+          renderOrders();
+        });
+      });
+
+      /* Eventos da busca única anterior preservados após adoção do formulário de filtros.
+      elements.search.addEventListener('input', function() {
+        state.searchTerm = elements.search.value;
+        renderOrders();
+      });
+
+      elements.searchClear.addEventListener('click', function() {
+        elements.search.value = '';
+        state.searchTerm = '';
+        renderOrders();
+        elements.search.focus();
+      });
+      */
+
+      elements.confirmButton.addEventListener('click', function() {
+        const action = pendingConfirmation;
+        pendingConfirmation = null;
+        window.bootstrap.Modal.getOrCreateInstance(elements.confirmModal).hide();
+        if (typeof action === 'function') {
+          action();
+        }
+      });
+
+      elements.confirmModal.addEventListener('hidden.bs.modal', function() {
+        pendingConfirmation = null;
+      });
+
+      elements.tableBody.addEventListener('click', function(event) {
+        const button = event.target.closest('[data-service-order-action]');
+        if (!button) {
+          return;
+        }
+        const order = state.orders.find(function(item) {
+          return String(item.id) === String(button.dataset.serviceOrderId);
+        });
+        if (!order) {
+          showAlert('A Ordem de Serviço não foi encontrada.', 'warning');
+          return;
+        }
+
+        const action = button.dataset.serviceOrderAction;
+        if (action === 'model') {
+          openAsModel(order);
+        } else if (action === 'print') {
+          printOrder(order);
+        } else if (action === 'inactivate') {
+          openConfirmation({
+            title: 'Inativar Ordem de Serviço',
+            message: 'A OS nº ' + order.numero + ' sairá da lista de ativas, mas poderá ser reativada a qualquer momento.',
+            confirmLabel: 'Inativar OS',
+            variant: 'warning',
+            onConfirm: function() {
+              updateStoredOrder(order, { status: 'Inativa', inativadaEm: new Date().toISOString() }, 'OS nº ' + order.numero + ' inativada com sucesso.');
+            }
+          });
+        } else if (action === 'reactivate') {
+          updateStoredOrder(order, { status: 'Ativa', reativadaEm: new Date().toISOString() }, 'OS nº ' + order.numero + ' reativada com sucesso.');
+        } else if (action === 'hide') {
+          openConfirmation({
+            title: 'Ocultar Ordem de Serviço',
+            note: 'A OS poderá ser recuperada no filtro “Ocultas”.',
+            message: 'Deseja ocultar a OS nº ' + order.numero + ' das listas de ordens ativas e inativas?',
+            confirmLabel: 'Ocultar da consulta',
+            variant: 'danger',
+            onConfirm: function() {
+              updateStoredOrder(order, { ocultaNaTelaOS: true, ocultaEm: new Date().toISOString() }, 'OS nº ' + order.numero + ' ocultada da consulta.');
+            }
+          });
+        } else if (action === 'restore') {
+          updateStoredOrder(order, { ocultaNaTelaOS: false, restauradaEm: new Date().toISOString() }, 'OS nº ' + order.numero + ' restaurada na consulta.');
+        }
+      });
+
+      window.addEventListener('afterprint', function() {
+        elements.printSheet.setAttribute('aria-hidden', 'true');
+      });
+
+      // Atualização automática anterior preservada e desativada.
+      // A consulta agora realiza somente uma leitura ao abrir a página.
+      /*
+      window.addEventListener('storage', function(event) {
+        if (event.key === STORAGE_KEYS.orders || event.key === STORAGE_KEYS.legacyOrders) {
+          state.orders = loadOrders();
+          renderOrders();
+          showAlert('O banco de Ordens de Serviço foi atualizado em outra aba.', 'info');
+        }
+      });
+      */
+
+      state.orders = loadOrders();
+      populateAdvancedFilterOptions();
+      renderOrders();
+    });
+  </script>
 
 </body>
 

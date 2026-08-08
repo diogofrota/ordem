@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Consulta de Tipos de Serviço - Ordena</title>
+  <meta name="description" content="Consulta e gerenciamento dos tipos de serviço cadastrados no sistema Ordena">
+  <meta name="keywords" content="ordena, consulta, tipos de serviço, ordens de serviço">
+
+  <link href="assets/img/favicon.png" rel="icon">
+  <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&amp;family=Nunito+Sans:wght@400;500;600;700;800&amp;family=Poppins:wght@500;600;700&amp;display=swap" rel="stylesheet">
+
+  <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+  <link href="assets/vendor/phosphor-icons/phosphor-icons.css" rel="stylesheet">
+  <link href="assets/css/main.css" rel="stylesheet">
+
+  <style>
+    .service-query-intro {
+      max-width: 680px;
+      margin: 0;
+      color: var(--muted-color);
+      font-size: 0.9375rem;
+    }
+
+    .service-query-heading-actions {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: var(--spacing-sm);
+    }
+
+    .service-card-heading {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--spacing-sm);
+    }
+
+    .service-card-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      flex: 0 0 36px;
+      border-radius: var(--radius-md);
+      color: var(--accent-color);
+      background: color-mix(in srgb, var(--accent-color), transparent 90%);
+      font-size: 1.1rem;
+    }
+
+    .service-list-card .card-header {
+      align-items: flex-start;
+    }
+
+    .service-list-tools {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: flex-end;
+      gap: var(--spacing-sm);
+    }
+
+    .service-filter .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .service-filter .badge {
+      min-width: 22px;
+    }
+
+    .service-name {
+      color: var(--heading-color);
+      font-weight: 600;
+    }
+
+    .service-description {
+      max-width: 560px;
+      color: var(--default-color);
+      white-space: normal;
+    }
+
+    .service-list-card .table th:last-child,
+    .service-list-card .table td:last-child {
+      text-align: right;
+    }
+
+    .service-list-card .table-actions {
+      justify-content: flex-end;
+      flex-wrap: nowrap;
+    }
+
+    .service-empty-state,
+    .service-loading-state {
+      padding: 2.75rem 1rem !important;
+      text-align: center;
+      color: var(--muted-color);
+    }
+
+    .service-empty-state > i {
+      display: block;
+      margin-bottom: var(--spacing-sm);
+      color: var(--light-color);
+      font-size: 2rem;
+    }
+
+    .service-loading-content {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--spacing-sm);
+      font-size: 0.875rem;
+      font-weight: 600;
+    }
+
+    .service-query-alert {
+      margin-bottom: var(--spacing-lg);
+    }
+
+    @media (max-width: 767px) {
+      .service-query-intro {
+        font-size: 0.875rem;
+      }
+
+      .service-query-heading-actions,
+      .service-list-tools,
+      .service-filter {
+        width: 100%;
+      }
+
+      .service-query-heading-actions {
+        align-items: flex-start;
+      }
+
+      .service-query-heading-actions .btn {
+        width: 100%;
+      }
+
+      .service-list-card .card-header {
+        flex-direction: column;
+        gap: var(--spacing-md);
+      }
+
+      .service-filter .btn {
+        flex: 1 1 0;
+      }
+
+      .service-list-card .table th,
+      .service-list-card .table td {
+        padding-right: var(--spacing-sm);
+        padding-left: var(--spacing-sm);
+      }
+
+      .service-list-card .table-actions .btn {
+        width: 36px;
+        min-width: 36px;
+        height: 36px;
+        padding: 0;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="header">
+    <div class="header-left">
+      <button class="sidebar-toggle" type="button" title="Alternar menu lateral" aria-label="Alternar menu lateral">
+        <span class="menu-lines" aria-hidden="true"><span></span><span></span><span></span></span>
+      </button>
+
+      <a href="index.html" class="header-brand" aria-label="Página inicial do Ordena">
+        <span class="header-logo"><img src="assets/img/logo.webp" alt="Ordena"></span>
+        <span class="header-context"><strong class="header-context-title">Ordena</strong></span>
+      </a>
+    </div>
+  </header>
+
+  <aside class="sidebar">
+    <div class="sidebar-shell">
+      <button class="sidebar-close" type="button" aria-label="Fechar menu lateral">
+        <i class="bi bi-x-lg" aria-hidden="true"></i>
+      </button>
+
+      <nav class="sidebar-nav" aria-label="Navegação principal">
+        <ul class="nav-menu">
+          <li class="nav-item">
+            <a class="nav-link" href="index.html">
+              <span class="nav-icon"><i class="ph-light ph-squares-four" aria-hidden="true"></i></span>
+              <span class="nav-text">Painel Operacional</span>
+              <span class="nav-meta">Home</span>
+            </a>
+          </li>
+
+          <li class="nav-item has-submenu">
+            <a class="nav-link" href="#" aria-expanded="false">
+              <span class="nav-icon"><i class="ph-light ph-gauge" aria-hidden="true"></i></span>
+              <span class="nav-text">Cadastro</span>
+              <span class="nav-badge">5</span>
+              <span class="nav-arrow"><i class="bi bi-chevron-right" aria-hidden="true"></i></span>
+            </a>
+            <ul class="nav-submenu">
+              <li><a class="nav-link" href="dashboard-sales.html"><span class="nav-dot"></span>Viaturas</a></li>
+              <li><a class="nav-link" href="dashboard-analytics.html"><span class="nav-dot"></span>Pontos de Baseamento</a></li>
+              <li><a class="nav-link" href="dashboard-crm.html"><span class="nav-dot"></span>Locais de Patrulhamento</a></li>
+              <li><a class="nav-link" href="dashboard-marketing.html"><span class="nav-dot"></span>Tipos de Serviço</a></li>
+              <li><a class="nav-link" href="dashboard-projects.html"><span class="nav-dot"></span>Operações Especiais</a></li>
+            </ul>
+          </li>
+
+          <li class="nav-item has-submenu open">
+            <a class="nav-link" href="#" aria-expanded="true">
+              <span class="nav-icon"><i class="ph-light ph-magnifying-glass" aria-hidden="true"></i></span>
+              <span class="nav-text">Consultas</span>
+              <span class="nav-badge">5</span>
+              <span class="nav-arrow"><i class="bi bi-chevron-right" aria-hidden="true"></i></span>
+            </a>
+            <ul class="nav-submenu show">
+              <li><a class="nav-link" href="consulta-viaturas.html"><span class="nav-dot"></span>Viaturas</a></li>
+              <li><a class="nav-link" href="consulta-pontos-baseamento.html"><span class="nav-dot"></span>Pontos de Baseamento</a></li>
+              <li><a class="nav-link" href="consulta-locais-patrulhamento.html"><span class="nav-dot"></span>Locais de Patrulhamento</a></li>
+              <li><a class="nav-link active" href="consulta-tipos-servico.html" aria-current="page"><span class="nav-dot"></span>Tipos de Serviço</a></li>
+              <li><a class="nav-link" href="consulta-operacoes-especiais.html"><span class="nav-dot"></span>Operações Especiais</a></li>
+            </ul>
+          </li>
+
+          <li class="nav-item has-submenu">
+            <a class="nav-link" href="#" aria-expanded="false">
+              <span class="nav-icon"><i class="ph-light ph-users-three" aria-hidden="true"></i></span>
+              <span class="nav-text">Ordens de Serviço</span>
+              <span class="nav-badge">2</span>
+              <span class="nav-arrow"><i class="bi bi-chevron-right" aria-hidden="true"></i></span>
+            </a>
+            <ul class="nav-submenu">
+              <li><a class="nav-link" href="users.html"><span class="nav-dot"></span>Consultar Ordens de Serviço</a></li>
+              <li><a class="nav-link" href="users-view.html"><span class="nav-dot"></span>Criar Ordem de Serviço</a></li>
+            </ul>
+          </li>
+
+          <li class="nav-item has-submenu">
+            <a class="nav-link" href="#" aria-expanded="false">
+              <span class="nav-icon"><i class="ph-light ph-shield-check" aria-hidden="true"></i></span>
+              <span class="nav-text">Operação</span>
+              <span class="nav-badge">2</span>
+              <span class="nav-arrow"><i class="bi bi-chevron-right" aria-hidden="true"></i></span>
+            </a>
+            <ul class="nav-submenu">
+              <li><a class="nav-link" href="auth-login.html"><span class="nav-dot"></span>Ativação</a></li>
+              <li><a class="nav-link" href="auth-register.html"><span class="nav-dot"></span>Mapa Tático</a></li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </aside>
+
+  <div class="sidebar-overlay"></div>
+
+  <main class="main">
+    <div class="main-content page-service-query">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Consulta de Tipos de Serviço</h1>
+          <p class="service-query-intro">Consulte e gerencie os tipos de serviço cadastrados.</p>
+        </div>
+        <div class="service-query-heading-actions">
+          <!-- Atalho de cadastro preservado e desativado; o acesso permanece disponível pelo menu lateral.
+          <a href="dashboard-marketing.html" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>
+            Novo Tipo
+          </a>
+          -->
+          <nav class="breadcrumb" aria-label="Navegação estrutural">
+            <a href="index.html" class="breadcrumb-item">Painel Operacional</a>
+            <span class="breadcrumb-item">Consultas</span>
+            <span class="breadcrumb-item active" aria-current="page">Tipos de Serviço</span>
+          </nav>
+        </div>
+      </div>
+
+      <div id="serviceQueryAlert" class="alert service-query-alert d-none" role="status" aria-live="polite">
+        <div class="d-flex align-items-center gap-2">
+          <i id="serviceQueryAlertIcon" class="bi" aria-hidden="true"></i>
+          <span id="serviceQueryAlertMessage"></span>
+        </div>
+      </div>
+
+      <section class="section" aria-labelledby="serviceListTitle">
+        <div class="card service-list-card">
+          <div class="card-header">
+            <div class="service-card-heading">
+              <span class="service-card-icon" aria-hidden="true"><i class="bi bi-list-check"></i></span>
+              <div>
+                <h2 class="card-title" id="serviceListTitle">Tipos de serviço cadastrados</h2>
+                <p class="card-subtitle" id="serviceRecordCount" aria-live="polite">Carregando tipos de serviço...</p>
+              </div>
+            </div>
+            <div class="service-list-tools">
+              <div class="btn-group service-filter" role="group" aria-label="Filtrar tipos de serviço por situação">
+                <button type="button" class="btn btn-sm btn-primary" data-service-filter="active" aria-pressed="true">
+                  <i class="bi bi-check-circle" aria-hidden="true"></i>
+                  Ativos
+                  <span class="badge bg-light text-primary" id="activeServiceCount">0</span>
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-primary" data-service-filter="inactive" aria-pressed="false">
+                  <i class="bi bi-slash-circle" aria-hidden="true"></i>
+                  Inativos
+                  <span class="badge bg-light text-primary" id="inactiveServiceCount">0</span>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0" id="serviceQueryTable" aria-busy="true">
+                <caption class="visually-hidden">Relação de tipos de serviço cadastrados</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Nome</th>
+                    <th scope="col" class="d-none d-md-table-cell">Descrição</th>
+                    <th scope="col" class="d-none d-md-table-cell">Status</th>
+                    <th scope="col">Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="serviceTableBody">
+                  <tr>
+                    <td colspan="4" class="service-loading-state">
+                      <span class="service-loading-content">
+                        <span class="spinner-border spinner-border-sm text-primary" role="status" aria-hidden="true"></span>
+                        <span>Carregando tipos de serviço...</span>
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <footer class="footer">
+      <div class="footer-content">
+        <div class="footer-links">
+          <a href="#">Docs</a>
+          <a href="#">Privacidade</a>
+          <a href="#">Segurança</a>
+          <a href="#">Suporte</a>
+        </div>
+        <div class="footer-credits">
+          <div class="footer-copyright">&copy; 2026 <a href="index.html">Ordena</a></div>
+        </div>
+      </div>
+    </footer>
+  </main>
+
+  <a href="#" class="back-to-top" aria-label="Voltar ao topo"><i class="bi bi-arrow-up" aria-hidden="true"></i></a>
+
+  <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="assets/js/theme.js"></script>
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/apps-sidebar-toggle.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const STORAGE_KEY = 'ordena.tipos-servico.v1';
+      const table = document.getElementById('serviceQueryTable');
+      const tableBody = document.getElementById('serviceTableBody');
+      const recordCount = document.getElementById('serviceRecordCount');
+      const activeCount = document.getElementById('activeServiceCount');
+      const inactiveCount = document.getElementById('inactiveServiceCount');
+      const filterButtons = document.querySelectorAll('[data-service-filter]');
+      const alertBox = document.getElementById('serviceQueryAlert');
+      const alertIcon = document.getElementById('serviceQueryAlertIcon');
+      const alertMessage = document.getElementById('serviceQueryAlertMessage');
+
+      if (!table || !tableBody || !recordCount || !activeCount || !inactiveCount || !alertBox || !alertIcon || !alertMessage) {
+        return;
+      }
+
+      let serviceTypes = [];
+      let currentFilter = 'active';
+      let alertTimeout;
+
+      function normalizeActive(value) {
+        if (value === undefined || value === null || value === '') {
+          return true;
+        }
+        if (typeof value === 'string') {
+          return !['false', '0', 'inativo', 'inactive'].includes(value.trim().toLocaleLowerCase('pt-BR'));
+        }
+        return value !== false && value !== 0;
+      }
+
+      function normalizeServiceType(serviceType, index) {
+        if (!serviceType || typeof serviceType !== 'object' || Array.isArray(serviceType)) {
+          return null;
+        }
+
+        const id = String(serviceType.id || ('service-type-stored-' + index)).trim();
+        const name = String(serviceType.name || '').trim();
+        const description = String(serviceType.description || '').trim();
+        if (!id || !name || !description) {
+          return null;
+        }
+
+        return {
+          id: id,
+          name: name,
+          description: description,
+          active: normalizeActive(serviceType.active)
+        };
+      }
+
+      function loadServiceTypes() {
+        try {
+          const storedServiceTypes = window.localStorage.getItem(STORAGE_KEY);
+          if (!storedServiceTypes) {
+            return [];
+          }
+
+          const parsedServiceTypes = JSON.parse(storedServiceTypes);
+          if (!Array.isArray(parsedServiceTypes)) {
+            return [];
+          }
+
+          return parsedServiceTypes.reduce(function(validServiceTypes, serviceType, index) {
+            const normalizedServiceType = normalizeServiceType(serviceType, index);
+            if (normalizedServiceType) {
+              validServiceTypes.push(normalizedServiceType);
+            }
+            return validServiceTypes;
+          }, []);
+        } catch (error) {
+          showPageAlert('Não foi possível carregar os tipos de serviço armazenados neste navegador.', 'warning');
+          return [];
+        }
+      }
+
+      function saveServiceTypes() {
+        try {
+          window.localStorage.setItem(STORAGE_KEY, JSON.stringify(serviceTypes));
+          return true;
+        } catch (error) {
+          return false;
+        }
+      }
+
+      function showPageAlert(message, type) {
+        const alertType = type || 'success';
+        const iconByType = {
+          success: 'bi-check-circle-fill',
+          danger: 'bi-exclamation-triangle-fill',
+          warning: 'bi-exclamation-circle-fill',
+          info: 'bi-info-circle-fill'
+        };
+
+        window.clearTimeout(alertTimeout);
+        alertBox.className = 'alert alert-' + alertType + ' service-query-alert';
+        alertBox.setAttribute('role', alertType === 'danger' ? 'alert' : 'status');
+        alertBox.setAttribute('aria-live', alertType === 'danger' ? 'assertive' : 'polite');
+        alertIcon.className = 'bi ' + (iconByType[alertType] || iconByType.info);
+        alertMessage.textContent = message;
+        alertTimeout = window.setTimeout(function() {
+          alertBox.classList.add('d-none');
+        }, 5500);
+      }
+
+      function createTextCell(row, text, className) {
+        const cell = document.createElement('td');
+        if (className) {
+          cell.className = className;
+        }
+        cell.textContent = text;
+        row.appendChild(cell);
+        return cell;
+      }
+
+      function createEditLink(serviceType) {
+        const link = document.createElement('a');
+        const icon = document.createElement('i');
+        const label = document.createElement('span');
+
+        link.className = 'btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1';
+        link.href = 'dashboard-marketing.html?edit=' + encodeURIComponent(serviceType.id);
+        link.title = 'Editar ' + serviceType.name;
+        link.setAttribute('aria-label', 'Editar tipo de serviço ' + serviceType.name);
+        icon.className = 'bi bi-pencil';
+        icon.setAttribute('aria-hidden', 'true');
+        label.className = 'd-none d-md-inline';
+        label.textContent = 'Editar';
+        link.append(icon, label);
+        return link;
+      }
+
+      function createStatusButton(serviceType) {
+        const button = document.createElement('button');
+        const icon = document.createElement('i');
+        const label = document.createElement('span');
+        const actionLabel = serviceType.active ? 'Inativar' : 'Ativar';
+
+        button.type = 'button';
+        button.className = 'btn btn-sm d-inline-flex align-items-center gap-1 ' +
+          (serviceType.active ? 'btn-outline-danger' : 'btn-outline-success');
+        button.dataset.serviceAction = 'toggle-status';
+        button.dataset.serviceId = serviceType.id;
+        button.title = actionLabel + ' ' + serviceType.name;
+        button.setAttribute('aria-label', actionLabel + ' tipo de serviço ' + serviceType.name);
+        icon.className = 'bi ' + (serviceType.active ? 'bi-slash-circle' : 'bi-check-circle');
+        icon.setAttribute('aria-hidden', 'true');
+        label.className = 'd-none d-md-inline';
+        label.textContent = actionLabel;
+        button.append(icon, label);
+        return button;
+      }
+
+      function updateFilterButtons() {
+        filterButtons.forEach(function(button) {
+          const isSelected = button.dataset.serviceFilter === currentFilter;
+          button.classList.toggle('btn-primary', isSelected);
+          button.classList.toggle('btn-outline-primary', !isSelected);
+          button.setAttribute('aria-pressed', String(isSelected));
+        });
+      }
+
+      function setLoading() {
+        const loadingRow = document.createElement('tr');
+        const loadingCell = document.createElement('td');
+        const loadingContent = document.createElement('span');
+        const spinner = document.createElement('span');
+        const loadingText = document.createElement('span');
+
+        table.setAttribute('aria-busy', 'true');
+        recordCount.textContent = 'Carregando tipos de serviço...';
+        filterButtons.forEach(function(button) {
+          button.disabled = true;
+        });
+        loadingCell.colSpan = 4;
+        loadingCell.className = 'service-loading-state';
+        loadingContent.className = 'service-loading-content';
+        spinner.className = 'spinner-border spinner-border-sm text-primary';
+        spinner.setAttribute('role', 'status');
+        spinner.setAttribute('aria-hidden', 'true');
+        loadingText.textContent = 'Carregando tipos de serviço...';
+        loadingContent.append(spinner, loadingText);
+        loadingCell.appendChild(loadingContent);
+        loadingRow.appendChild(loadingCell);
+        tableBody.replaceChildren(loadingRow);
+      }
+
+      function renderServiceTypes() {
+        const activeServiceTypes = serviceTypes.filter(function(serviceType) {
+          return serviceType.active;
+        });
+        const inactiveServiceTypes = serviceTypes.filter(function(serviceType) {
+          return !serviceType.active;
+        });
+        const visibleServiceTypes = currentFilter === 'active' ? activeServiceTypes : inactiveServiceTypes;
+        const statusLabel = currentFilter === 'active' ? 'ativo' : 'inativo';
+
+        table.setAttribute('aria-busy', 'false');
+        filterButtons.forEach(function(button) {
+          button.disabled = false;
+        });
+        activeCount.textContent = String(activeServiceTypes.length);
+        inactiveCount.textContent = String(inactiveServiceTypes.length);
+        recordCount.textContent = visibleServiceTypes.length === 1
+          ? '1 tipo de serviço ' + statusLabel
+          : visibleServiceTypes.length + ' tipos de serviço ' + statusLabel + 's';
+        tableBody.replaceChildren();
+
+        if (visibleServiceTypes.length === 0) {
+          const emptyRow = document.createElement('tr');
+          const emptyCell = document.createElement('td');
+          const emptyIcon = document.createElement('i');
+          const emptyText = document.createElement('span');
+
+          emptyCell.colSpan = 4;
+          emptyCell.className = 'service-empty-state';
+          emptyIcon.className = currentFilter === 'active' ? 'bi bi-list-check' : 'bi bi-slash-circle';
+          emptyIcon.setAttribute('aria-hidden', 'true');
+          emptyText.textContent = currentFilter === 'active'
+            ? 'Nenhum tipo de serviço ativo foi cadastrado.'
+            : 'Nenhum tipo de serviço inativo foi encontrado.';
+          emptyCell.append(emptyIcon, emptyText);
+          emptyRow.appendChild(emptyCell);
+          tableBody.appendChild(emptyRow);
+          updateFilterButtons();
+          return;
+        }
+
+        visibleServiceTypes.forEach(function(serviceType) {
+          const row = document.createElement('tr');
+          const statusCell = document.createElement('td');
+          const statusBadge = document.createElement('span');
+          const actionsCell = document.createElement('td');
+          const actions = document.createElement('div');
+
+          createTextCell(row, serviceType.name, 'service-name text-uppercase');
+          createTextCell(row, serviceType.description, 'service-description d-none d-md-table-cell');
+
+          statusCell.className = 'd-none d-md-table-cell';
+          statusBadge.className = serviceType.active ? 'badge badge-soft-success' : 'badge badge-soft-danger';
+          statusBadge.textContent = serviceType.active ? 'Ativo' : 'Inativo';
+          statusCell.appendChild(statusBadge);
+          row.appendChild(statusCell);
+
+          actions.className = 'table-actions';
+          actions.append(createEditLink(serviceType), createStatusButton(serviceType));
+          actionsCell.appendChild(actions);
+          row.appendChild(actionsCell);
+          tableBody.appendChild(row);
+        });
+
+        updateFilterButtons();
+      }
+
+      function reloadAndRenderServiceTypes() {
+        serviceTypes = loadServiceTypes();
+        renderServiceTypes();
+      }
+
+      function toggleServiceTypeStatus(serviceId) {
+        serviceTypes = loadServiceTypes();
+        const serviceType = serviceTypes.find(function(item) {
+          return item.id === serviceId;
+        });
+
+        if (!serviceType) {
+          renderServiceTypes();
+          showPageAlert('O tipo de serviço selecionado não foi encontrado.', 'warning');
+          return;
+        }
+
+        serviceType.active = !serviceType.active;
+        const isStored = saveServiceTypes();
+        if (!isStored) {
+          serviceTypes = loadServiceTypes();
+          renderServiceTypes();
+          const failedFilterButton = document.querySelector('[data-service-filter="' + currentFilter + '"]');
+          if (failedFilterButton) {
+            failedFilterButton.focus();
+          }
+          showPageAlert(
+            'A alteração não pôde ser gravada neste navegador. O estado anterior foi restaurado.',
+            'warning'
+          );
+          return;
+        }
+        renderServiceTypes();
+
+        const currentFilterButton = document.querySelector('[data-service-filter="' + currentFilter + '"]');
+        if (currentFilterButton) {
+          currentFilterButton.focus();
+        }
+
+        showPageAlert(
+          'Tipo de serviço ' + serviceType.name + (serviceType.active ? ' ativado' : ' inativado') + ' com sucesso.' +
+          (isStored ? '' : ' A alteração não pôde ser gravada neste navegador.'),
+          isStored ? 'success' : 'warning'
+        );
+      }
+
+      filterButtons.forEach(function(button) {
+        button.addEventListener('click', function() {
+          currentFilter = button.dataset.serviceFilter;
+          renderServiceTypes();
+        });
+      });
+
+      tableBody.addEventListener('click', function(event) {
+        const actionButton = event.target.closest('[data-service-action="toggle-status"]');
+        if (!actionButton || !tableBody.contains(actionButton)) {
+          return;
+        }
+        toggleServiceTypeStatus(actionButton.dataset.serviceId);
+      });
+
+      window.addEventListener('storage', function(event) {
+        if (event.key !== STORAGE_KEY) {
+          return;
+        }
+        setLoading();
+        window.requestAnimationFrame(reloadAndRenderServiceTypes);
+      });
+
+      setLoading();
+      window.requestAnimationFrame(reloadAndRenderServiceTypes);
+    });
+  </script>
+</body>
+
+</html>

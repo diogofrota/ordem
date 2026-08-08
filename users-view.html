@@ -1,12 +1,17 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR" data-legacy-lang="en">
 
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Metadados anteriores preservados:
   <title>View User - NiceAdmin</title>
   <meta name="description" content="NiceAdmin - Bootstrap Admin Template">
   <meta name="keywords" content="admin, dashboard, bootstrap">
+  -->
+  <title>Criar Ordem de Serviço - Ordena</title>
+  <meta name="description" content="Criação, fracionamento e gerenciamento de ordens de serviço no sistema Ordena">
+  <meta name="keywords" content="ordena, ordem de serviço, patrulhamento, baseamento, operações especiais">
 
   <!-- Favicons -->
   <link href="assets/img/favicon.png" rel="icon">
@@ -15,7 +20,7 @@
   <!-- Google Fonts - Nunito Sans + Poppins + JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Nunito+Sans:wght@400;500;600;700;800&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&amp;family=Nunito+Sans:wght@400;500;600;700;800&amp;family=Poppins:wght@500;600;700&amp;display=swap" rel="stylesheet">
 
   <!-- Vendor CSS Files -->
   <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
@@ -33,6 +38,703 @@
   <!-- Template Main CSS File -->
   <link href="assets/css/main.css" rel="stylesheet">
 
+  <!-- Estilos localizados da página de criação de Ordem de Serviço. -->
+  <style>
+    .page-service-order-body .header-right,
+    .page-service-order-body .header-search-wrap,
+    .page-service-order-body .mobile-search,
+    .page-service-order-body .mobile-header-menu,
+    .page-service-order-body .sidebar-footer {
+      display: none !important;
+    }
+
+    .os-page-intro {
+      max-width: 760px;
+      margin: 0;
+      color: var(--muted-color);
+      font-size: 0.9375rem;
+    }
+
+    .os-heading-actions {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: var(--spacing-sm);
+    }
+
+    .os-page-alert {
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .os-page-loading {
+      min-height: 210px;
+      margin-bottom: var(--spacing-lg);
+      border-color: var(--border-color-light);
+    }
+
+    .os-page-loading .card-body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: var(--spacing-xs);
+      text-align: center;
+    }
+
+    .os-page-loading strong {
+      color: var(--heading-color);
+      font-size: 0.9375rem;
+    }
+
+    .os-page-loading small {
+      color: var(--muted-color);
+    }
+
+    .os-growing-dots {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      color: var(--accent-color);
+    }
+
+    .os-growing-dots .spinner-grow {
+      width: 0.625rem;
+      height: 0.625rem;
+      color: currentColor;
+    }
+
+    .page-service-order.is-loading .os-workflow,
+    .page-service-order.is-loading > .section {
+      display: none;
+    }
+
+    .btn.os-action-processing {
+      position: relative;
+      color: transparent !important;
+      pointer-events: none;
+    }
+
+    .btn.os-action-processing:disabled {
+      opacity: 1;
+    }
+
+    .btn.os-action-processing:not(.os-compact-processing) {
+      min-width: 150px;
+    }
+
+    .btn.os-action-processing > *:not(.os-processing-content) {
+      visibility: hidden;
+    }
+
+    .btn.os-action-processing .os-processing-content {
+      position: absolute;
+      inset: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: inherit;
+      color: var(--bs-btn-color) !important;
+      visibility: visible;
+      white-space: nowrap;
+    }
+
+    .btn.os-action-processing .os-processing-content .spinner-grow {
+      width: 0.45rem;
+      height: 0.45rem;
+      color: currentColor;
+    }
+
+    .btn.os-action-processing .os-processing-content .os-growing-dots {
+      color: currentColor;
+    }
+
+    .btn.os-action-processing .os-processing-content > span:last-child:not(.visually-hidden) {
+      min-width: 0;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .os-growing-dots .spinner-grow {
+        opacity: 1;
+        transform: scale(0.75);
+        animation: none !important;
+      }
+    }
+
+    .os-workflow {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: var(--spacing-sm);
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .os-workflow-step {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+      min-width: 0;
+      padding: var(--spacing-md);
+      color: var(--muted-color);
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      transition: border-color var(--transition-fast), background var(--transition-fast);
+    }
+
+    .os-workflow-step.is-active {
+      color: var(--accent-color);
+      border-color: color-mix(in srgb, var(--accent-color), transparent 45%);
+      background: color-mix(in srgb, var(--accent-color), transparent 95%);
+    }
+
+    .os-workflow-step.is-complete {
+      color: var(--success-color);
+      border-color: color-mix(in srgb, var(--success-color), transparent 55%);
+      background: color-mix(in srgb, var(--success-color), transparent 95%);
+    }
+
+    .os-workflow-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      flex: 0 0 34px;
+      color: inherit;
+      background: color-mix(in srgb, currentColor, transparent 88%);
+      border-radius: var(--radius-full);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.8125rem;
+      font-weight: 700;
+    }
+
+    .os-workflow-copy {
+      min-width: 0;
+    }
+
+    .os-workflow-copy strong,
+    .os-workflow-copy small {
+      display: block;
+    }
+
+    .os-workflow-copy strong {
+      color: inherit;
+      font-size: 0.875rem;
+    }
+
+    .os-workflow-copy small {
+      overflow: hidden;
+      margin-top: 2px;
+      color: var(--muted-color);
+      font-size: 0.75rem;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .os-card-heading {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--spacing-sm);
+      min-width: 0;
+    }
+
+    .os-card-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      flex: 0 0 38px;
+      color: var(--accent-color);
+      background: color-mix(in srgb, var(--accent-color), transparent 90%);
+      border-radius: var(--radius-md);
+      font-size: 1.125rem;
+    }
+
+    .os-card-heading .card-subtitle {
+      max-width: 760px;
+    }
+
+    .os-header-card.is-locked .os-card-icon {
+      color: var(--success-color);
+      background: color-mix(in srgb, var(--success-color), transparent 90%);
+    }
+
+    .os-required-note {
+      color: var(--muted-color);
+      font-size: 0.75rem;
+      white-space: nowrap;
+    }
+
+    .os-form-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: var(--spacing-sm);
+      padding-top: var(--spacing-sm);
+    }
+
+    .os-code-field .input-group-text {
+      color: var(--accent-color);
+      background: color-mix(in srgb, var(--accent-color), transparent 94%);
+    }
+
+    .os-code-field .form-control[readonly] {
+      color: var(--heading-color);
+      background: var(--card-bg);
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .os-duration-field .input-group-text {
+      color: var(--success-color);
+      background: color-mix(in srgb, var(--success-color), transparent 92%);
+    }
+
+    .os-duration-field .form-control[readonly] {
+      color: var(--heading-color);
+      background: var(--card-bg);
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 700;
+    }
+
+    .os-lock-summary {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--spacing-xs);
+      margin-top: var(--spacing-md);
+      padding: var(--spacing-sm) var(--spacing-md);
+      color: var(--muted-color);
+      background: var(--background-color);
+      border: 1px dashed var(--border-color-dark);
+      border-radius: var(--radius-md);
+      font-size: 0.8125rem;
+    }
+
+    .os-lock-summary strong {
+      color: var(--heading-color);
+    }
+
+    .os-data-strip {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: var(--spacing-sm);
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .os-data-source {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+      min-width: 0;
+      padding: var(--spacing-sm) var(--spacing-md);
+      background: var(--background-color);
+      border: 1px solid var(--border-color-light);
+      border-radius: var(--radius-md);
+    }
+
+    .os-data-source i {
+      color: var(--accent-color);
+      font-size: 1rem;
+    }
+
+    .os-data-source strong,
+    .os-data-source span {
+      display: block;
+    }
+
+    .os-data-source strong {
+      color: var(--heading-color);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.8125rem;
+    }
+
+    .os-data-source span {
+      overflow: hidden;
+      color: var(--muted-color);
+      font-size: 0.75rem;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .os-builder-panel {
+      padding: var(--spacing-md);
+      background: color-mix(in srgb, var(--accent-color), transparent 97%);
+      border: 1px solid var(--border-color-light);
+      border-radius: var(--radius-md);
+    }
+
+    .os-builder-location[hidden] {
+      display: none !important;
+    }
+
+    .os-location-preview {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--spacing-xs);
+      min-height: 20px;
+      margin-top: 6px;
+      color: var(--muted-color);
+      font-size: 0.75rem;
+    }
+
+    .os-location-preview i {
+      margin-top: 1px;
+      color: var(--accent-color);
+    }
+
+    .os-activity-table th,
+    .os-order-table th {
+      white-space: nowrap;
+    }
+
+    .os-activity-table td,
+    .os-order-table td {
+      vertical-align: middle;
+    }
+
+    .os-activity-index {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      color: var(--accent-color);
+      background: color-mix(in srgb, var(--accent-color), transparent 90%);
+      border-radius: var(--radius-full);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .os-activity-main strong,
+    .os-order-mission strong {
+      display: block;
+      color: var(--heading-color);
+      font-size: 0.875rem;
+    }
+
+    .os-activity-main small,
+    .os-order-mission small,
+    .os-cell-meta {
+      display: block;
+      margin-top: 2px;
+      color: var(--muted-color);
+      font-size: 0.75rem;
+    }
+
+    .os-time-range,
+    .os-number {
+      color: var(--heading-color);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .os-operation-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 5px;
+      padding: 3px 7px;
+      color: var(--info-color);
+      background: color-mix(in srgb, var(--info-color), transparent 90%);
+      border-radius: var(--radius-full);
+      font-size: 0.6875rem;
+      font-weight: 700;
+    }
+
+    .os-operation-row > td:first-child {
+      box-shadow: inset 3px 0 0 var(--info-color);
+    }
+
+    .os-empty-state {
+      padding: 2.75rem 1rem !important;
+      color: var(--muted-color);
+      text-align: center;
+    }
+
+    .os-empty-state i {
+      display: block;
+      margin-bottom: var(--spacing-sm);
+      color: var(--light-color);
+      font-size: 2rem;
+    }
+
+    .os-summary-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--spacing-md);
+    }
+
+    .os-summary-metrics {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--spacing-lg);
+    }
+
+    .os-summary-metric span,
+    .os-summary-metric strong {
+      display: block;
+    }
+
+    .os-summary-metric span {
+      color: var(--muted-color);
+      font-size: 0.6875rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .os-summary-metric strong {
+      margin-top: 2px;
+      color: var(--heading-color);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.875rem;
+    }
+
+    .os-list-tools {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: flex-end;
+      gap: var(--spacing-sm);
+    }
+
+    .os-filter .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .os-order-table .table-actions {
+      justify-content: flex-end;
+      flex-wrap: nowrap;
+    }
+
+    .os-order-table th:last-child,
+    .os-order-table td:last-child {
+      text-align: right;
+    }
+
+    .os-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 8px;
+      border-radius: var(--radius-full);
+      font-size: 0.75rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .os-status.is-active {
+      color: var(--success-color);
+      background: var(--success-color-light);
+    }
+
+    .os-status.is-inactive {
+      color: var(--muted-color);
+      background: var(--background-color);
+    }
+
+    .os-modal-note {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--spacing-sm);
+      padding: var(--spacing-sm) var(--spacing-md);
+      color: var(--muted-color);
+      background: var(--background-color);
+      border-radius: var(--radius-md);
+      font-size: 0.8125rem;
+    }
+
+    .os-modal-note i {
+      margin-top: 2px;
+      color: var(--info-color);
+    }
+
+    .os-print-sheet {
+      display: none;
+    }
+
+    @media (max-width: 991px) {
+      .os-data-strip {
+        grid-template-columns: 1fr;
+      }
+
+      .os-summary-bar {
+        align-items: stretch;
+      }
+
+      .os-summary-bar .btn {
+        width: 100%;
+      }
+    }
+
+    @media (max-width: 767px) {
+      .os-heading-actions {
+        width: 100%;
+        align-items: flex-start;
+      }
+
+      .os-heading-actions .btn {
+        width: 100%;
+      }
+
+      .os-workflow {
+        grid-template-columns: 1fr;
+      }
+
+      .os-workflow-step:not(.is-active):not(.is-complete) {
+        display: none;
+      }
+
+      .os-form-actions,
+      .os-list-tools,
+      .os-filter,
+      .os-summary-metrics {
+        width: 100%;
+      }
+
+      .os-form-actions {
+        flex-direction: column-reverse;
+        align-items: stretch;
+      }
+
+      .os-form-actions .btn,
+      .os-filter .btn {
+        flex: 1 1 0;
+      }
+
+      .os-activity-table th,
+      .os-activity-table td,
+      .os-order-table th,
+      .os-order-table td {
+        padding-right: var(--spacing-sm);
+        padding-left: var(--spacing-sm);
+      }
+
+      .os-order-table .table-actions .btn {
+        width: 36px;
+        height: 36px;
+        justify-content: center;
+        padding: 0;
+      }
+
+      .os-order-table .table-actions .btn span {
+        display: none;
+      }
+    }
+
+    @media print {
+      @page {
+        size: A4 portrait;
+        margin: 12mm;
+      }
+
+      body > *:not(.os-print-sheet) {
+        display: none !important;
+      }
+
+      .os-print-sheet {
+        display: block !important;
+        color: #1f2937;
+        background: #fff;
+        font-family: Arial, sans-serif;
+      }
+
+      .os-print-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 20px;
+        padding-bottom: 12px;
+        border-bottom: 2px solid #1f3a78;
+      }
+
+      .os-print-brand {
+        color: #1f3a78;
+        font-size: 20px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+      }
+
+      .os-print-title {
+        margin: 18px 0 10px;
+        font-size: 18px;
+      }
+
+      .os-print-meta {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+        margin-bottom: 16px;
+      }
+
+      .os-print-meta div {
+        padding: 8px;
+        border: 1px solid #d7deea;
+      }
+
+      .os-print-meta span,
+      .os-print-meta strong {
+        display: block;
+      }
+
+      .os-print-meta span {
+        color: #64748b;
+        font-size: 9px;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+
+      .os-print-meta strong {
+        margin-top: 3px;
+        font-size: 11px;
+      }
+
+      .os-print-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 10px;
+      }
+
+      .os-print-table th,
+      .os-print-table td {
+        padding: 7px;
+        border: 1px solid #d7deea;
+        text-align: left;
+        vertical-align: top;
+      }
+
+      .os-print-table th {
+        color: #1f3a78;
+        background: #eef3ff;
+        font-size: 9px;
+        text-transform: uppercase;
+      }
+
+      .os-print-footer {
+        margin-top: 18px;
+        color: #64748b;
+        font-size: 9px;
+        text-align: right;
+      }
+    }
+  </style>
+
   <!-- =======================================================
     * Template Name: NiceAdmin - Bootstrap Admin Template
     * Template URL: https://bootstrapmade.com/flex-admin-bootstrap-template/
@@ -42,7 +744,9 @@
     ======================================================== -->
 </head>
 
-<body>
+<body class="page-service-order-body">
+  <!-- Cabeçalho anterior preservado de forma inerte por segurança. -->
+  <template id="legacyUserViewHeader">
   <!-- Header -->
   <header class="header">
     <div class="header-left">
@@ -394,8 +1098,33 @@
       </a>
     </div>
   </div>
+  </template>
+
+  <!-- Cabeçalho operacional da página de Ordem de Serviço. -->
+  <header class="header">
+    <div class="header-left">
+      <button class="sidebar-toggle" type="button" title="Abrir menu" aria-label="Abrir menu lateral">
+        <span class="menu-lines" aria-hidden="true">
+          <span></span>
+          <span></span>
+          <span></span>
+        </span>
+      </button>
+
+      <a href="index.html" class="header-brand" aria-label="Página inicial do Ordena">
+        <span class="header-logo">
+          <img src="assets/img/logo.webp" alt="Ordena">
+        </span>
+        <span class="header-context">
+          <strong class="header-context-title">Ordena</strong>
+        </span>
+      </a>
+    </div>
+  </header>
 
   <!-- Sidebar -->
+  <!-- Menu anterior preservado de forma inerte por segurança. -->
+  <template id="legacyUserViewSidebar">
   <aside class="sidebar">
     <div class="sidebar-shell">
       <button class="sidebar-close" type="button" aria-label="Close sidebar">
@@ -744,12 +1473,97 @@
       </div>
     </div>
   </aside>
+  </template>
+
+  <!-- Menu operacional usado pelas páginas do projeto Ordena. -->
+  <aside class="sidebar">
+    <div class="sidebar-shell">
+      <button class="sidebar-close" type="button" aria-label="Fechar menu lateral">
+        <i class="bi bi-x-lg"></i>
+      </button>
+
+      <nav class="sidebar-nav" aria-label="Menu principal">
+        <ul class="nav-menu">
+          <li class="nav-item">
+            <a class="nav-link" href="index.html">
+              <span class="nav-icon"><i class="ph-light ph-squares-four"></i></span>
+              <span class="nav-text">Painel Operacional</span>
+              <span class="nav-meta">Home</span>
+            </a>
+          </li>
+
+          <li class="nav-item has-submenu">
+            <a class="nav-link" href="#" aria-expanded="false">
+              <span class="nav-icon"><i class="ph-light ph-gauge"></i></span>
+              <span class="nav-text">Cadastro</span>
+              <span class="nav-badge">5</span>
+              <span class="nav-arrow"><i class="bi bi-chevron-right"></i></span>
+            </a>
+            <ul class="nav-submenu">
+              <li><a class="nav-link" href="dashboard-sales.html"><span class="nav-dot"></span>Viaturas</a></li>
+              <li><a class="nav-link" href="dashboard-analytics.html"><span class="nav-dot"></span>Pontos de Baseamento</a></li>
+              <li><a class="nav-link" href="dashboard-crm.html"><span class="nav-dot"></span>Locais de Patrulhamento</a></li>
+              <li><a class="nav-link" href="dashboard-marketing.html"><span class="nav-dot"></span>Tipos de Serviço</a></li>
+              <li><a class="nav-link" href="dashboard-projects.html"><span class="nav-dot"></span>Operações Especiais</a></li>
+            </ul>
+          </li>
+
+          <li class="nav-item has-submenu">
+            <a class="nav-link" href="#" aria-expanded="false">
+              <span class="nav-icon"><i class="ph-light ph-magnifying-glass"></i></span>
+              <span class="nav-text">Consultas</span>
+              <span class="nav-badge">6</span>
+              <span class="nav-arrow"><i class="bi bi-chevron-right"></i></span>
+            </a>
+            <ul class="nav-submenu">
+              <li><a class="nav-link" href="consulta-viaturas.html"><span class="nav-dot"></span>Viaturas</a></li>
+              <li><a class="nav-link" href="consulta-pontos-baseamento.html"><span class="nav-dot"></span>Pontos de Baseamento</a></li>
+              <li><a class="nav-link" href="consulta-locais-patrulhamento.html"><span class="nav-dot"></span>Locais de Patrulhamento</a></li>
+              <li><a class="nav-link" href="consulta-tipos-servico.html"><span class="nav-dot"></span>Tipos de Serviço</a></li>
+              <li><a class="nav-link" href="consulta-operacoes-especiais.html"><span class="nav-dot"></span>Operações Especiais</a></li>
+              <li><a class="nav-link" href="users.html"><span class="nav-dot"></span>Ordens de Serviço</a></li>
+            </ul>
+          </li>
+
+          <li class="nav-item has-submenu open">
+            <a class="nav-link" href="#" aria-expanded="true">
+              <span class="nav-icon"><i class="ph-light ph-users-three"></i></span>
+              <span class="nav-text">Ordens de Serviço</span>
+              <span class="nav-badge">1</span>
+              <span class="nav-arrow"><i class="bi bi-chevron-right"></i></span>
+            </a>
+            <ul class="nav-submenu show">
+              <!-- Link anterior de consulta preservado no grupo original por segurança.
+              <li><a class="nav-link" href="users.html"><span class="nav-dot"></span>Consultar Ordens de Serviço</a></li>
+              -->
+              <li><a class="nav-link active" href="users-view.html" aria-current="page"><span class="nav-dot"></span>Criar Ordem de Serviço</a></li>
+            </ul>
+          </li>
+
+          <li class="nav-item has-submenu">
+            <a class="nav-link" href="#" aria-expanded="false">
+              <span class="nav-icon"><i class="ph-light ph-shield-check"></i></span>
+              <span class="nav-text">Operação</span>
+              <span class="nav-badge">2</span>
+              <span class="nav-arrow"><i class="bi bi-chevron-right"></i></span>
+            </a>
+            <ul class="nav-submenu">
+              <li><a class="nav-link" href="auth-login.html"><span class="nav-dot"></span>Ativação</a></li>
+              <li><a class="nav-link" href="auth-register.html"><span class="nav-dot"></span>Mapa Tático</a></li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </aside>
 
   <!-- Sidebar Overlay (Mobile) -->
   <div class="sidebar-overlay"></div>
 
   <!-- Main Content -->
   <main class="main">
+    <!-- Conteúdo anterior da página User View preservado de forma inerte por segurança. -->
+    <template id="legacyUserViewContent">
     <div class="main-content page-users-view">
       <div class="page-users-view">
         <div class="uv-hero mb-3">
@@ -930,8 +1744,450 @@
         </div>
       </div>
     </div>
+    </template>
+
+    <!-- Página operacional de criação de Ordem de Serviço. -->
+    <div class="main-content page-service-order is-loading" id="orderPageContent" aria-busy="false">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Criar Ordem de Serviço</h1>
+          <p class="os-page-intro">Defina o turno e organize a missão em atividades usando os pontos de baseamento, locais de patrulhamento e operações especiais já cadastrados.</p>
+        </div>
+        <div class="os-heading-actions">
+          <a class="btn btn-outline-primary btn-sm" href="users.html">
+            <i class="bi bi-card-list me-1" aria-hidden="true"></i>
+            Consultar todas as OS
+          </a>
+          <nav class="breadcrumb" aria-label="Navegação estrutural">
+            <a href="index.html" class="breadcrumb-item">Painel Operacional</a>
+            <span class="breadcrumb-item">Ordens de Serviço</span>
+            <span class="breadcrumb-item active" aria-current="page">Criar OS</span>
+          </nav>
+        </div>
+      </div>
+
+      <div id="orderPageAlert" class="alert os-page-alert d-none" role="status" aria-live="polite" aria-atomic="true">
+        <div class="d-flex align-items-start gap-2">
+          <i id="orderPageAlertIcon" class="bi mt-1" aria-hidden="true"></i>
+          <span id="orderPageAlertMessage"></span>
+        </div>
+      </div>
+
+      <div class="card os-page-loading" id="orderPageLoading" role="status" aria-live="polite" aria-atomic="true">
+        <div class="card-body">
+          <div class="os-growing-dots mb-2" aria-hidden="true">
+            <span class="spinner-grow spinner-grow-sm" style="animation-delay: 0s;"></span>
+            <span class="spinner-grow spinner-grow-sm" style="animation-delay: 0.15s;"></span>
+            <span class="spinner-grow spinner-grow-sm" style="animation-delay: 0.3s;"></span>
+          </div>
+          <strong id="orderPageLoadingTitle">Carregando dados da Ordem de Serviço...</strong>
+          <small id="orderPageLoadingMessage">Buscando locais, operações e ordens gravadas.</small>
+        </div>
+      </div>
+
+      <noscript>
+        <style>#orderPageLoading { display: none !important; }</style>
+        <div class="alert alert-danger" role="alert">
+          <i class="bi bi-exclamation-triangle-fill me-1" aria-hidden="true"></i>
+          Não foi possível carregar os dados desta página. Ative o JavaScript e tente novamente.
+        </div>
+      </noscript>
+
+      <div class="os-workflow" aria-label="Etapas para criação da ordem de serviço">
+        <div class="os-workflow-step is-active" id="orderStepHeader" aria-current="step">
+          <span class="os-workflow-number">01</span>
+          <span class="os-workflow-copy">
+            <strong>Dados gerais</strong>
+            <small>Missão, recurso e turno</small>
+          </span>
+        </div>
+        <div class="os-workflow-step" id="orderStepActivities">
+          <span class="os-workflow-number">02</span>
+          <span class="os-workflow-copy">
+            <strong>Fracionamento</strong>
+            <small>Atividades e locais</small>
+          </span>
+        </div>
+        <div class="os-workflow-step" id="orderStepFinish">
+          <span class="os-workflow-number">03</span>
+          <span class="os-workflow-copy">
+            <strong>Conferência</strong>
+            <small>Revisar e gravar a OS</small>
+          </span>
+        </div>
+      </div>
+
+      <section class="section" aria-labelledby="orderHeaderTitle">
+        <div class="card os-header-card" id="orderHeaderCard">
+          <div class="card-header">
+            <div class="os-card-heading">
+              <span class="os-card-icon" aria-hidden="true"><i class="bi bi-file-earmark-text"></i></span>
+              <div>
+                <h2 class="card-title" id="orderHeaderTitle">Dados da Ordem de Serviço</h2>
+                <p class="card-subtitle">Preencha os campos obrigatórios para liberar o fracionamento do turno.</p>
+              </div>
+            </div>
+            <span class="os-required-note"><span class="text-danger">*</span> Campos obrigatórios</span>
+          </div>
+          <div class="card-body">
+            <form id="orderHeaderForm" class="needs-validation" novalidate autocomplete="off">
+              <div class="row g-3">
+                <div class="col-12 col-md-6 col-xl-3">
+                  <!-- Campo anterior preservado; o tipo de serviço deixou de ser informado pelo usuário.
+                  <label for="orderServiceType" class="form-label">Tipo de serviço <span class="text-danger">*</span></label>
+                  <select class="form-select" id="orderServiceType" name="serviceType" aria-describedby="orderServiceTypeHelp orderServiceTypeFeedback" required>
+                    <option value="">Selecione...</option>
+                  </select>
+                  <div class="invalid-feedback" id="orderServiceTypeFeedback">Selecione o tipo de serviço.</div>
+                  <div class="form-text" id="orderServiceTypeHelp">Carregado dos tipos de serviço ativos.</div>
+                  -->
+                  <label for="orderCode" class="form-label">Código da OS</label>
+                  <div class="input-group os-code-field">
+                    <span class="input-group-text"><i class="bi bi-hash" aria-hidden="true"></i></span>
+                    <input type="text" class="form-control" id="orderCode" name="orderCode" value="1" inputmode="numeric" readonly aria-describedby="orderCodeHelp">
+                  </div>
+                  <div class="form-text" id="orderCodeHelp">Gerado automaticamente em ordem sequencial.</div>
+
+                  <!-- Controle técnico preservado para compatibilidade com ordens antigas. -->
+                  <select id="orderServiceType" name="serviceType" hidden aria-hidden="true" tabindex="-1">
+                    <option value="">Rotina</option>
+                  </select>
+                </div>
+
+                <div class="col-12 col-md-6 col-xl-3">
+                  <label for="orderPatrolType" class="form-label">Tipo de patrulhamento <span class="text-danger">*</span></label>
+                  <select class="form-select" id="orderPatrolType" name="patrolType" aria-describedby="orderPatrolTypeHelp orderPatrolTypeFeedback" required>
+                    <option value="">Selecione...</option>
+                    <option value="Viatura">Viatura</option>
+                    <option value="Moto">Moto</option>
+                    <option value="Cabine">Cabine</option>
+                    <option value="Setor">Setor a Pé</option>
+                  </select>
+                  <div class="invalid-feedback" id="orderPatrolTypeFeedback">Selecione o tipo de patrulhamento.</div>
+                  <div class="form-text" id="orderPatrolTypeHelp">Selecione o recurso que será empregado durante o turno.</div>
+                </div>
+
+                <div class="col-12 col-xl-6">
+                  <label for="orderMission" class="form-label">Missão (nome da OS) <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control text-uppercase" id="orderMission" name="mission" placeholder="Ex.: Patrulhamento Setor Centro" minlength="3" maxlength="100" aria-describedby="orderMissionHelp orderMissionFeedback" autocapitalize="characters" spellcheck="false" required>
+                  <div class="invalid-feedback" id="orderMissionFeedback">Informe uma missão com 3 a 100 caracteres.</div>
+                  <div class="form-text" id="orderMissionHelp">Use um nome curto e objetivo para identificar a ordem.</div>
+                </div>
+
+                <div class="col-12 col-sm-6 col-xl-2">
+                  <label for="orderStartTime" class="form-label">Início do turno <span class="text-danger">*</span></label>
+                  <div class="input-group has-validation">
+                    <input type="time" class="form-control" id="orderStartTime" name="startTime" aria-describedby="orderStartTimeHelp orderStartTimeFeedback" required>
+                    <span class="input-group-text"><i class="bi bi-clock" aria-hidden="true"></i></span>
+                    <div class="invalid-feedback" id="orderStartTimeFeedback">Informe o horário de início.</div>
+                  </div>
+                  <div class="form-text" id="orderStartTimeHelp">Informe o horário em que o turno começa.</div>
+                </div>
+
+                <div class="col-12 col-sm-6 col-xl-2">
+                  <label for="orderEndTime" class="form-label">Término do turno <span class="text-danger">*</span></label>
+                  <div class="input-group has-validation">
+                    <input type="time" class="form-control" id="orderEndTime" name="endTime" aria-describedby="orderEndTimeHelp orderEndTimeFeedback" required>
+                    <span class="input-group-text"><i class="bi bi-clock-history" aria-hidden="true"></i></span>
+                    <div class="invalid-feedback" id="orderEndTimeFeedback">Informe o horário de término.</div>
+                  </div>
+                  <div class="form-text" id="orderEndTimeHelp">Pode terminar após a meia-noite.</div>
+                </div>
+
+                <div class="col-12 col-sm-6 col-xl-2">
+                  <label for="orderTotalDuration" class="form-label">Total do intervalo</label>
+                  <div class="input-group os-duration-field">
+                    <input type="text" class="form-control" id="orderTotalDuration" name="totalDuration" placeholder="0h 00min" readonly aria-describedby="orderTotalDurationHelp" aria-live="polite">
+                    <span class="input-group-text"><i class="bi bi-hourglass-split" aria-hidden="true"></i></span>
+                  </div>
+                  <div class="form-text" id="orderTotalDurationHelp">Calculado automaticamente.</div>
+                </div>
+
+                <div class="col-12 col-xl-6 d-flex align-items-end">
+                  <div class="os-form-actions w-100">
+                    <button type="button" class="btn btn-outline-secondary" id="orderResetButton">
+                      <i class="bi bi-arrow-counterclockwise me-1" aria-hidden="true"></i>
+                      Limpar rascunho
+                    </button>
+                    <button type="submit" class="btn btn-primary" id="orderHeaderButton">
+                      <i class="bi bi-arrow-right-circle me-1" aria-hidden="true"></i>
+                      <span>Continuar para atividades</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="os-lock-summary d-none" id="orderLockSummary" aria-live="polite">
+                <i class="bi bi-lock-fill text-success" aria-hidden="true"></i>
+                <span>Cabeçalho confirmado:</span>
+                <strong id="orderLockSummaryText"></strong>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <section class="section d-none" id="activitySection" aria-labelledby="activitySectionTitle">
+        <div class="card">
+          <div class="card-header">
+            <div class="os-card-heading">
+              <span class="os-card-icon" aria-hidden="true"><i class="bi bi-diagram-3"></i></span>
+              <div>
+                <h2 class="card-title" id="activitySectionTitle">Fracionamento de Atividades</h2>
+                <p class="card-subtitle">Monte a sequência do turno. A página ordena os horários automaticamente e impede sobreposições.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-body">
+            <div class="os-data-strip" aria-label="Cadastros disponíveis para a ordem de serviço">
+              <div class="os-data-source">
+                <i class="bi bi-pin-map" aria-hidden="true"></i>
+                <div><strong id="basePointSourceCount">0</strong><span>pontos de baseamento ativos</span></div>
+              </div>
+              <div class="os-data-source">
+                <i class="bi bi-bounding-box-circles" aria-hidden="true"></i>
+                <div><strong id="patrolLocationSourceCount">0</strong><span>locais de patrulhamento ativos</span></div>
+              </div>
+              <div class="os-data-source">
+                <i class="bi bi-shield-check" aria-hidden="true"></i>
+                <div><strong id="operationSourceCount">0</strong><span>operações especiais ativas</span></div>
+              </div>
+            </div>
+
+            <div class="os-builder-panel">
+              <form id="activityForm" class="needs-validation" novalidate autocomplete="off">
+                <div class="row g-3 align-items-end">
+                  <div class="col-12 col-lg-5">
+                    <label for="activityType" class="form-label">Atividade <span class="text-danger">*</span></label>
+                    <select class="form-select" id="activityType" name="activityType" required>
+                      <option value="Preleção">Preleção</option>
+                      <option value="Deslocamento">Deslocamento</option>
+                      <option value="Baseamento">Baseamento (Ponto Fixo)</option>
+                      <option value="Patrulhamento">Patrulhamento (Ronda)</option>
+                      <option value="Intervalo">Intervalo / Refeição</option>
+                      <option value="Retorno Base">Retorno à Base</option>
+                    </select>
+                  </div>
+
+                  <div class="col-6 col-lg-2">
+                    <label for="activityStartTime" class="form-label">Início <span class="text-danger">*</span></label>
+                    <input type="time" class="form-control" id="activityStartTime" name="activityStartTime" required>
+                    <div class="invalid-feedback" id="activityStartFeedback">Informe o início da atividade.</div>
+                  </div>
+
+                  <div class="col-6 col-lg-2">
+                    <label for="activityEndTime" class="form-label">Término <span class="text-danger">*</span></label>
+                    <input type="time" class="form-control" id="activityEndTime" name="activityEndTime" required>
+                    <div class="invalid-feedback" id="activityEndFeedback">Informe o término da atividade.</div>
+                  </div>
+
+                  <div class="col-12 col-lg-3">
+                    <button type="submit" class="btn btn-primary w-100" id="activityAddButton">
+                      <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>
+                      Adicionar atividade
+                    </button>
+                  </div>
+                </div>
+
+                <div class="row g-3 align-items-end mt-0 os-builder-location" id="activityLocationFields" hidden>
+                  <div class="col-12 col-lg-6">
+                    <label for="activityLocation" class="form-label" id="activityLocationLabel">Local cadastrado <span class="text-danger">*</span></label>
+                    <select class="form-select" id="activityLocation" name="activityLocation" aria-describedby="activityLocationPreview activityLocationFeedback">
+                      <option value="">Selecione...</option>
+                    </select>
+                    <div class="invalid-feedback" id="activityLocationFeedback">Selecione um local cadastrado e ativo.</div>
+                    <div class="os-location-preview" id="activityLocationPreview" aria-live="polite">
+                      <i class="bi bi-info-circle" aria-hidden="true"></i>
+                      <span>Escolha um local para conferir os dados usados na atividade.</span>
+                    </div>
+                  </div>
+
+                  <div class="col-12 col-lg-6">
+                    <label for="activityOperation" class="form-label">Vincular operação <span class="form-label-optional">(opcional)</span></label>
+                    <div class="input-group">
+                      <select class="form-select" id="activityOperation" name="activityOperation" aria-label="Operação especial vinculada">
+                        <option value="">Nenhuma operação</option>
+                      </select>
+                      <button class="btn btn-outline-primary" type="button" id="openOperationModalButton" title="Cadastrar nova operação" aria-label="Cadastrar nova operação especial">
+                        <i class="bi bi-plus-lg" aria-hidden="true"></i>
+                      </button>
+                    </div>
+                    <div class="form-text">A OS guarda o vínculo e uma cópia do nome da operação.</div>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <div class="card-body p-0 border-top">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0 os-activity-table">
+                <caption class="visually-hidden">Atividades adicionadas ao fracionamento da Ordem de Serviço</caption>
+                <thead>
+                  <tr>
+                    <th scope="col" style="width: 56px;">#</th>
+                    <th scope="col">Atividade</th>
+                    <th scope="col">Horário</th>
+                    <th scope="col">Local / Operação</th>
+                    <th scope="col" class="d-none d-lg-table-cell">Detalhes</th>
+                    <th scope="col" class="text-end">Ação</th>
+                  </tr>
+                </thead>
+                <tbody id="activityTableBody">
+                  <tr>
+                    <td colspan="6" class="os-empty-state">
+                      <i class="bi bi-list-check" aria-hidden="true"></i>
+                      <span>Nenhuma atividade adicionada. Comece informando o primeiro intervalo do turno.</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card-footer">
+            <div class="os-summary-bar">
+              <div class="os-summary-metrics" aria-live="polite">
+                <div class="os-summary-metric"><span>Atividades</span><strong id="activityCountMetric">0</strong></div>
+                <div class="os-summary-metric"><span>Tempo planejado</span><strong id="activityDurationMetric">0h 00min</strong></div>
+                <div class="os-summary-metric"><span>Cobertura do turno</span><strong id="activityCoverageMetric">0%</strong></div>
+              </div>
+              <button type="button" class="btn btn-success" id="finishOrderButton" disabled>
+                <i class="bi bi-check2-circle me-1" aria-hidden="true"></i>
+                Finalizar e gravar nova OS
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="savedOrdersTitle" hidden aria-hidden="true">
+        <div class="card">
+          <div class="card-header">
+            <div class="os-card-heading">
+              <span class="os-card-icon" aria-hidden="true"><i class="bi bi-archive"></i></span>
+              <div>
+                <h2 class="card-title" id="savedOrdersTitle">Banco de Ordens de Serviço</h2>
+                <p class="card-subtitle" id="savedOrderCount" aria-live="polite"></p>
+              </div>
+            </div>
+            <div class="os-list-tools">
+              <div class="btn-group os-filter" role="group" aria-label="Filtrar ordens por situação">
+                <button type="button" class="btn btn-sm btn-primary" data-order-filter="Ativa" aria-pressed="true">
+                  <i class="bi bi-check-circle" aria-hidden="true"></i>
+                  Ativas
+                  <span class="badge bg-light text-primary" id="activeOrderCount">0</span>
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-primary" data-order-filter="Inativa" aria-pressed="false">
+                  <i class="bi bi-slash-circle" aria-hidden="true"></i>
+                  Inativas
+                  <span class="badge bg-light text-primary" id="inactiveOrderCount">0</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0 os-order-table" id="savedOrdersTable">
+                <caption class="visually-hidden">Ordens de Serviço gravadas neste navegador</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Nº OS</th>
+                    <th scope="col">Missão</th>
+                    <th scope="col" class="d-none d-md-table-cell">Turno</th>
+                    <th scope="col" class="d-none d-lg-table-cell">Composição</th>
+                    <th scope="col">Situação</th>
+                    <th scope="col">Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="savedOrdersTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="modal fade" id="operationModal" tabindex="-1" aria-labelledby="operationModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+          <div class="modal-content">
+            <form id="quickOperationForm" class="needs-validation" novalidate autocomplete="off">
+              <div class="modal-header">
+                <div>
+                  <h2 class="modal-title fs-5" id="operationModalLabel">Cadastrar operação especial</h2>
+                  <p class="card-subtitle mb-0">A nova operação ficará disponível imediatamente no fracionamento.</p>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+              </div>
+              <div class="modal-body">
+                <div class="os-modal-note mb-3">
+                  <i class="bi bi-info-circle-fill" aria-hidden="true"></i>
+                  <span>Este cadastro usa o mesmo banco de dados da página de Operações Especiais.</span>
+                </div>
+                <div class="alert alert-danger d-none mb-3" id="quickOperationAlert" role="alert" aria-live="assertive" aria-atomic="true">
+                  <div class="d-flex align-items-start gap-2">
+                    <i class="bi bi-exclamation-triangle-fill mt-1" id="quickOperationAlertIcon" aria-hidden="true"></i>
+                    <span id="quickOperationAlertMessage"></span>
+                  </div>
+                </div>
+                <div class="row g-3">
+                  <div class="col-12">
+                    <label for="quickOperationName" class="form-label">Nome da operação <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control text-uppercase" id="quickOperationName" minlength="3" maxlength="80" placeholder="Ex.: Operação Verão 2026" required>
+                    <div class="invalid-feedback" id="quickOperationNameFeedback">Informe um nome com 3 a 80 caracteres.</div>
+                  </div>
+                  <div class="col-12">
+                    <label for="quickOperationDescription" class="form-label">Descrição <span class="text-danger">*</span></label>
+                    <textarea class="form-control" id="quickOperationDescription" rows="3" minlength="3" maxlength="500" placeholder="Objetivo, efetivo previsto e observações da operação..." required></textarea>
+                    <div class="invalid-feedback">Informe uma descrição com 3 a 500 caracteres.</div>
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <label for="quickOperationStart" class="form-label">Início previsto <span class="text-danger">*</span></label>
+                    <input type="datetime-local" class="form-control" id="quickOperationStart" required>
+                    <div class="invalid-feedback">Informe a data e hora de início.</div>
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <label for="quickOperationEnd" class="form-label">Término previsto <span class="text-danger">*</span></label>
+                    <input type="datetime-local" class="form-control" id="quickOperationEnd" required>
+                    <div class="invalid-feedback" id="quickOperationEndFeedback">Informe uma data e hora posterior ao início.</div>
+                  </div>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" class="btn btn-primary" id="quickOperationSubmitButton">
+                  <i class="bi bi-check2 me-1" aria-hidden="true"></i>
+                  Salvar operação
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal fade" id="orderConfirmModal" tabindex="-1" aria-labelledby="orderConfirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h2 class="modal-title fs-5" id="orderConfirmModalLabel">Confirmar ação</h2>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+              <p class="mb-0" id="orderConfirmModalMessage"></p>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+              <button type="button" class="btn btn-primary" id="orderConfirmButton">Confirmar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- Footer -->
+    <!-- Rodapé anterior preservado de forma inerte por segurança. -->
+    <template id="legacyUserViewFooter">
     <footer class="footer">
       <div class="footer-content">
         <div class="footer-links">
@@ -950,7 +2206,25 @@
         </div>
       </div>
     </footer>
+    </template>
+
+    <footer class="footer">
+      <div class="footer-content">
+        <div class="footer-links">
+          <a href="#">Documentação</a>
+          <a href="#">Privacidade</a>
+          <a href="#">Suporte</a>
+        </div>
+        <div class="footer-credits">
+          <div class="footer-copyright">&copy; 2026 <a href="index.html">Ordena</a></div>
+        </div>
+      </div>
+    </footer>
   </main>
+
+  <section class="os-print-sheet" id="orderPrintSheet" aria-hidden="true"></section>
+
+  <div class="visually-hidden" id="orderOperationStatus" role="status" aria-live="polite" aria-atomic="true"></div>
 
   <!-- Back to Top -->
   <a href="#" class="back-to-top">
@@ -975,6 +2249,2357 @@
 
   <!-- App Sidebar Toggle (for app pages with sidebars) -->
   <script src="assets/js/apps-sidebar-toggle.js"></script>
+
+  <!-- Comportamento localizado da página de Ordem de Serviço. -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const STORAGE_KEYS = {
+        serviceTypes: 'ordena.tipos-servico.v1',
+        basePoints: 'ordena.pontos-baseamento.v1',
+        patrolLocations: 'ordena.locais-patrulhamento.v1',
+        operations: 'ordena.operacoes-especiais.v1',
+        orders: 'ordena.ordens-servico.v1',
+        legacyBasePoints: 'locaisCadastrados',
+        legacyPatrolLocations: 'pontosPatrulhamento',
+        legacyOperations: 'cadastrosOperacoes',
+        legacyOrders: 'ordensServico',
+        legacyPrint: 'osImpressaoTemp'
+      };
+
+      const elements = {
+        pageContent: document.getElementById('orderPageContent'),
+        pageLoading: document.getElementById('orderPageLoading'),
+        pageLoadingTitle: document.getElementById('orderPageLoadingTitle'),
+        pageLoadingMessage: document.getElementById('orderPageLoadingMessage'),
+        pageLoadingTargets: document.querySelectorAll('#orderPageContent > .os-workflow, #orderPageContent > .section'),
+        operationStatus: document.getElementById('orderOperationStatus'),
+        pageAlert: document.getElementById('orderPageAlert'),
+        pageAlertIcon: document.getElementById('orderPageAlertIcon'),
+        pageAlertMessage: document.getElementById('orderPageAlertMessage'),
+        stepHeader: document.getElementById('orderStepHeader'),
+        stepActivities: document.getElementById('orderStepActivities'),
+        stepFinish: document.getElementById('orderStepFinish'),
+        headerCard: document.getElementById('orderHeaderCard'),
+        headerForm: document.getElementById('orderHeaderForm'),
+        serviceType: document.getElementById('orderServiceType'),
+        orderCode: document.getElementById('orderCode'),
+        patrolType: document.getElementById('orderPatrolType'),
+        mission: document.getElementById('orderMission'),
+        missionFeedback: document.getElementById('orderMissionFeedback'),
+        orderStart: document.getElementById('orderStartTime'),
+        orderEnd: document.getElementById('orderEndTime'),
+        totalDuration: document.getElementById('orderTotalDuration'),
+        headerButton: document.getElementById('orderHeaderButton'),
+        headerButtonLabel: document.querySelector('#orderHeaderButton span'),
+        resetButton: document.getElementById('orderResetButton'),
+        lockSummary: document.getElementById('orderLockSummary'),
+        lockSummaryText: document.getElementById('orderLockSummaryText'),
+        activitySection: document.getElementById('activitySection'),
+        baseSourceCount: document.getElementById('basePointSourceCount'),
+        patrolSourceCount: document.getElementById('patrolLocationSourceCount'),
+        operationSourceCount: document.getElementById('operationSourceCount'),
+        activityForm: document.getElementById('activityForm'),
+        activityType: document.getElementById('activityType'),
+        activityStart: document.getElementById('activityStartTime'),
+        activityEnd: document.getElementById('activityEndTime'),
+        activityStartFeedback: document.getElementById('activityStartFeedback'),
+        activityEndFeedback: document.getElementById('activityEndFeedback'),
+        activityAddButton: document.getElementById('activityAddButton'),
+        locationFields: document.getElementById('activityLocationFields'),
+        locationLabel: document.getElementById('activityLocationLabel'),
+        locationSelect: document.getElementById('activityLocation'),
+        locationFeedback: document.getElementById('activityLocationFeedback'),
+        locationPreview: document.getElementById('activityLocationPreview'),
+        operationSelect: document.getElementById('activityOperation'),
+        openOperationButton: document.getElementById('openOperationModalButton'),
+        activityTableBody: document.getElementById('activityTableBody'),
+        activityCountMetric: document.getElementById('activityCountMetric'),
+        activityDurationMetric: document.getElementById('activityDurationMetric'),
+        activityCoverageMetric: document.getElementById('activityCoverageMetric'),
+        finishButton: document.getElementById('finishOrderButton'),
+        savedOrderCount: document.getElementById('savedOrderCount'),
+        activeOrderCount: document.getElementById('activeOrderCount'),
+        inactiveOrderCount: document.getElementById('inactiveOrderCount'),
+        orderFilterButtons: document.querySelectorAll('[data-order-filter]'),
+        ordersTableBody: document.getElementById('savedOrdersTableBody'),
+        operationModal: document.getElementById('operationModal'),
+        quickOperationForm: document.getElementById('quickOperationForm'),
+        quickOperationAlert: document.getElementById('quickOperationAlert'),
+        quickOperationAlertIcon: document.getElementById('quickOperationAlertIcon'),
+        quickOperationAlertMessage: document.getElementById('quickOperationAlertMessage'),
+        quickOperationName: document.getElementById('quickOperationName'),
+        quickOperationNameFeedback: document.getElementById('quickOperationNameFeedback'),
+        quickOperationDescription: document.getElementById('quickOperationDescription'),
+        quickOperationStart: document.getElementById('quickOperationStart'),
+        quickOperationEnd: document.getElementById('quickOperationEnd'),
+        quickOperationEndFeedback: document.getElementById('quickOperationEndFeedback'),
+        quickOperationSubmitButton: document.getElementById('quickOperationSubmitButton'),
+        confirmModal: document.getElementById('orderConfirmModal'),
+        confirmTitle: document.getElementById('orderConfirmModalLabel'),
+        confirmMessage: document.getElementById('orderConfirmModalMessage'),
+        confirmButton: document.getElementById('orderConfirmButton'),
+        printSheet: document.getElementById('orderPrintSheet')
+      };
+
+      if (!elements.headerForm || !elements.activityForm || !elements.ordersTableBody || !elements.pageAlert || !elements.pageContent || !elements.pageLoading || !elements.operationStatus || !elements.orderCode || !elements.totalDuration) {
+        return;
+      }
+
+      const state = {
+        serviceTypes: [],
+        basePoints: [],
+        patrolLocations: [],
+        operations: [],
+        activities: [],
+        orders: [],
+        currentFilter: 'Ativa',
+        headerLocked: false,
+        copySourceNumber: null
+      };
+
+      let pageAlertTimeout = null;
+      let pendingConfirmation = null;
+      let pendingConfirmationFeedback = null;
+      let pageLoadingDepth = 0;
+      let dataLoadHasIssue = false;
+      let dataLoadIssueCount = 0;
+      const activeOperations = new Set();
+      const processingButtons = new WeakMap();
+
+      function normalizeWhitespace(value) {
+        return String(value || '').replace(/\s+/g, ' ').trim();
+      }
+
+      function normalizeUppercase(value) {
+        return normalizeWhitespace(value).toLocaleUpperCase('pt-BR');
+      }
+
+      function normalizeActive(value) {
+        if (value === undefined || value === null || value === '') {
+          return true;
+        }
+        if (typeof value === 'string') {
+          return !['false', '0', 'inativo', 'inativa', 'inactive', 'disabled'].includes(value.trim().toLocaleLowerCase('pt-BR'));
+        }
+        return value !== false && value !== 0;
+      }
+
+      function createId(prefix) {
+        if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+          return window.crypto.randomUUID();
+        }
+        return prefix + '-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
+      }
+
+      function showPageAlert(message, type, autoHide) {
+        const alertType = type || 'success';
+        const iconByType = {
+          success: 'bi-check-circle-fill',
+          danger: 'bi-exclamation-triangle-fill',
+          warning: 'bi-exclamation-circle-fill',
+          info: 'bi-info-circle-fill'
+        };
+
+        window.clearTimeout(pageAlertTimeout);
+        elements.pageAlert.className = 'alert alert-' + alertType + ' os-page-alert';
+        elements.pageAlert.setAttribute('role', alertType === 'danger' ? 'alert' : 'status');
+        elements.pageAlert.setAttribute('aria-live', alertType === 'danger' ? 'assertive' : 'polite');
+        elements.pageAlertIcon.className = 'bi mt-1 ' + (iconByType[alertType] || iconByType.info);
+        elements.pageAlertMessage.textContent = message;
+
+        if (autoHide !== false) {
+          pageAlertTimeout = window.setTimeout(function() {
+            elements.pageAlert.classList.add('d-none');
+          }, 6500);
+        }
+
+        if (alertType === 'danger' && !document.querySelector('.modal.show')) {
+          window.requestAnimationFrame(function() {
+            elements.pageAlert.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          });
+        }
+      }
+
+      function showQuickOperationAlert(message, type) {
+        if (!elements.quickOperationAlert || !elements.quickOperationAlertMessage || !elements.quickOperationAlertIcon) {
+          return;
+        }
+        const alertType = type || 'danger';
+        const iconByType = {
+          success: 'bi-check-circle-fill',
+          danger: 'bi-exclamation-triangle-fill',
+          warning: 'bi-exclamation-circle-fill',
+          info: 'bi-info-circle-fill'
+        };
+        elements.quickOperationAlert.className = 'alert alert-' + alertType + ' mb-3';
+        elements.quickOperationAlert.setAttribute('role', alertType === 'danger' ? 'alert' : 'status');
+        elements.quickOperationAlert.setAttribute('aria-live', alertType === 'danger' ? 'assertive' : 'polite');
+        elements.quickOperationAlertIcon.className = 'bi mt-1 ' + (iconByType[alertType] || iconByType.info);
+        elements.quickOperationAlertMessage.textContent = message;
+      }
+
+      function hideQuickOperationAlert() {
+        if (elements.quickOperationAlert) {
+          elements.quickOperationAlert.classList.add('d-none');
+        }
+      }
+
+      function announceOperationStatus(message) {
+        if (!elements.operationStatus || !message) {
+          return;
+        }
+        elements.operationStatus.textContent = '';
+        window.requestAnimationFrame(function() {
+          elements.operationStatus.textContent = message;
+        });
+      }
+
+      function waitForVisualFeedback() {
+        return new Promise(function(resolve) {
+          const startedAt = Date.now();
+          const minimumVisibleMilliseconds = 180;
+          const finishWaiting = function() {
+            const remainingTime = Math.max(0, minimumVisibleMilliseconds - (Date.now() - startedAt));
+            window.setTimeout(resolve, remainingTime);
+          };
+          if (typeof window.requestAnimationFrame !== 'function') {
+            finishWaiting();
+            return;
+          }
+          window.requestAnimationFrame(function() {
+            window.requestAnimationFrame(finishWaiting);
+          });
+        });
+      }
+
+      function createGrowingDots(compact) {
+        const dots = document.createElement('span');
+        const totalDots = compact ? 1 : 3;
+        dots.className = 'os-growing-dots';
+        dots.setAttribute('aria-hidden', 'true');
+
+        for (let index = 0; index < totalDots; index += 1) {
+          const dot = document.createElement('span');
+          dot.className = 'spinner-grow spinner-grow-sm';
+          dot.style.animationDelay = (index * 0.15) + 's';
+          dots.appendChild(dot);
+        }
+        return dots;
+      }
+
+      function beginButtonProcessing(button, label, compact, controls) {
+        if (!button || processingButtons.has(button)) {
+          return false;
+        }
+
+        const processingContent = document.createElement('span');
+        const processingLabel = document.createElement('span');
+        processingContent.className = 'os-processing-content';
+        processingContent.appendChild(createGrowingDots(Boolean(compact)));
+        processingLabel.className = compact ? 'visually-hidden' : '';
+        processingLabel.textContent = label || 'Processando...';
+        processingContent.appendChild(processingLabel);
+
+        const ownerForm = button.closest('form');
+        const ownerModal = button.closest('.modal');
+        const relatedModalControls = ownerModal
+          ? Array.from(ownerModal.querySelectorAll('[data-bs-dismiss="modal"], .btn-close')).filter(function(control) { return control !== button; })
+          : [];
+        const relatedActionControls = Array.from(controls || []).filter(function(control) {
+          return control && control !== button && typeof control.disabled === 'boolean';
+        });
+        processingButtons.set(button, {
+          disabled: button.disabled,
+          ariaLabel: button.getAttribute('aria-label'),
+          ownerForm: ownerForm,
+          formAriaBusy: ownerForm ? ownerForm.getAttribute('aria-busy') : null,
+          relatedModalControls: relatedModalControls.map(function(control) {
+            return { control: control, disabled: control.disabled };
+          }),
+          relatedActionControls: relatedActionControls.map(function(control) {
+            return { control: control, disabled: control.disabled };
+          })
+        });
+        button.appendChild(processingContent);
+        button.classList.add('os-action-processing');
+        button.classList.toggle('os-compact-processing', Boolean(compact));
+        button.disabled = true;
+        button.setAttribute('aria-busy', 'true');
+        button.setAttribute('aria-label', label || 'Processando...');
+        if (ownerForm) {
+          ownerForm.setAttribute('aria-busy', 'true');
+        }
+        relatedModalControls.forEach(function(control) {
+          control.disabled = true;
+        });
+        relatedActionControls.forEach(function(control) {
+          control.disabled = true;
+        });
+        return true;
+      }
+
+      function endButtonProcessing(button, options) {
+        const storedState = button ? processingButtons.get(button) : null;
+        if (!button || !storedState) {
+          return;
+        }
+
+        const settings = options || {};
+        const processingContent = button.querySelector('.os-processing-content');
+        if (processingContent) {
+          processingContent.remove();
+        }
+        button.classList.remove('os-action-processing');
+        button.classList.remove('os-compact-processing');
+        button.removeAttribute('aria-busy');
+        if (storedState.ariaLabel === null) {
+          button.removeAttribute('aria-label');
+        } else {
+          button.setAttribute('aria-label', storedState.ariaLabel);
+        }
+        if (storedState.ownerForm) {
+          if (storedState.formAriaBusy === null) {
+            storedState.ownerForm.removeAttribute('aria-busy');
+          } else {
+            storedState.ownerForm.setAttribute('aria-busy', storedState.formAriaBusy);
+          }
+        }
+        storedState.relatedModalControls.forEach(function(item) {
+          item.control.disabled = item.disabled;
+        });
+        storedState.relatedActionControls.forEach(function(item) {
+          let disabledAfter = item.disabled;
+          if (typeof settings.controlDisabledAfter === 'function') {
+            disabledAfter = Boolean(settings.controlDisabledAfter(item.control, item.disabled, settings.operationSucceeded === true));
+          }
+          item.control.disabled = disabledAfter;
+        });
+
+        let disabledAfter = storedState.disabled;
+        if (typeof settings.disabledAfter === 'function') {
+          disabledAfter = Boolean(settings.disabledAfter());
+        } else if (settings.disabledAfter !== undefined) {
+          disabledAfter = Boolean(settings.disabledAfter);
+        }
+        button.disabled = disabledAfter;
+        processingButtons.delete(button);
+
+        if (settings.operationSucceeded !== true && settings.restoreFocusOnFailure !== false && button.isConnected) {
+          window.requestAnimationFrame(function() {
+            try {
+              button.focus({ preventScroll: true });
+            } catch (error) {
+              button.focus();
+            }
+          });
+        }
+      }
+
+      async function runButtonOperation(button, processingLabel, operation, options) {
+        const settings = options || {};
+        const operationKey = settings.key || processingLabel || 'page-operation';
+        if (activeOperations.has(operationKey) || !beginButtonProcessing(button, processingLabel, settings.compact, settings.controls)) {
+          return false;
+        }
+
+        activeOperations.add(operationKey);
+        let operationSucceeded = false;
+        announceOperationStatus(processingLabel || 'Processando...');
+        try {
+          await waitForVisualFeedback();
+          const result = await operation();
+          if (result && result.ok === false) {
+            const operationErrorMessage = result.message || result.error || settings.errorMessage || 'Não foi possível concluir a operação. Tente novamente.';
+            showPageAlert(operationErrorMessage, 'danger', false);
+            if (typeof settings.onError === 'function') {
+              settings.onError(operationErrorMessage, result);
+            }
+            announceOperationStatus(operationErrorMessage);
+            return false;
+          }
+          if (result === false) {
+            announceOperationStatus('A operação não foi concluída. Verifique a mensagem apresentada.');
+            return false;
+          }
+          operationSucceeded = true;
+          if (result && result.warning === true) {
+            announceOperationStatus(result.message || 'Operação concluída com ressalvas.');
+            return true;
+          }
+          if (settings.successMessage) {
+            const successMessage = typeof settings.successMessage === 'function'
+              ? settings.successMessage(result)
+              : settings.successMessage;
+            showPageAlert(successMessage, 'success', settings.keepSuccessVisible === true ? false : undefined);
+          }
+          announceOperationStatus(settings.successMessage || 'Operação concluída com sucesso.');
+          return true;
+        } catch (error) {
+          console.error('Não foi possível concluir a operação da Ordem de Serviço.', error);
+          const errorMessage = settings.errorMessage || 'Não foi possível concluir a operação. Tente novamente.';
+          showPageAlert(errorMessage, 'danger', false);
+          if (typeof settings.onError === 'function') {
+            settings.onError(errorMessage, error);
+          }
+          announceOperationStatus(errorMessage);
+          return false;
+        } finally {
+          activeOperations.delete(operationKey);
+          endButtonProcessing(button, Object.assign({}, settings, { operationSucceeded: operationSucceeded }));
+        }
+      }
+
+      function withStorageLock(lockName, operation) {
+        if (window.navigator && window.navigator.locks && typeof window.navigator.locks.request === 'function') {
+          return window.navigator.locks.request(lockName, { mode: 'exclusive' }, operation);
+        }
+        return Promise.resolve().then(operation);
+      }
+
+      function setPageLoading(isLoading, title, message) {
+        if (isLoading) {
+          pageLoadingDepth += 1;
+          elements.pageLoadingTitle.textContent = title || 'Carregando dados da Ordem de Serviço...';
+          elements.pageLoadingMessage.textContent = message || 'Buscando locais, operações e ordens gravadas.';
+          elements.pageLoading.classList.remove('d-none');
+          elements.pageContent.classList.add('is-loading');
+          elements.pageLoadingTargets.forEach(function(target) {
+            target.setAttribute('aria-busy', 'true');
+          });
+          // Aplicação anterior do estado ocupado no contêiner inteiro preservada como referência.
+          // elements.pageContent.setAttribute('aria-busy', 'true');
+          announceOperationStatus(title || 'Carregando dados da Ordem de Serviço...');
+          return;
+        }
+
+        pageLoadingDepth = Math.max(0, pageLoadingDepth - 1);
+        if (pageLoadingDepth > 0) {
+          return;
+        }
+        elements.pageContent.classList.remove('is-loading');
+        elements.pageLoadingTargets.forEach(function(target) {
+          target.setAttribute('aria-busy', 'false');
+        });
+        // elements.pageContent.setAttribute('aria-busy', 'false');
+        elements.pageLoading.classList.add('d-none');
+      }
+
+      function readArray(key, silent) {
+        try {
+          const storedValue = window.localStorage.getItem(key);
+          if (!storedValue) {
+            return [];
+          }
+          const parsedValue = JSON.parse(storedValue);
+          if (!Array.isArray(parsedValue)) {
+            dataLoadHasIssue = true;
+            dataLoadIssueCount += 1;
+            if (!silent) {
+              showPageAlert('Erro ao carregar os dados armazenados em “' + key + '”: o formato é inválido.', 'danger', false);
+            }
+            return [];
+          }
+          return parsedValue;
+        } catch (error) {
+          dataLoadHasIssue = true;
+          dataLoadIssueCount += 1;
+          if (!silent) {
+            showPageAlert('Erro ao carregar os dados armazenados em “' + key + '”. Tente atualizar a página.', 'danger', false);
+          }
+          return [];
+        }
+      }
+
+      function writeArray(key, items) {
+        try {
+          window.localStorage.setItem(key, JSON.stringify(items));
+          return true;
+        } catch (error) {
+          return false;
+        }
+      }
+
+      function restoreStoredValue(key, previousValue) {
+        try {
+          if (previousValue === null) {
+            window.localStorage.removeItem(key);
+          } else {
+            window.localStorage.setItem(key, previousValue);
+          }
+          return true;
+        } catch (error) {
+          return false;
+        }
+      }
+
+      function deduplicateByName(items) {
+        const uniqueItems = new Map();
+        items.forEach(function(item) {
+          const key = normalizeUppercase(item && item.name);
+          if (key && !uniqueItems.has(key)) {
+            uniqueItems.set(key, item);
+          }
+        });
+        return Array.from(uniqueItems.values());
+      }
+
+      function normalizeCoordinate(coordinate, usesGeoJsonOrder) {
+        let latitude;
+        let longitude;
+
+        if (Array.isArray(coordinate)) {
+          latitude = Number(coordinate[usesGeoJsonOrder ? 1 : 0]);
+          longitude = Number(coordinate[usesGeoJsonOrder ? 0 : 1]);
+        } else if (coordinate && typeof coordinate === 'object') {
+          latitude = Number(coordinate.latitude !== undefined ? coordinate.latitude : coordinate.lat);
+          longitude = Number(coordinate.longitude !== undefined ? coordinate.longitude : coordinate.lng);
+        }
+
+        if (!Number.isFinite(latitude) || !Number.isFinite(longitude) || latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
+          return null;
+        }
+        return { latitude: latitude, longitude: longitude };
+      }
+
+      function extractPatrolCoordinates(item) {
+        const geometryCoordinates = item && item.geometry && Array.isArray(item.geometry.coordinates)
+          ? item.geometry.coordinates[0]
+          : null;
+        const sourceCoordinates = geometryCoordinates || (Array.isArray(item && item.coordinates)
+          ? item.coordinates
+          : (Array.isArray(item && item.vertices) ? item.vertices : []));
+        const coordinates = sourceCoordinates.map(function(coordinate) {
+          return normalizeCoordinate(coordinate, sourceCoordinates === geometryCoordinates);
+        }).filter(Boolean);
+
+        if (coordinates.length > 3) {
+          const first = coordinates[0];
+          const last = coordinates[coordinates.length - 1];
+          if (first.latitude === last.latitude && first.longitude === last.longitude) {
+            coordinates.pop();
+          }
+        }
+        return coordinates;
+      }
+
+      function loadServiceTypes() {
+        const storedTypes = readArray(STORAGE_KEYS.serviceTypes).reduce(function(validTypes, item, index) {
+          const name = normalizeUppercase(item && item.name);
+          if (!name || !normalizeActive(item && item.active)) {
+            return validTypes;
+          }
+          validTypes.push({
+            id: String((item && item.id) || ('service-type-' + index)),
+            name: name,
+            description: normalizeWhitespace(item && item.description)
+          });
+          return validTypes;
+        }, []);
+
+        if (!storedTypes.some(function(item) { return item.name === 'ROTINA'; })) {
+          storedTypes.unshift({
+            id: 'service-type-default-routine',
+            name: 'ROTINA',
+            description: 'Ordem de serviço operacional de rotina.'
+          });
+        }
+
+        return deduplicateByName(storedTypes).sort(function(first, second) {
+          if (first.name === 'ROTINA') return -1;
+          if (second.name === 'ROTINA') return 1;
+          return first.name.localeCompare(second.name, 'pt-BR');
+        });
+      }
+
+      function formatBaseAddress(point) {
+        const roadAndNumber = [point.road, point.number].filter(Boolean).join(', ');
+        const cityAndState = [point.city, point.state].filter(Boolean).join(' - ');
+        return normalizeWhitespace(point.fullAddress || [roadAndNumber, point.district, cityAndState].filter(Boolean).join(' · '));
+      }
+
+      function loadBasePoints() {
+        const modernPoints = readArray(STORAGE_KEYS.basePoints).reduce(function(validPoints, item, index) {
+          const name = normalizeWhitespace(item && item.nickname);
+          const latitude = Number(item && item.latitude);
+          const longitude = Number(item && item.longitude);
+          if (!name || !normalizeActive(item && item.active)) {
+            return validPoints;
+          }
+          const point = {
+            id: String((item && item.id) || ('base-point-' + index)),
+            name: name,
+            code: Number(item && item.code) || null,
+            road: normalizeWhitespace(item && item.road),
+            number: normalizeWhitespace(item && item.number) || 'S/N',
+            district: normalizeWhitespace(item && item.district),
+            city: normalizeWhitespace(item && item.city),
+            state: normalizeUppercase(item && item.state),
+            latitude: Number.isFinite(latitude) ? latitude : null,
+            longitude: Number.isFinite(longitude) ? longitude : null,
+            fullAddress: normalizeWhitespace(item && item.fullAddress),
+            details: 'Ponto de baseamento cadastrado'
+          };
+          point.address = formatBaseAddress(point);
+          validPoints.push(point);
+          return validPoints;
+        }, []);
+
+        const legacyPoints = readArray(STORAGE_KEYS.legacyBasePoints, true).reduce(function(validPoints, item, index) {
+          const name = normalizeWhitespace(item && (item.apelido || item.nickname || item.name));
+          if (!name || !normalizeActive(item && (item.active !== undefined ? item.active : item.status))) {
+            return validPoints;
+          }
+          const latitude = Number(item && (item.lat !== undefined ? item.lat : item.latitude));
+          const longitude = Number(item && (item.lng !== undefined ? item.lng : item.longitude));
+          const point = {
+            id: String((item && item.id) || ('legacy-base-point-' + index)),
+            name: name,
+            code: Number(item && item.codigo) || null,
+            road: normalizeWhitespace(item && (item.rua || item.road)),
+            number: normalizeWhitespace(item && (item.numero || item.number)) || 'S/N',
+            district: normalizeWhitespace(item && (item.bairro || item.district)),
+            city: normalizeWhitespace(item && (item.cidade || item.city)),
+            state: normalizeUppercase(item && (item.estado || item.state)),
+            latitude: Number.isFinite(latitude) ? latitude : null,
+            longitude: Number.isFinite(longitude) ? longitude : null,
+            fullAddress: normalizeWhitespace(item && item.fullAddress),
+            details: normalizeWhitespace(item && (item.obs || item.detalhes)) || 'Ponto de baseamento cadastrado'
+          };
+          point.address = formatBaseAddress(point);
+          validPoints.push(point);
+          return validPoints;
+        }, []);
+
+        return deduplicateByName(modernPoints.concat(legacyPoints)).sort(function(first, second) {
+          return first.name.localeCompare(second.name, 'pt-BR');
+        });
+      }
+
+      function loadPatrolLocations() {
+        const modernLocations = readArray(STORAGE_KEYS.patrolLocations).reduce(function(validLocations, item, index) {
+          const name = normalizeWhitespace(item && (item.name || item.nickname));
+          const coordinates = extractPatrolCoordinates(item || {});
+          if (!name || !normalizeActive(item && item.active)) {
+            return validLocations;
+          }
+          validLocations.push({
+            id: String((item && item.id) || ('patrol-location-' + index)),
+            name: name,
+            code: Number(item && item.code) || null,
+            coordinates: coordinates,
+            address: '',
+            details: coordinates.length
+              ? 'Área delimitada · ' + coordinates.length + (coordinates.length === 1 ? ' ponto' : ' pontos')
+              : 'Área de patrulhamento cadastrada'
+          });
+          return validLocations;
+        }, []);
+
+        const legacyLocations = readArray(STORAGE_KEYS.legacyPatrolLocations, true).reduce(function(validLocations, item, index) {
+          const name = normalizeWhitespace(item && (item.apelido || item.name || item.nickname));
+          if (!name || !normalizeActive(item && (item.active !== undefined ? item.active : item.status))) {
+            return validLocations;
+          }
+          const coordinates = extractPatrolCoordinates(item || {});
+          const radius = Number(item && item.raio);
+          validLocations.push({
+            id: String((item && item.id) || ('legacy-patrol-location-' + index)),
+            name: name,
+            code: Number(item && item.codigo) || null,
+            coordinates: coordinates,
+            address: normalizeWhitespace(item && [item.rua, item.numero, item.bairro, item.cidade].filter(Boolean).join(' · ')),
+            details: Number.isFinite(radius) && radius > 0
+              ? 'Raio de ' + radius + ' m'
+              : (coordinates.length ? 'Área delimitada · ' + coordinates.length + ' pontos' : 'Área de patrulhamento cadastrada')
+          });
+          return validLocations;
+        }, []);
+
+        return deduplicateByName(modernLocations.concat(legacyLocations)).sort(function(first, second) {
+          return first.name.localeCompare(second.name, 'pt-BR');
+        });
+      }
+
+      function loadOperations() {
+        const modernOperations = readArray(STORAGE_KEYS.operations).reduce(function(validOperations, item, index) {
+          const name = normalizeUppercase(item && item.name);
+          if (!name || !normalizeActive(item && (item.active !== undefined ? item.active : item.status))) {
+            return validOperations;
+          }
+          validOperations.push({
+            id: String((item && item.id) || ('operation-' + index)),
+            name: name,
+            description: normalizeWhitespace(item && item.description),
+            startsAt: String((item && item.startsAt) || ''),
+            endsAt: String((item && item.endsAt) || '')
+          });
+          return validOperations;
+        }, []);
+
+        const legacyOperations = readArray(STORAGE_KEYS.legacyOperations, true).reduce(function(validOperations, item, index) {
+          const name = normalizeUppercase(item && (item.nome || item.name));
+          if (!name || !normalizeActive(item && (item.active !== undefined ? item.active : item.status))) {
+            return validOperations;
+          }
+          validOperations.push({
+            id: String((item && item.id) || ('legacy-operation-' + index)),
+            name: name,
+            description: normalizeWhitespace(item && (item.descricao || item.description)),
+            startsAt: String((item && (item.inicio || item.startsAt)) || ''),
+            endsAt: String((item && (item.fim || item.endsAt)) || '')
+          });
+          return validOperations;
+        }, []);
+
+        return deduplicateByName(modernOperations.concat(legacyOperations)).sort(function(first, second) {
+          return first.name.localeCompare(second.name, 'pt-BR');
+        });
+      }
+
+      function loadSourceData() {
+        state.serviceTypes = loadServiceTypes();
+        state.basePoints = loadBasePoints();
+        state.patrolLocations = loadPatrolLocations();
+        state.operations = loadOperations();
+        populateServiceTypes();
+        populateOperations();
+        elements.baseSourceCount.textContent = String(state.basePoints.length);
+        elements.patrolSourceCount.textContent = String(state.patrolLocations.length);
+        elements.operationSourceCount.textContent = String(state.operations.length);
+        updateActivityLocationInterface();
+      }
+
+      function createOption(value, label) {
+        const option = document.createElement('option');
+        option.value = value;
+        option.textContent = label;
+        return option;
+      }
+
+      function populateServiceTypes() {
+        const previousValue = elements.serviceType.value;
+        elements.serviceType.replaceChildren(createOption('', 'Selecione...'));
+        state.serviceTypes.forEach(function(serviceType) {
+          const option = createOption(serviceType.id, serviceType.name);
+          option.dataset.serviceName = serviceType.name;
+          elements.serviceType.appendChild(option);
+        });
+
+        const previousStillExists = Array.from(elements.serviceType.options).some(function(option) {
+          return option.value === previousValue;
+        });
+        if (previousValue && previousStillExists) {
+          elements.serviceType.value = previousValue;
+          return;
+        }
+
+        const routineOption = Array.from(elements.serviceType.options).find(function(option) {
+          return option.dataset.serviceName === 'ROTINA';
+        });
+        if (routineOption) {
+          elements.serviceType.value = routineOption.value;
+        }
+      }
+
+      function populateOperations(selectedId) {
+        const valueToRestore = selectedId !== undefined ? selectedId : elements.operationSelect.value;
+        elements.operationSelect.replaceChildren(createOption('', 'Nenhuma operação'));
+        state.operations.forEach(function(operation) {
+          elements.operationSelect.appendChild(createOption(operation.id, operation.name));
+        });
+        if (Array.from(elements.operationSelect.options).some(function(option) { return option.value === valueToRestore; })) {
+          elements.operationSelect.value = valueToRestore;
+        }
+      }
+
+      function timeToMinutes(value) {
+        const match = String(value || '').match(/^(\d{2}):(\d{2})$/);
+        if (!match) {
+          return NaN;
+        }
+        const hours = Number(match[1]);
+        const minutes = Number(match[2]);
+        if (hours > 23 || minutes > 59) {
+          return NaN;
+        }
+        return hours * 60 + minutes;
+      }
+
+      function shiftDurationMinutes() {
+        const start = timeToMinutes(elements.orderStart.value);
+        const end = timeToMinutes(elements.orderEnd.value);
+        if (!Number.isFinite(start) || !Number.isFinite(end)) {
+          return 0;
+        }
+        const duration = end - start;
+        return duration > 0 ? duration : duration + 1440;
+      }
+
+      function minutesFromShiftStart(value) {
+        const shiftStart = timeToMinutes(elements.orderStart.value);
+        let time = timeToMinutes(value);
+        if (!Number.isFinite(shiftStart) || !Number.isFinite(time)) {
+          return NaN;
+        }
+        if (time < shiftStart) {
+          time += 1440;
+        }
+        return time - shiftStart;
+      }
+
+      function activityRange(startValue, endValue) {
+        const start = minutesFromShiftStart(startValue);
+        let end = minutesFromShiftStart(endValue);
+        if (!Number.isFinite(start) || !Number.isFinite(end)) {
+          return null;
+        }
+        if (end <= start) {
+          end += 1440;
+        }
+        return { start: start, end: end, duration: end - start };
+      }
+
+      function formatDuration(totalMinutes) {
+        const safeMinutes = Math.max(0, Math.round(Number(totalMinutes) || 0));
+        const hours = Math.floor(safeMinutes / 60);
+        const minutes = safeMinutes % 60;
+        return hours + 'h ' + String(minutes).padStart(2, '0') + 'min';
+      }
+
+      function updateShiftDuration() {
+        const start = timeToMinutes(elements.orderStart.value);
+        const end = timeToMinutes(elements.orderEnd.value);
+        if (!Number.isFinite(start) || !Number.isFinite(end)) {
+          elements.totalDuration.value = '';
+          return;
+        }
+        elements.totalDuration.value = formatDuration(shiftDurationMinutes());
+      }
+
+      function selectedServiceType() {
+        return state.serviceTypes.find(function(item) {
+          return item.id === elements.serviceType.value;
+        }) || {
+          id: elements.serviceType.value,
+          name: normalizeUppercase(elements.serviceType.options[elements.serviceType.selectedIndex] && elements.serviceType.options[elements.serviceType.selectedIndex].textContent)
+        };
+      }
+
+      function setHeaderControlsDisabled(disabled) {
+        [elements.serviceType, elements.patrolType, elements.mission, elements.orderStart, elements.orderEnd].forEach(function(control) {
+          control.disabled = disabled;
+        });
+      }
+
+      function updateWorkflow() {
+        const hasActivities = state.activities.length > 0;
+        const steps = [elements.stepHeader, elements.stepActivities, elements.stepFinish];
+        steps.forEach(function(step) {
+          step.classList.remove('is-active', 'is-complete');
+          step.removeAttribute('aria-current');
+        });
+
+        if (!state.headerLocked) {
+          elements.stepHeader.classList.add('is-active');
+          elements.stepHeader.setAttribute('aria-current', 'step');
+          return;
+        }
+
+        elements.stepHeader.classList.add('is-complete');
+        if (!hasActivities) {
+          elements.stepActivities.classList.add('is-active');
+          elements.stepActivities.setAttribute('aria-current', 'step');
+          return;
+        }
+
+        elements.stepActivities.classList.add('is-complete');
+        elements.stepFinish.classList.add('is-active');
+        elements.stepFinish.setAttribute('aria-current', 'step');
+      }
+
+      function validateHeaderForm() {
+        const mission = normalizeWhitespace(elements.mission.value);
+        elements.mission.setCustomValidity('');
+        elements.missionFeedback.textContent = 'Informe uma missão com 3 a 100 caracteres.';
+
+        if (mission.length < 3) {
+          elements.mission.setCustomValidity('Informe uma missão com pelo menos 3 caracteres.');
+        }
+
+        elements.headerForm.classList.add('was-validated');
+        if (!elements.headerForm.checkValidity()) {
+          elements.headerForm.reportValidity();
+          return false;
+        }
+        return true;
+      }
+
+      function lockHeader(options) {
+        const settings = options || {};
+        if (!settings.skipValidation && !validateHeaderForm()) {
+          showPageAlert('Revise os campos obrigatórios antes de continuar para o fracionamento.', 'warning');
+          return false;
+        }
+
+        elements.mission.value = normalizeUppercase(elements.mission.value);
+        updateShiftDuration();
+        state.headerLocked = true;
+        setHeaderControlsDisabled(true);
+        elements.headerCard.classList.add('is-locked');
+        elements.headerButton.classList.remove('btn-primary');
+        elements.headerButton.classList.add('btn-outline-secondary');
+        elements.headerButton.querySelector('i').className = 'bi bi-pencil me-1';
+        elements.headerButtonLabel.textContent = 'Editar dados gerais';
+        elements.lockSummary.classList.remove('d-none');
+        elements.lockSummaryText.textContent = 'OS nº ' + elements.orderCode.value + ' · ' + elements.mission.value + ' · ' + elements.patrolType.options[elements.patrolType.selectedIndex].textContent + ' · ' + elements.orderStart.value + '–' + elements.orderEnd.value + ' · ' + elements.totalDuration.value;
+        elements.activitySection.classList.remove('d-none');
+
+        if (!elements.activityStart.value) {
+          elements.activityStart.value = elements.orderStart.value;
+        }
+
+        updateWorkflow();
+        updateActivityLocationInterface();
+        renderActivities();
+
+        if (settings.scroll !== false) {
+          elements.activitySection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        return true;
+      }
+
+      function unlockHeader(clearActivities) {
+        state.headerLocked = false;
+        state.copySourceNumber = null;
+        if (clearActivities) {
+          state.activities = [];
+          elements.activityForm.reset();
+          elements.activityType.value = 'Preleção';
+        }
+        setHeaderControlsDisabled(false);
+        elements.headerCard.classList.remove('is-locked');
+        elements.headerButton.classList.add('btn-primary');
+        elements.headerButton.classList.remove('btn-outline-secondary');
+        elements.headerButton.querySelector('i').className = 'bi bi-arrow-right-circle me-1';
+        elements.headerButtonLabel.textContent = 'Continuar para atividades';
+        elements.lockSummary.classList.add('d-none');
+        elements.activitySection.classList.add('d-none');
+        elements.headerForm.classList.remove('was-validated');
+        updateActivityLocationInterface();
+        renderActivities();
+        updateWorkflow();
+        return true;
+      }
+
+      function openConfirmation(options) {
+        pendingConfirmation = options.onConfirm;
+        pendingConfirmationFeedback = {
+          processingLabel: options.processingLabel || 'Processando...',
+          key: options.operationKey || ('confirmation-' + (options.confirmLabel || 'action')),
+          successMessage: options.successMessage || '',
+          errorMessage: options.errorMessage || 'Não foi possível concluir a operação. Tente novamente.'
+        };
+        elements.confirmTitle.textContent = options.title || 'Confirmar ação';
+        elements.confirmMessage.textContent = options.message || 'Deseja continuar?';
+        elements.confirmButton.textContent = options.confirmLabel || 'Confirmar';
+        elements.confirmButton.className = 'btn btn-' + (options.variant || 'primary');
+        window.bootstrap.Modal.getOrCreateInstance(elements.confirmModal).show();
+      }
+
+      function requestHeaderUnlock() {
+        if (!state.activities.length) {
+          return runButtonOperation(elements.headerButton, 'Liberando edição...', function() {
+            unlockHeader(false);
+            elements.mission.focus();
+            return true;
+          }, {
+            key: 'header-unlock',
+            successMessage: 'Dados gerais liberados para edição.',
+            errorMessage: 'Não foi possível liberar os dados gerais para edição.',
+            controls: [elements.resetButton],
+            disabledAfter: false
+          });
+        }
+
+        openConfirmation({
+          title: 'Editar dados gerais',
+          message: 'Os horários das atividades dependem do turno informado. Para editar o cabeçalho, o fracionamento atual será limpo.',
+          confirmLabel: 'Editar e limpar atividades',
+          variant: 'warning',
+          processingLabel: 'Liberando edição...',
+          operationKey: 'header-unlock-with-activities',
+          successMessage: 'Dados gerais liberados para edição e atividades do rascunho removidas.',
+          errorMessage: 'Não foi possível liberar os dados gerais para edição.',
+          onConfirm: function() {
+            unlockHeader(true);
+            elements.mission.focus();
+            return true;
+          }
+        });
+        return true;
+      }
+
+      function resetDraft() {
+        state.activities = [];
+        state.headerLocked = false;
+        state.copySourceNumber = null;
+        elements.headerForm.reset();
+        elements.headerForm.classList.remove('was-validated');
+        elements.activityForm.reset();
+        elements.activityForm.classList.remove('was-validated');
+        elements.activityType.value = 'Preleção';
+        setHeaderControlsDisabled(false);
+        elements.headerCard.classList.remove('is-locked');
+        elements.headerButton.classList.add('btn-primary');
+        elements.headerButton.classList.remove('btn-outline-secondary');
+        elements.headerButton.querySelector('i').className = 'bi bi-arrow-right-circle me-1';
+        elements.headerButtonLabel.textContent = 'Continuar para atividades';
+        elements.lockSummary.classList.add('d-none');
+        elements.activitySection.classList.add('d-none');
+        populateServiceTypes();
+        updateOrderCodePreview();
+        updateShiftDuration();
+        populateOperations();
+        updateActivityLocationInterface();
+        renderActivities();
+        updateWorkflow();
+        return true;
+      }
+
+      function hasDraftContent() {
+        return state.activities.length > 0 || state.headerLocked || normalizeWhitespace(elements.mission.value) || elements.patrolType.value || elements.orderStart.value || elements.orderEnd.value;
+      }
+
+      function locationCandidatesForActivity() {
+        if (elements.activityType.value === 'Baseamento') {
+          return state.basePoints;
+        }
+        if (elements.activityType.value === 'Patrulhamento') {
+          return state.patrolLocations;
+        }
+        return [];
+      }
+
+      function updateLocationPreview() {
+        const selectedLocation = locationCandidatesForActivity().find(function(location) {
+          return location.id === elements.locationSelect.value;
+        });
+        const icon = document.createElement('i');
+        const text = document.createElement('span');
+        icon.className = 'bi bi-info-circle';
+        icon.setAttribute('aria-hidden', 'true');
+
+        if (!selectedLocation) {
+          text.textContent = 'Escolha um local para conferir os dados usados na atividade.';
+        } else {
+          text.textContent = [selectedLocation.address, selectedLocation.details].filter(Boolean).join(' · ');
+        }
+        elements.locationPreview.replaceChildren(icon, text);
+      }
+
+      function updateActivityLocationInterface() {
+        const needsLocation = elements.activityType.value === 'Baseamento' || elements.activityType.value === 'Patrulhamento';
+        elements.locationFields.hidden = !needsLocation;
+        elements.locationSelect.required = needsLocation;
+        elements.locationSelect.setCustomValidity('');
+
+        if (!needsLocation) {
+          elements.locationSelect.value = '';
+          elements.operationSelect.value = '';
+          updateLocationPreview();
+          return;
+        }
+
+        const isBasePoint = elements.activityType.value === 'Baseamento';
+        const labelText = isBasePoint ? 'Ponto de baseamento' : 'Local de patrulhamento';
+        const requiredMark = document.createElement('span');
+        requiredMark.className = 'text-danger';
+        requiredMark.textContent = '*';
+        elements.locationLabel.replaceChildren(document.createTextNode(labelText + ' '), requiredMark);
+        elements.locationFeedback.textContent = isBasePoint
+          ? 'Selecione um ponto de baseamento cadastrado e ativo.'
+          : 'Selecione um local de patrulhamento cadastrado e ativo.';
+
+        const previousValue = elements.locationSelect.value;
+        const candidates = locationCandidatesForActivity();
+        const emptyLabel = candidates.length ? 'Selecione...' : 'Nenhum local ativo cadastrado';
+        elements.locationSelect.replaceChildren(createOption('', emptyLabel));
+        candidates.forEach(function(location) {
+          elements.locationSelect.appendChild(createOption(location.id, location.name));
+        });
+        if (candidates.some(function(location) { return location.id === previousValue; })) {
+          elements.locationSelect.value = previousValue;
+        }
+        updateLocationPreview();
+      }
+
+      function activityDisplayName(type) {
+        const names = {
+          Baseamento: 'Baseamento (Ponto Fixo)',
+          Patrulhamento: 'Patrulhamento (Ronda)',
+          Intervalo: 'Intervalo / Refeição',
+          'Retorno Base': 'Retorno à Base'
+        };
+        return names[type] || type || 'Atividade';
+      }
+
+      function buildActivityFromForm(range) {
+        const type = elements.activityType.value;
+        const location = locationCandidatesForActivity().find(function(item) {
+          return item.id === elements.locationSelect.value;
+        }) || null;
+        const operation = state.operations.find(function(item) {
+          return item.id === elements.operationSelect.value;
+        }) || null;
+        const activity = {
+          id: createId('activity'),
+          tipo: type,
+          inicio: elements.activityStart.value,
+          fim: elements.activityEnd.value,
+          local: '',
+          localId: '',
+          localTipo: '',
+          operacao: operation ? operation.name : '',
+          operacaoId: operation ? operation.id : '',
+          rua: '-',
+          numero: '-',
+          bairro: '-',
+          cidade: '-',
+          estado: '',
+          detalhes: '-',
+          gps: null,
+          duracaoMinutos: range.duration
+        };
+
+        if (location && type === 'Baseamento') {
+          activity.local = location.name;
+          activity.localId = location.id;
+          activity.localTipo = 'baseamento';
+          activity.rua = location.road || '-';
+          activity.numero = location.number || 'S/N';
+          activity.bairro = location.district || '-';
+          activity.cidade = location.city || '-';
+          activity.estado = location.state || '';
+          activity.detalhes = location.details || 'Ponto de baseamento';
+          if (Number.isFinite(location.latitude) && Number.isFinite(location.longitude)) {
+            activity.gps = { lat: location.latitude, lng: location.longitude };
+          }
+        }
+
+        if (location && type === 'Patrulhamento') {
+          activity.local = location.name;
+          activity.localId = location.id;
+          activity.localTipo = 'patrulhamento';
+          activity.detalhes = location.details || 'Área de patrulhamento';
+          if (location.coordinates.length) {
+            activity.gps = {
+              tipo: 'poligono',
+              coordenadas: location.coordinates.map(function(coordinate) {
+                return { latitude: coordinate.latitude, longitude: coordinate.longitude };
+              })
+            };
+          }
+        }
+
+        return activity;
+      }
+
+      function validateActivityForm() {
+        elements.activityStart.setCustomValidity('');
+        elements.activityEnd.setCustomValidity('');
+        elements.locationSelect.setCustomValidity('');
+        elements.activityStartFeedback.textContent = 'Informe o início da atividade.';
+        elements.activityEndFeedback.textContent = 'Informe o término da atividade.';
+
+        const needsLocation = elements.activityType.value === 'Baseamento' || elements.activityType.value === 'Patrulhamento';
+        if (needsLocation && !locationCandidatesForActivity().some(function(item) { return item.id === elements.locationSelect.value; })) {
+          elements.locationSelect.setCustomValidity('Selecione um local cadastrado e ativo.');
+        }
+
+        elements.activityForm.classList.add('was-validated');
+        if (!elements.activityForm.checkValidity()) {
+          elements.activityForm.reportValidity();
+          return null;
+        }
+
+        const range = activityRange(elements.activityStart.value, elements.activityEnd.value);
+        const shiftDuration = shiftDurationMinutes();
+        if (!range || range.start < 0 || range.start >= shiftDuration || range.end > shiftDuration || range.duration <= 0) {
+          elements.activityEnd.setCustomValidity('A atividade precisa estar totalmente dentro do turno informado.');
+          elements.activityEndFeedback.textContent = 'A atividade precisa estar totalmente dentro do turno informado.';
+          elements.activityForm.reportValidity();
+          return null;
+        }
+
+        const overlaps = state.activities.some(function(activity) {
+          const existingRange = activityRange(activity.inicio, activity.fim);
+          return existingRange && range.start < existingRange.end && existingRange.start < range.end;
+        });
+        if (overlaps) {
+          elements.activityEnd.setCustomValidity('Este intervalo se sobrepõe a uma atividade já adicionada.');
+          elements.activityEndFeedback.textContent = 'Este intervalo se sobrepõe a uma atividade já adicionada.';
+          elements.activityForm.reportValidity();
+          return null;
+        }
+
+        return range;
+      }
+
+      function createCell(row, className) {
+        const cell = document.createElement('td');
+        if (className) {
+          cell.className = className;
+        }
+        row.appendChild(cell);
+        return cell;
+      }
+
+      function appendTextBlock(container, primaryText, secondaryText, className) {
+        const wrapper = document.createElement('div');
+        const primary = document.createElement('strong');
+        wrapper.className = className || '';
+        primary.textContent = primaryText;
+        wrapper.appendChild(primary);
+        if (secondaryText) {
+          const secondary = document.createElement('small');
+          secondary.textContent = secondaryText;
+          wrapper.appendChild(secondary);
+        }
+        container.appendChild(wrapper);
+        return wrapper;
+      }
+
+      function activityAddress(activity) {
+        const roadAndNumber = activity.rua && activity.rua !== '-'
+          ? activity.rua + (activity.numero && activity.numero !== '-' ? ', ' + activity.numero : '')
+          : '';
+        const cityAndState = [activity.cidade && activity.cidade !== '-' ? activity.cidade : '', activity.estado].filter(Boolean).join(' - ');
+        return [roadAndNumber, activity.bairro && activity.bairro !== '-' ? activity.bairro : '', cityAndState].filter(Boolean).join(' · ');
+      }
+
+      function renderActivities() {
+        const sortedActivities = state.activities.slice().sort(function(first, second) {
+          const firstRange = activityRange(first.inicio, first.fim);
+          const secondRange = activityRange(second.inicio, second.fim);
+          return (firstRange ? firstRange.start : 0) - (secondRange ? secondRange.start : 0);
+        });
+        state.activities = sortedActivities;
+        elements.activityTableBody.replaceChildren();
+
+        if (!sortedActivities.length) {
+          const emptyRow = document.createElement('tr');
+          const emptyCell = createCell(emptyRow, 'os-empty-state');
+          const icon = document.createElement('i');
+          const text = document.createElement('span');
+          emptyCell.colSpan = 6;
+          icon.className = 'bi bi-list-check';
+          icon.setAttribute('aria-hidden', 'true');
+          text.textContent = 'Nenhuma atividade adicionada. Comece informando o primeiro intervalo do turno.';
+          emptyCell.append(icon, text);
+          elements.activityTableBody.appendChild(emptyRow);
+        } else {
+          sortedActivities.forEach(function(activity, index) {
+            const row = document.createElement('tr');
+            if (activity.operacao) {
+              row.classList.add('os-operation-row');
+            }
+
+            const indexCell = createCell(row);
+            const indexBadge = document.createElement('span');
+            indexBadge.className = 'os-activity-index';
+            indexBadge.textContent = String(index + 1).padStart(2, '0');
+            indexCell.appendChild(indexBadge);
+
+            const activityCell = createCell(row);
+            appendTextBlock(activityCell, activityDisplayName(activity.tipo), formatDuration(activity.duracaoMinutos || (activityRange(activity.inicio, activity.fim) || {}).duration), 'os-activity-main');
+
+            const timeCell = createCell(row);
+            const timeRange = document.createElement('span');
+            timeRange.className = 'os-time-range';
+            timeRange.textContent = (activity.inicio || '—') + ' – ' + (activity.fim || '—');
+            timeCell.appendChild(timeRange);
+
+            const locationCell = createCell(row);
+            appendTextBlock(locationCell, activity.local || 'Sem local específico', activityAddress(activity), 'os-activity-main');
+            if (activity.operacao) {
+              const operationBadge = document.createElement('span');
+              const operationIcon = document.createElement('i');
+              operationBadge.className = 'os-operation-badge';
+              operationIcon.className = 'bi bi-shield-check';
+              operationIcon.setAttribute('aria-hidden', 'true');
+              operationBadge.append(operationIcon, document.createTextNode('OP: ' + activity.operacao));
+              locationCell.appendChild(operationBadge);
+            }
+
+            const detailsCell = createCell(row, 'd-none d-lg-table-cell');
+            const detailsText = document.createElement('span');
+            detailsText.className = 'os-cell-meta';
+            detailsText.textContent = activity.detalhes && activity.detalhes !== '-' ? activity.detalhes : 'Sem detalhes adicionais';
+            detailsCell.appendChild(detailsText);
+
+            const actionCell = createCell(row, 'text-end');
+            const removeButton = document.createElement('button');
+            const removeIcon = document.createElement('i');
+            removeButton.type = 'button';
+            removeButton.className = 'btn btn-sm btn-outline-danger';
+            removeButton.dataset.activityId = String(activity.id);
+            removeButton.title = 'Remover atividade';
+            removeButton.setAttribute('aria-label', 'Remover ' + activityDisplayName(activity.tipo));
+            removeIcon.className = 'bi bi-trash';
+            removeIcon.setAttribute('aria-hidden', 'true');
+            removeButton.appendChild(removeIcon);
+            actionCell.appendChild(removeButton);
+
+            elements.activityTableBody.appendChild(row);
+          });
+        }
+
+        const totalMinutes = state.activities.reduce(function(total, activity) {
+          const range = activityRange(activity.inicio, activity.fim);
+          return total + (Number(activity.duracaoMinutos) || (range ? range.duration : 0));
+        }, 0);
+        const shiftMinutes = shiftDurationMinutes();
+        const coverage = shiftMinutes ? Math.min(100, Math.round(totalMinutes / shiftMinutes * 100)) : 0;
+        elements.activityCountMetric.textContent = String(state.activities.length);
+        elements.activityDurationMetric.textContent = formatDuration(totalMinutes);
+        elements.activityCoverageMetric.textContent = coverage + '%';
+        elements.finishButton.disabled = !state.headerLocked || state.activities.length === 0;
+        updateWorkflow();
+      }
+
+      function normalizeActivity(item, index) {
+        const type = normalizeWhitespace(item && (item.tipo || item.type));
+        const start = String((item && (item.inicio || item.start)) || '');
+        const end = String((item && (item.fim || item.end)) || '');
+        const range = activityRange(start, end);
+        return {
+          id: String((item && item.id) || ('stored-activity-' + index)),
+          tipo: type || 'Atividade',
+          inicio: start,
+          fim: end,
+          local: normalizeWhitespace(item && (item.local || item.location)),
+          localId: String((item && item.localId) || ''),
+          localTipo: String((item && item.localTipo) || ''),
+          operacao: normalizeUppercase(item && (item.operacao || item.operation)),
+          operacaoId: String((item && item.operacaoId) || ''),
+          rua: normalizeWhitespace(item && (item.rua || item.road)) || '-',
+          numero: normalizeWhitespace(item && (item.numero || item.number)) || '-',
+          bairro: normalizeWhitespace(item && (item.bairro || item.district)) || '-',
+          cidade: normalizeWhitespace(item && (item.cidade || item.city)) || '-',
+          estado: normalizeUppercase(item && (item.estado || item.state)),
+          detalhes: normalizeWhitespace(item && (item.detalhes || item.detail || item.obs)) || '-',
+          gps: item && item.gps ? item.gps : null,
+          duracaoMinutos: Number(item && item.duracaoMinutos) || (range ? range.duration : 0)
+        };
+      }
+
+      function normalizeOrder(item, index) {
+        if (!item || typeof item !== 'object') {
+          return null;
+        }
+        const number = Number(item.numero);
+        const statusValue = normalizeUppercase(item.status);
+        const status = statusValue === 'INATIVA' || statusValue === 'INATIVO' ? 'Inativa' : 'Ativa';
+        const activities = Array.isArray(item.atividades) ? item.atividades.map(normalizeActivity) : [];
+        return Object.assign({}, item, {
+          id: String(item.id || ('order-' + (Number.isFinite(number) ? number : index))),
+          numero: Number.isFinite(number) ? number : 0,
+          criadoEm: String(item.criadoEm || ''),
+          status: status,
+          tipoOrdem: normalizeUppercase(item.tipoOrdem || item.tipoServico),
+          tipoServicoId: String(item.tipoServicoId || ''),
+          nomeOS: normalizeUppercase(item.nomeOS || item.missao),
+          tipoRecurso: normalizeWhitespace(item.tipoRecurso || item.recurso),
+          inicioGeral: String(item.inicioGeral || item.inicio || ''),
+          terminoGeral: String(item.terminoGeral || item.termino || ''),
+          atividades: activities,
+          ocultaNaTelaOS: item.ocultaNaTelaOS === true || item.ocultaNaTelaOS === 'true'
+        });
+      }
+
+      function loadOrders() {
+        const modernOrders = readArray(STORAGE_KEYS.orders).map(normalizeOrder).filter(Boolean);
+        const legacyOrders = readArray(STORAGE_KEYS.legacyOrders, true).map(normalizeOrder).filter(Boolean);
+        const uniqueOrders = new Map();
+
+        modernOrders.concat(legacyOrders).forEach(function(order) {
+          const key = order.id ? 'id:' + order.id : 'number:' + order.numero;
+          if (!uniqueOrders.has(key)) {
+            uniqueOrders.set(key, order);
+          }
+        });
+        return Array.from(uniqueOrders.values());
+      }
+
+      function persistOrders(orders) {
+        let previousModernValue;
+        let previousLegacyValue;
+        try {
+          previousModernValue = window.localStorage.getItem(STORAGE_KEYS.orders);
+          previousLegacyValue = window.localStorage.getItem(STORAGE_KEYS.legacyOrders);
+        } catch (error) {
+          showPageAlert('Não foi possível acessar o armazenamento das ordens. Nenhum dado foi alterado.', 'danger', false);
+          return false;
+        }
+
+        const modernSaved = writeArray(STORAGE_KEYS.orders, orders);
+        const legacySaved = writeArray(STORAGE_KEYS.legacyOrders, orders);
+        if (!modernSaved || !legacySaved) {
+          const modernRestored = !modernSaved || restoreStoredValue(STORAGE_KEYS.orders, previousModernValue);
+          const legacyRestored = !legacySaved || restoreStoredValue(STORAGE_KEYS.legacyOrders, previousLegacyValue);
+          const errorMessage = modernRestored && legacyRestored
+            ? 'Não foi possível gravar as ordens de serviço. A alteração foi cancelada e o rascunho foi preservado.'
+            : 'Não foi possível concluir a gravação e o armazenamento pode ter sido atualizado parcialmente. Atualize a página antes de tentar novamente.';
+          showPageAlert(errorMessage, 'danger', false);
+          return false;
+        }
+        state.orders = orders;
+        return true;
+      }
+
+      function updateOrderFilterButtons() {
+        elements.orderFilterButtons.forEach(function(button) {
+          const isSelected = button.dataset.orderFilter === state.currentFilter;
+          button.classList.toggle('btn-primary', isSelected);
+          button.classList.toggle('btn-outline-primary', !isSelected);
+          button.setAttribute('aria-pressed', String(isSelected));
+        });
+      }
+
+      function createOrderActionButton(action, order, label, iconName, buttonClass) {
+        const button = document.createElement('button');
+        const icon = document.createElement('i');
+        const labelNode = document.createElement('span');
+        button.type = 'button';
+        button.className = 'btn btn-sm d-inline-flex align-items-center gap-1 ' + buttonClass;
+        button.dataset.orderAction = action;
+        button.dataset.orderId = String(order.id);
+        button.title = label + ' OS nº ' + order.numero;
+        button.setAttribute('aria-label', label + ' Ordem de Serviço nº ' + order.numero);
+        icon.className = 'bi ' + iconName;
+        icon.setAttribute('aria-hidden', 'true');
+        labelNode.textContent = label;
+        button.append(icon, labelNode);
+        return button;
+      }
+
+      function renderOrders() {
+        const visibleOrders = state.orders.filter(function(order) {
+          return !order.ocultaNaTelaOS;
+        });
+        const activeOrders = visibleOrders.filter(function(order) { return order.status === 'Ativa'; });
+        const inactiveOrders = visibleOrders.filter(function(order) { return order.status === 'Inativa'; });
+        const filteredOrders = (state.currentFilter === 'Ativa' ? activeOrders : inactiveOrders).sort(function(first, second) {
+          return Number(second.numero) - Number(first.numero);
+        });
+
+        elements.activeOrderCount.textContent = String(activeOrders.length);
+        elements.inactiveOrderCount.textContent = String(inactiveOrders.length);
+        elements.savedOrderCount.textContent = filteredOrders.length === 0
+          ? ''
+          : (filteredOrders.length === 1
+            ? '1 ordem ' + (state.currentFilter === 'Ativa' ? 'ativa' : 'inativa')
+            : filteredOrders.length + ' ordens ' + (state.currentFilter === 'Ativa' ? 'ativas' : 'inativas'));
+        elements.ordersTableBody.replaceChildren();
+
+        if (!filteredOrders.length) {
+          updateOrderFilterButtons();
+          return;
+        }
+
+        filteredOrders.forEach(function(order) {
+          const row = document.createElement('tr');
+          const numberCell = createCell(row);
+          const numberText = document.createElement('span');
+          numberText.className = 'os-number';
+          numberText.textContent = order.numero ? String(order.numero) : '—';
+          numberCell.appendChild(numberText);
+
+          const missionCell = createCell(row);
+          appendTextBlock(missionCell, order.nomeOS || 'Missão não informada', [order.tipoOrdem || 'ROTINA', order.tipoRecurso || 'Recurso não informado'].join(' · '), 'os-order-mission');
+
+          const shiftCell = createCell(row, 'd-none d-md-table-cell');
+          const shiftText = document.createElement('span');
+          shiftText.className = 'os-time-range';
+          shiftText.textContent = (order.inicioGeral || '—') + ' – ' + (order.terminoGeral || '—');
+          shiftCell.appendChild(shiftText);
+
+          const compositionCell = createCell(row, 'd-none d-lg-table-cell');
+          const operations = Array.from(new Set(order.atividades.map(function(activity) { return activity.operacao; }).filter(Boolean)));
+          appendTextBlock(compositionCell, order.atividades.length + (order.atividades.length === 1 ? ' atividade' : ' atividades'), operations.length ? operations.length + (operations.length === 1 ? ' operação vinculada' : ' operações vinculadas') : 'Rotina sem operação', 'os-order-mission');
+
+          const statusCell = createCell(row);
+          const statusBadge = document.createElement('span');
+          const statusIcon = document.createElement('i');
+          statusBadge.className = 'os-status ' + (order.status === 'Ativa' ? 'is-active' : 'is-inactive');
+          statusIcon.className = 'bi ' + (order.status === 'Ativa' ? 'bi-check-circle-fill' : 'bi-slash-circle');
+          statusIcon.setAttribute('aria-hidden', 'true');
+          statusBadge.append(statusIcon, document.createTextNode(order.status));
+          statusCell.appendChild(statusBadge);
+
+          const actionsCell = createCell(row);
+          const actions = document.createElement('div');
+          actions.className = 'table-actions';
+          actions.appendChild(createOrderActionButton('model', order, 'Usar como modelo', 'bi-copy', 'btn-outline-primary'));
+          actions.appendChild(createOrderActionButton('print', order, 'Imprimir', 'bi-printer', 'btn-outline-info'));
+          if (order.status === 'Ativa') {
+            actions.appendChild(createOrderActionButton('inactivate', order, 'Inativar', 'bi-archive', 'btn-outline-secondary'));
+          } else {
+            actions.appendChild(createOrderActionButton('reactivate', order, 'Reativar', 'bi-arrow-counterclockwise', 'btn-outline-success'));
+            actions.appendChild(createOrderActionButton('hide', order, 'Ocultar', 'bi-eye-slash', 'btn-outline-danger'));
+          }
+          actionsCell.appendChild(actions);
+          elements.ordersTableBody.appendChild(row);
+        });
+
+        updateOrderFilterButtons();
+      }
+
+      function nextOrderNumber(orders) {
+        const highestNumber = orders.reduce(function(highest, order) {
+          const number = Number(order.numero);
+          return Number.isInteger(number) && number > 0 ? Math.max(highest, number) : highest;
+        }, 0);
+        return highestNumber + 1;
+      }
+
+      function updateOrderCodePreview(orders) {
+        const sourceOrders = Array.isArray(orders) ? orders : state.orders;
+        elements.orderCode.value = String(nextOrderNumber(sourceOrders));
+      }
+
+      function saveNewOrder() {
+        if (!state.headerLocked || !state.activities.length) {
+          showPageAlert('Confirme o cabeçalho e adicione pelo menos uma atividade antes de finalizar.', 'warning');
+          return false;
+        }
+
+        const issueCountBeforeRead = dataLoadIssueCount;
+        const latestOrders = loadOrders();
+        if (dataLoadIssueCount > issueCountBeforeRead) {
+          showPageAlert('Não foi possível carregar as ordens existentes. Nenhum dado foi gravado; revise o armazenamento e tente novamente.', 'danger', false);
+          return false;
+        }
+        const serviceType = selectedServiceType();
+        const newNumber = nextOrderNumber(latestOrders);
+        elements.orderCode.value = String(newNumber);
+        const sourceNumber = state.copySourceNumber;
+        const newOrder = {
+          numero: newNumber,
+          id: createId('service-order'),
+          criadoEm: new Date().toISOString(),
+          status: 'Ativa',
+          tipoOrdem: serviceType.name || 'ROTINA',
+          tipoServicoId: serviceType.id || '',
+          nomeOS: normalizeUppercase(elements.mission.value),
+          tipoRecurso: elements.patrolType.value,
+          inicioGeral: elements.orderStart.value,
+          terminoGeral: elements.orderEnd.value,
+          atividades: state.activities.map(function(activity) {
+            return JSON.parse(JSON.stringify(activity));
+          }),
+          origemCopia: sourceNumber || null,
+          versao: 1
+        };
+
+        latestOrders.push(newOrder);
+        if (!persistOrders(latestOrders)) {
+          return false;
+        }
+
+        state.currentFilter = 'Ativa';
+        renderOrders();
+        resetDraft();
+        showPageAlert('Ordem de Serviço nº ' + newNumber + ' criada com sucesso' + (sourceNumber ? ' a partir da OS nº ' + sourceNumber : '') + '.', 'success', false);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return true;
+      }
+
+      function setServiceTypeFromOrder(order) {
+        let matchingOption = Array.from(elements.serviceType.options).find(function(option) {
+          return option.value === order.tipoServicoId || normalizeUppercase(option.textContent) === normalizeUppercase(order.tipoOrdem);
+        });
+        if (!matchingOption && order.tipoOrdem) {
+          matchingOption = createOption('historical-service-' + order.id, order.tipoOrdem + ' (histórico)');
+          matchingOption.dataset.serviceName = order.tipoOrdem;
+          elements.serviceType.appendChild(matchingOption);
+        }
+        if (matchingOption) {
+          elements.serviceType.value = matchingOption.value;
+        }
+      }
+
+      function setPatrolTypeFromOrder(order) {
+        let matchingOption = Array.from(elements.patrolType.options).find(function(option) {
+          return option.value === order.tipoRecurso;
+        });
+        if (!matchingOption && order.tipoRecurso) {
+          matchingOption = createOption(order.tipoRecurso, order.tipoRecurso + ' (histórico)');
+          elements.patrolType.appendChild(matchingOption);
+        }
+        if (matchingOption) {
+          elements.patrolType.value = matchingOption.value;
+        }
+      }
+
+      function validateOrderModel(order) {
+        const mission = normalizeWhitespace(order && order.nomeOS);
+        const patrolType = normalizeWhitespace(order && order.tipoRecurso);
+        const start = timeToMinutes(order && order.inicioGeral);
+        const end = timeToMinutes(order && order.terminoGeral);
+        return Boolean(order)
+          && mission.length >= 3
+          && mission.length <= 100
+          && Boolean(patrolType)
+          && Number.isFinite(start)
+          && Number.isFinite(end);
+      }
+
+      function loadOrderAsModel(order) {
+        if (!validateOrderModel(order)) {
+          showPageAlert('Não foi possível carregar esta Ordem de Serviço como modelo porque os dados gerais estão incompletos. O rascunho atual foi preservado.', 'danger', false);
+          return false;
+        }
+        resetDraft();
+        setServiceTypeFromOrder(order);
+        setPatrolTypeFromOrder(order);
+        elements.mission.value = order.nomeOS;
+        elements.orderStart.value = order.inicioGeral;
+        elements.orderEnd.value = order.terminoGeral;
+        updateShiftDuration();
+        state.activities = order.atividades.filter(function(activity) {
+          return Number.isFinite(timeToMinutes(activity.inicio)) && Number.isFinite(timeToMinutes(activity.fim));
+        }).map(function(activity, index) {
+          return normalizeActivity(activity, index);
+        });
+        state.copySourceNumber = order.numero;
+
+        if (!lockHeader({ scroll: false })) {
+          showPageAlert('A OS selecionada possui dados antigos incompletos. Revise o cabeçalho antes de continuar.', 'warning', false);
+          return false;
+        }
+
+        renderActivities();
+        showPageAlert('OS nº ' + order.numero + ' carregada como modelo com sucesso. Ao finalizar, uma nova numeração será gerada.', 'success', false);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return true;
+      }
+
+      function requestOrderAsModel(order, triggerButton) {
+        const loadModel = function() { return loadOrderAsModel(order); };
+        if (!hasDraftContent()) {
+          return runButtonOperation(triggerButton, 'Carregando modelo...', function() {
+            return loadOrderAsModel(order);
+          }, {
+            key: 'load-order-model-' + order.id,
+            compact: true,
+            errorMessage: 'Não foi possível carregar a Ordem de Serviço como modelo.',
+            disabledAfter: false
+          });
+        }
+        openConfirmation({
+          title: 'Usar OS como modelo',
+          message: 'O rascunho atual será substituído pelos dados da OS nº ' + order.numero + '. A ordem original permanecerá inalterada.',
+          confirmLabel: 'Carregar modelo',
+          variant: 'primary',
+          processingLabel: 'Carregando modelo...',
+          operationKey: 'load-order-model-' + order.id,
+          errorMessage: 'Não foi possível carregar a Ordem de Serviço como modelo.',
+          onConfirm: loadModel
+        });
+        return true;
+      }
+
+      function updateStoredOrder(order, changes, successMessage) {
+        const issueCountBeforeRead = dataLoadIssueCount;
+        const latestOrders = loadOrders();
+        if (dataLoadIssueCount > issueCountBeforeRead) {
+          showPageAlert('Não foi possível carregar a versão mais recente das ordens. A alteração não foi realizada.', 'danger', false);
+          return false;
+        }
+        const index = latestOrders.findIndex(function(item) { return String(item.id) === String(order.id); });
+        if (index === -1) {
+          showPageAlert('Não foi possível atualizar a Ordem de Serviço porque o registro não foi encontrado. Atualize a página e tente novamente.', 'danger', false);
+          return false;
+        }
+        Object.assign(latestOrders[index], changes);
+        if (!persistOrders(latestOrders)) {
+          return false;
+        }
+        renderOrders();
+        showPageAlert(successMessage, 'success');
+        return true;
+      }
+
+      function createPrintMeta(label, value) {
+        const item = document.createElement('div');
+        const labelNode = document.createElement('span');
+        const valueNode = document.createElement('strong');
+        labelNode.textContent = label;
+        valueNode.textContent = value || '—';
+        item.append(labelNode, valueNode);
+        return item;
+      }
+
+      function printOrder(order) {
+        elements.printSheet.replaceChildren();
+        const header = document.createElement('div');
+        const brand = document.createElement('div');
+        const headerMeta = document.createElement('div');
+        const title = document.createElement('h1');
+        const meta = document.createElement('div');
+        const table = document.createElement('table');
+        const tableHead = document.createElement('thead');
+        const headRow = document.createElement('tr');
+        const tableBody = document.createElement('tbody');
+        const footer = document.createElement('div');
+
+        header.className = 'os-print-header';
+        brand.className = 'os-print-brand';
+        headerMeta.style.textAlign = 'right';
+        brand.textContent = 'ORDENA';
+        appendTextBlock(headerMeta, 'ORDEM DE SERVIÇO Nº ' + (order.numero || '—'), 'Situação: ' + order.status, 'os-order-mission');
+        header.append(brand, headerMeta);
+
+        title.className = 'os-print-title';
+        title.textContent = order.nomeOS || 'Ordem de Serviço';
+        meta.className = 'os-print-meta';
+        meta.append(
+          createPrintMeta('Tipo de serviço', order.tipoOrdem || 'ROTINA'),
+          createPrintMeta('Patrulhamento', order.tipoRecurso),
+          createPrintMeta('Início', order.inicioGeral),
+          createPrintMeta('Término', order.terminoGeral)
+        );
+
+        table.className = 'os-print-table';
+        ['Atividade', 'Horário', 'Local / Operação', 'Detalhes'].forEach(function(label) {
+          const headerCell = document.createElement('th');
+          headerCell.scope = 'col';
+          headerCell.textContent = label;
+          headRow.appendChild(headerCell);
+        });
+        tableHead.appendChild(headRow);
+
+        order.atividades.forEach(function(activity) {
+          const row = document.createElement('tr');
+          const cells = [
+            activityDisplayName(activity.tipo),
+            (activity.inicio || '—') + ' – ' + (activity.fim || '—'),
+            [activity.local || 'Sem local específico', activity.operacao ? 'OP: ' + activity.operacao : ''].filter(Boolean).join(' · '),
+            [activityAddress(activity), activity.detalhes && activity.detalhes !== '-' ? activity.detalhes : ''].filter(Boolean).join(' · ') || '—'
+          ];
+          cells.forEach(function(value) {
+            const cell = document.createElement('td');
+            cell.textContent = value;
+            row.appendChild(cell);
+          });
+          tableBody.appendChild(row);
+        });
+        table.append(tableHead, tableBody);
+
+        footer.className = 'os-print-footer';
+        footer.textContent = 'Documento gerado pelo Ordena em ' + new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' }).format(new Date());
+        elements.printSheet.append(header, title, meta, table, footer);
+        elements.printSheet.setAttribute('aria-hidden', 'false');
+
+        const printPayload = {
+          numero: order.numero,
+          nomeOS: order.nomeOS,
+          tipoRecurso: order.tipoRecurso,
+          inicioGeral: order.inicioGeral,
+          terminoGeral: order.terminoGeral,
+          status: order.status,
+          atividades: order.atividades
+        };
+        let printCopySaved = true;
+        try {
+          window.localStorage.setItem(STORAGE_KEYS.legacyPrint, JSON.stringify(printPayload));
+        } catch (error) {
+          printCopySaved = false;
+          // A impressão local continua disponível mesmo sem gravar a cópia temporária legada.
+        }
+
+        window.requestAnimationFrame(function() {
+          window.print();
+        });
+        if (printCopySaved) {
+          showPageAlert('Ordem de Serviço nº ' + order.numero + ' preparada para impressão.', 'success');
+        } else {
+          const printWarningMessage = 'A impressão foi preparada, mas não foi possível salvar a cópia temporária da Ordem de Serviço.';
+          showPageAlert(printWarningMessage, 'warning', false);
+          return { warning: true, message: printWarningMessage };
+        }
+        return true;
+      }
+
+      function toDateTimeLocal(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        return year + '-' + month + '-' + day + 'T' + hours + ':' + minutes;
+      }
+
+      function prepareOperationModal() {
+        elements.quickOperationForm.reset();
+        elements.quickOperationForm.classList.remove('was-validated');
+        hideQuickOperationAlert();
+        elements.quickOperationName.setCustomValidity('');
+        elements.quickOperationDescription.setCustomValidity('');
+        elements.quickOperationEnd.setCustomValidity('');
+
+        const now = new Date();
+        now.setSeconds(0, 0);
+        let startDate = new Date(now);
+        let endDate = new Date(now.getTime() + 2 * 60 * 60 * 1000);
+        const shiftStart = timeToMinutes(elements.orderStart.value);
+        const shiftEnd = timeToMinutes(elements.orderEnd.value);
+
+        if (Number.isFinite(shiftStart) && Number.isFinite(shiftEnd)) {
+          startDate.setHours(Math.floor(shiftStart / 60), shiftStart % 60, 0, 0);
+          endDate = new Date(startDate);
+          endDate.setHours(Math.floor(shiftEnd / 60), shiftEnd % 60, 0, 0);
+          if (endDate <= startDate) {
+            endDate.setDate(endDate.getDate() + 1);
+          }
+        }
+
+        elements.quickOperationStart.value = toDateTimeLocal(startDate);
+        elements.quickOperationEnd.value = toDateTimeLocal(endDate);
+        window.bootstrap.Modal.getOrCreateInstance(elements.operationModal).show();
+        elements.operationModal.addEventListener('shown.bs.modal', function focusOperationName() {
+          elements.quickOperationName.focus();
+          elements.operationModal.removeEventListener('shown.bs.modal', focusOperationName);
+        });
+      }
+
+      function validateQuickOperationBeforeProcessing() {
+        hideQuickOperationAlert();
+        const name = normalizeUppercase(elements.quickOperationName.value);
+        const description = normalizeWhitespace(elements.quickOperationDescription.value);
+        const startsAt = new Date(elements.quickOperationStart.value);
+        const endsAt = new Date(elements.quickOperationEnd.value);
+        const duplicateExists = state.operations.some(function(operation) {
+          return normalizeUppercase(operation.name) === name;
+        });
+        const invalidDateRange = Number.isNaN(startsAt.getTime()) || Number.isNaN(endsAt.getTime()) || endsAt <= startsAt;
+
+        elements.quickOperationName.setCustomValidity('');
+        elements.quickOperationDescription.setCustomValidity('');
+        elements.quickOperationEnd.setCustomValidity('');
+        elements.quickOperationNameFeedback.textContent = 'Informe um nome com 3 a 80 caracteres.';
+        elements.quickOperationEndFeedback.textContent = 'Informe uma data e hora posterior ao início.';
+
+        if (name.length < 3) {
+          elements.quickOperationName.setCustomValidity('Informe um nome com pelo menos 3 caracteres.');
+        }
+        if (description.length < 3) {
+          elements.quickOperationDescription.setCustomValidity('Informe uma descrição com pelo menos 3 caracteres.');
+        }
+        if (duplicateExists) {
+          elements.quickOperationName.setCustomValidity('Já existe uma operação com este nome.');
+          elements.quickOperationNameFeedback.textContent = 'Já existe uma operação com este nome.';
+        }
+        if (invalidDateRange) {
+          elements.quickOperationEnd.setCustomValidity('O término deve ser posterior ao início.');
+          elements.quickOperationEndFeedback.textContent = 'O término deve ser posterior ao início.';
+        }
+
+        elements.quickOperationForm.classList.add('was-validated');
+        if (!elements.quickOperationForm.checkValidity() || name.length < 3 || description.length < 3 || duplicateExists || invalidDateRange) {
+          elements.quickOperationForm.reportValidity();
+          return false;
+        }
+        return true;
+      }
+
+      function saveQuickOperation() {
+        hideQuickOperationAlert();
+        const name = normalizeUppercase(elements.quickOperationName.value);
+        const description = normalizeWhitespace(elements.quickOperationDescription.value);
+        const startsAt = new Date(elements.quickOperationStart.value);
+        const endsAt = new Date(elements.quickOperationEnd.value);
+        const duplicateExists = state.operations.some(function(operation) { return normalizeUppercase(operation.name) === name; });
+        const invalidDateRange = Number.isNaN(startsAt.getTime()) || Number.isNaN(endsAt.getTime()) || endsAt <= startsAt;
+        elements.quickOperationName.setCustomValidity('');
+        elements.quickOperationEnd.setCustomValidity('');
+        elements.quickOperationNameFeedback.textContent = 'Informe um nome com 3 a 80 caracteres.';
+        elements.quickOperationEndFeedback.textContent = 'Informe uma data e hora posterior ao início.';
+
+        if (name.length < 3) {
+          elements.quickOperationName.setCustomValidity('Informe um nome com pelo menos 3 caracteres.');
+          elements.quickOperationNameFeedback.textContent = 'Informe um nome com 3 a 80 caracteres.';
+        }
+        if (description.length < 3) {
+          elements.quickOperationDescription.setCustomValidity('Informe uma descrição com pelo menos 3 caracteres.');
+        } else {
+          elements.quickOperationDescription.setCustomValidity('');
+        }
+        if (duplicateExists) {
+          elements.quickOperationName.setCustomValidity('Já existe uma operação com este nome.');
+          elements.quickOperationNameFeedback.textContent = 'Já existe uma operação com este nome.';
+        }
+        if (invalidDateRange) {
+          elements.quickOperationEnd.setCustomValidity('O término deve ser posterior ao início.');
+          elements.quickOperationEndFeedback.textContent = 'O término deve ser posterior ao início.';
+        }
+
+        elements.quickOperationForm.classList.add('was-validated');
+        if (!elements.quickOperationForm.checkValidity() || name.length < 3 || description.length < 3 || duplicateExists || invalidDateRange) {
+          elements.quickOperationForm.reportValidity();
+          return false;
+        }
+
+        const operation = {
+          id: createId('special-operation'),
+          name: name,
+          description: description,
+          startsAt: startsAt.toISOString(),
+          endsAt: endsAt.toISOString(),
+          active: true
+        };
+        const issueCountBeforeRead = dataLoadIssueCount;
+        const storedOperations = readArray(STORAGE_KEYS.operations);
+        if (dataLoadIssueCount > issueCountBeforeRead) {
+          const loadErrorMessage = 'Não foi possível carregar as operações existentes. Nenhum dado foi gravado e o formulário foi preservado.';
+          showQuickOperationAlert(loadErrorMessage, 'danger');
+          showPageAlert(loadErrorMessage, 'danger', false);
+          return false;
+        }
+        if (storedOperations.some(function(item) { return normalizeUppercase(item && item.name) === name; })) {
+          const duplicateMessage = 'Já existe uma operação especial com este nome. Nenhum dado foi gravado.';
+          elements.quickOperationName.setCustomValidity('Já existe uma operação com este nome.');
+          elements.quickOperationNameFeedback.textContent = 'Já existe uma operação com este nome.';
+          showQuickOperationAlert(duplicateMessage, 'warning');
+          return false;
+        }
+        storedOperations.push(operation);
+        if (!writeArray(STORAGE_KEYS.operations, storedOperations)) {
+          const saveErrorMessage = 'Não foi possível cadastrar a operação especial. Tente novamente.';
+          showQuickOperationAlert(saveErrorMessage, 'danger');
+          showPageAlert(saveErrorMessage, 'danger', false);
+          return false;
+        }
+
+        const issueCountBeforeReload = dataLoadIssueCount;
+        state.operations = loadOperations();
+        populateOperations(operation.id);
+        elements.operationSourceCount.textContent = String(state.operations.length);
+        if (dataLoadIssueCount > issueCountBeforeReload) {
+          const reloadWarningMessage = 'A operação foi cadastrada, mas nem todos os dados de compatibilidade puderam ser atualizados na tela.';
+          showPageAlert(reloadWarningMessage, 'warning', false);
+          return { warning: true, message: reloadWarningMessage };
+        }
+        // Fechamento anterior preservado; o modal agora fecha somente após o estado de processamento terminar.
+        // window.bootstrap.Modal.getOrCreateInstance(elements.operationModal).hide();
+        showPageAlert('Operação “' + operation.name + '” cadastrada e vinculada à atividade.', 'success');
+        return true;
+      }
+
+      elements.headerForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+        if (state.headerLocked) {
+          requestHeaderUnlock();
+          return;
+        }
+        if (!validateHeaderForm()) {
+          showPageAlert('Revise os campos obrigatórios antes de continuar para o fracionamento.', 'warning');
+          return;
+        }
+        runButtonOperation(elements.headerButton, 'Confirmando dados...', function() {
+          return lockHeader({ skipValidation: true });
+        }, {
+          key: 'header-lock',
+          successMessage: 'Dados gerais confirmados. Agora adicione as atividades do turno.',
+          errorMessage: 'Não foi possível confirmar os dados gerais.',
+          controls: [elements.serviceType, elements.patrolType, elements.mission, elements.orderStart, elements.orderEnd, elements.resetButton],
+          controlDisabledAfter: function(control, previousDisabled, succeeded) {
+            const headerFields = [elements.serviceType, elements.patrolType, elements.mission, elements.orderStart, elements.orderEnd];
+            return succeeded && headerFields.includes(control) ? true : previousDisabled;
+          },
+          disabledAfter: false
+        });
+      });
+
+      elements.mission.addEventListener('input', function() {
+        elements.mission.setCustomValidity('');
+        elements.missionFeedback.textContent = 'Informe uma missão com 3 a 100 caracteres.';
+      });
+
+      elements.orderStart.addEventListener('input', updateShiftDuration);
+      elements.orderEnd.addEventListener('input', updateShiftDuration);
+
+      elements.resetButton.addEventListener('click', function() {
+        if (!hasDraftContent()) {
+          runButtonOperation(elements.resetButton, 'Limpando...', resetDraft, {
+            key: 'reset-empty-draft',
+            successMessage: 'Rascunho limpo com sucesso.',
+            errorMessage: 'Não foi possível limpar o rascunho.',
+            controls: Array.from(elements.headerForm.elements),
+            disabledAfter: false
+          });
+          return;
+        }
+        openConfirmation({
+          title: 'Limpar rascunho',
+          message: 'Os dados gerais e todas as atividades ainda não gravadas serão limpos.',
+          confirmLabel: 'Limpar rascunho',
+          variant: 'danger',
+          processingLabel: 'Limpando rascunho...',
+          operationKey: 'reset-draft',
+          successMessage: 'Rascunho limpo com sucesso.',
+          errorMessage: 'Não foi possível limpar o rascunho.',
+          onConfirm: resetDraft
+        });
+      });
+
+      elements.activityType.addEventListener('change', updateActivityLocationInterface);
+      elements.locationSelect.addEventListener('change', updateLocationPreview);
+      elements.activityStart.addEventListener('input', function() {
+        elements.activityStart.setCustomValidity('');
+      });
+      elements.activityEnd.addEventListener('input', function() {
+        elements.activityEnd.setCustomValidity('');
+        elements.activityEndFeedback.textContent = 'Informe o término da atividade.';
+      });
+
+      elements.activityForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+        if (!state.headerLocked) {
+          showPageAlert('Confirme primeiro os dados gerais da Ordem de Serviço.', 'warning');
+          return;
+        }
+        const range = validateActivityForm();
+        if (!range) {
+          showPageAlert('Revise o intervalo informado. Atividades precisam ficar dentro do turno e não podem se sobrepor.', 'warning');
+          return;
+        }
+
+        const activityToAdd = buildActivityFromForm(range);
+        const activityControls = Array.from(elements.activitySection.querySelectorAll('button, input, select, textarea'));
+        activityControls.push(elements.headerButton, elements.resetButton);
+        runButtonOperation(elements.activityAddButton, 'Adicionando...', function() {
+          state.activities.push(activityToAdd);
+          elements.activityForm.classList.remove('was-validated');
+          const nextStart = elements.activityEnd.value;
+          elements.activityStart.value = nextStart;
+          elements.activityEnd.value = '';
+          elements.locationSelect.value = '';
+          elements.operationSelect.value = '';
+          updateLocationPreview();
+          renderActivities();
+          showPageAlert('Atividade adicionada ao fracionamento.', 'success');
+          elements.activityEnd.focus();
+          return true;
+        }, {
+          key: 'activity-add',
+          errorMessage: 'Não foi possível adicionar a atividade. Revise os dados e tente novamente.',
+          controls: activityControls,
+          controlDisabledAfter: function(control, previousDisabled, succeeded) {
+            if (control === elements.finishButton && succeeded) {
+              return !state.headerLocked || state.activities.length === 0;
+            }
+            return previousDisabled;
+          },
+          disabledAfter: false
+        });
+      });
+
+      elements.activityTableBody.addEventListener('click', function(event) {
+        const button = event.target.closest('[data-activity-id]');
+        if (!button) {
+          return;
+        }
+        const activityControls = Array.from(elements.activitySection.querySelectorAll('button, input, select, textarea'));
+        activityControls.push(elements.headerButton, elements.resetButton);
+        runButtonOperation(button, 'Removendo atividade...', function() {
+          const activityIndex = state.activities.findIndex(function(activity) {
+            return String(activity.id) === String(button.dataset.activityId);
+          });
+          if (activityIndex === -1) {
+            showPageAlert('A atividade não foi encontrada. Atualize o fracionamento e tente novamente.', 'warning');
+            return false;
+          }
+          const removedActivity = state.activities.splice(activityIndex, 1)[0];
+          renderActivities();
+          showPageAlert(activityDisplayName(removedActivity.tipo) + ' removida do fracionamento com sucesso.', 'success');
+          return true;
+        }, {
+          key: 'activity-remove-' + button.dataset.activityId,
+          compact: true,
+          errorMessage: 'Não foi possível remover a atividade.',
+          controls: activityControls,
+          controlDisabledAfter: function(control, previousDisabled, succeeded) {
+            if (control === elements.finishButton && succeeded) {
+              return !state.headerLocked || state.activities.length === 0;
+            }
+            return previousDisabled;
+          },
+          disabledAfter: false
+        });
+      });
+
+      elements.finishButton.addEventListener('click', function() {
+        const orderControls = Array.from(elements.headerForm.elements).concat(
+          Array.from(elements.activitySection.querySelectorAll('button, input, select, textarea'))
+        );
+        runButtonOperation(elements.finishButton, 'Gravando OS...', function() {
+          return withStorageLock('ordena-service-orders-write', saveNewOrder);
+        }, {
+          key: 'order-create',
+          errorMessage: 'Não foi possível gravar a Ordem de Serviço. Seus dados foram preservados para uma nova tentativa.',
+          controls: orderControls,
+          controlDisabledAfter: function(control, previousDisabled, succeeded) {
+            return succeeded ? false : previousDisabled;
+          },
+          disabledAfter: function() {
+            return !state.headerLocked || state.activities.length === 0;
+          }
+        });
+      });
+      elements.openOperationButton.addEventListener('click', prepareOperationModal);
+      elements.quickOperationForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+        if (!validateQuickOperationBeforeProcessing()) {
+          return;
+        }
+        runButtonOperation(elements.quickOperationSubmitButton, 'Salvando operação...', function() {
+          return withStorageLock('ordena-special-operations-write', saveQuickOperation);
+        }, {
+          key: 'special-operation-create',
+          errorMessage: 'Não foi possível cadastrar a operação especial. Os dados preenchidos foram preservados.',
+          onError: function(message) {
+            showQuickOperationAlert(message, 'danger');
+          },
+          controls: Array.from(elements.quickOperationForm.elements),
+          disabledAfter: false
+        }).then(function(succeeded) {
+          if (succeeded) {
+            window.bootstrap.Modal.getOrCreateInstance(elements.operationModal).hide();
+          }
+        });
+      });
+
+      elements.operationModal.addEventListener('hide.bs.modal', function(event) {
+        if (processingButtons.has(elements.quickOperationSubmitButton)) {
+          event.preventDefault();
+        }
+      });
+
+      elements.confirmButton.addEventListener('click', function() {
+        const action = pendingConfirmation;
+        const feedback = pendingConfirmationFeedback || {};
+        if (typeof action !== 'function') {
+          return;
+        }
+        runButtonOperation(elements.confirmButton, feedback.processingLabel || 'Processando...', action, {
+          key: feedback.key || 'confirmation-action',
+          successMessage: feedback.successMessage || '',
+          errorMessage: feedback.errorMessage || 'Não foi possível concluir a operação. Tente novamente.',
+          disabledAfter: false
+        }).then(function(succeeded) {
+          if (!succeeded) {
+            window.bootstrap.Modal.getOrCreateInstance(elements.confirmModal).hide();
+            return;
+          }
+          pendingConfirmation = null;
+          pendingConfirmationFeedback = null;
+          window.bootstrap.Modal.getOrCreateInstance(elements.confirmModal).hide();
+        });
+      });
+
+      elements.confirmModal.addEventListener('hidden.bs.modal', function() {
+        pendingConfirmation = null;
+        pendingConfirmationFeedback = null;
+        if (elements.pageAlert.classList.contains('alert-danger') && !elements.pageAlert.classList.contains('d-none')) {
+          window.requestAnimationFrame(function() {
+            elements.pageAlert.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          });
+        }
+      });
+
+      elements.confirmModal.addEventListener('hide.bs.modal', function(event) {
+        if (processingButtons.has(elements.confirmButton)) {
+          event.preventDefault();
+        }
+      });
+
+      elements.orderFilterButtons.forEach(function(button) {
+        button.addEventListener('click', function() {
+          state.currentFilter = button.dataset.orderFilter;
+          renderOrders();
+        });
+      });
+
+      elements.ordersTableBody.addEventListener('click', function(event) {
+        const button = event.target.closest('[data-order-action]');
+        if (!button) {
+          return;
+        }
+        const order = state.orders.find(function(item) {
+          return String(item.id) === String(button.dataset.orderId);
+        });
+        if (!order) {
+          showPageAlert('Não foi possível concluir a operação porque a Ordem de Serviço não foi encontrada.', 'danger', false);
+          return;
+        }
+
+        if (button.dataset.orderAction === 'model') {
+          requestOrderAsModel(order, button);
+        } else if (button.dataset.orderAction === 'print') {
+          runButtonOperation(button, 'Preparando impressão...', function() {
+            return printOrder(order);
+          }, {
+            key: 'order-print-' + order.id,
+            compact: true,
+            errorMessage: 'Não foi possível preparar a Ordem de Serviço para impressão.',
+            disabledAfter: false
+          });
+        } else if (button.dataset.orderAction === 'inactivate') {
+          openConfirmation({
+            title: 'Inativar Ordem de Serviço',
+            message: 'A OS nº ' + order.numero + ' sairá da lista de ativas, mas continuará armazenada e poderá ser reativada.',
+            confirmLabel: 'Inativar OS',
+            variant: 'warning',
+            processingLabel: 'Inativando OS...',
+            operationKey: 'order-inactivate-' + order.id,
+            errorMessage: 'Não foi possível inativar a Ordem de Serviço.',
+            onConfirm: function() {
+              return withStorageLock('ordena-service-orders-write', function() {
+                return updateStoredOrder(order, { status: 'Inativa', inativadaEm: new Date().toISOString() }, 'OS nº ' + order.numero + ' inativada com sucesso.');
+              });
+            }
+          });
+        } else if (button.dataset.orderAction === 'reactivate') {
+          runButtonOperation(button, 'Reativando OS...', function() {
+            return withStorageLock('ordena-service-orders-write', function() {
+              return updateStoredOrder(order, { status: 'Ativa', reativadaEm: new Date().toISOString() }, 'OS nº ' + order.numero + ' reativada com sucesso.');
+            });
+          }, {
+            key: 'order-reactivate-' + order.id,
+            compact: true,
+            errorMessage: 'Não foi possível reativar a Ordem de Serviço.',
+            disabledAfter: false
+          });
+        } else if (button.dataset.orderAction === 'hide') {
+          openConfirmation({
+            title: 'Ocultar Ordem de Serviço',
+            message: 'A OS nº ' + order.numero + ' será removida apenas desta tela. O registro continuará preservado no armazenamento do navegador.',
+            confirmLabel: 'Ocultar da tela',
+            variant: 'danger',
+            processingLabel: 'Ocultando OS...',
+            operationKey: 'order-hide-' + order.id,
+            errorMessage: 'Não foi possível ocultar a Ordem de Serviço.',
+            onConfirm: function() {
+              return withStorageLock('ordena-service-orders-write', function() {
+                return updateStoredOrder(order, { ocultaNaTelaOS: true, ocultaEm: new Date().toISOString() }, 'OS nº ' + order.numero + ' ocultada da tela.');
+              });
+            }
+          });
+        }
+      });
+
+      window.addEventListener('afterprint', function() {
+        elements.printSheet.setAttribute('aria-hidden', 'true');
+      });
+
+      window.addEventListener('storage', async function(event) {
+        const sourceKeys = [
+          STORAGE_KEYS.serviceTypes,
+          STORAGE_KEYS.basePoints,
+          STORAGE_KEYS.patrolLocations,
+          STORAGE_KEYS.operations,
+          STORAGE_KEYS.legacyBasePoints,
+          STORAGE_KEYS.legacyPatrolLocations,
+          STORAGE_KEYS.legacyOperations
+        ];
+        const sourceDataChanged = event.key === null || sourceKeys.includes(event.key);
+        const ordersChanged = event.key === null || event.key === STORAGE_KEYS.orders || event.key === STORAGE_KEYS.legacyOrders;
+        if (!sourceDataChanged && !ordersChanged) {
+          return;
+        }
+
+        dataLoadHasIssue = false;
+        setPageLoading(true, 'Atualizando dados da página...', 'Recebendo as alterações mais recentes do banco de dados.');
+        try {
+          await waitForVisualFeedback();
+          if (sourceDataChanged) {
+            await loadSourceData();
+          }
+          if (ordersChanged) {
+            state.orders = await loadOrders();
+            renderOrders();
+            if (!state.headerLocked) {
+              updateOrderCodePreview();
+            }
+          }
+          if (!dataLoadHasIssue) {
+            showPageAlert('Dados da página atualizados com sucesso.', 'success');
+            announceOperationStatus('Dados da página atualizados com sucesso.');
+          } else {
+            showPageAlert('Erro ao atualizar todos os dados da página. Alguns registros não puderam ser carregados.', 'danger', false);
+            announceOperationStatus('Erro ao atualizar todos os dados da página.');
+          }
+        } catch (error) {
+          console.error('Erro ao atualizar os dados da Ordem de Serviço.', error);
+          showPageAlert('Erro ao atualizar os dados. Tente novamente.', 'danger', false);
+          announceOperationStatus('Erro ao atualizar os dados. Tente novamente.');
+        } finally {
+          setPageLoading(false);
+        }
+      });
+
+      async function initializePage() {
+        dataLoadHasIssue = false;
+        setPageLoading(true, 'Carregando dados da Ordem de Serviço...', 'Buscando locais, operações e ordens gravadas.');
+        try {
+          await waitForVisualFeedback();
+          await loadSourceData();
+          state.orders = await loadOrders();
+          renderOrders();
+          resetDraft();
+
+          if (!dataLoadHasIssue) {
+            showPageAlert('Dados da página carregados com sucesso.', 'success');
+            announceOperationStatus('Dados da página carregados com sucesso.');
+          } else {
+            showPageAlert('Erro ao carregar todos os dados da página. Alguns registros não puderam ser exibidos.', 'danger', false);
+            announceOperationStatus('Erro ao carregar todos os dados da página.');
+          }
+
+          const modelParams = new URLSearchParams(window.location.search);
+          if (modelParams.has('modelo')) {
+            const requestedModelId = modelParams.get('modelo') || '';
+            const requestedOrder = state.orders.find(function(order) {
+              return String(order.id) === String(requestedModelId);
+            });
+            const cleanUrl = new URL(window.location.href);
+            cleanUrl.searchParams.delete('modelo');
+            window.history.replaceState(window.history.state, '', cleanUrl.pathname + cleanUrl.search + cleanUrl.hash);
+
+            if (requestedOrder) {
+              loadOrderAsModel(requestedOrder);
+            } else {
+              showPageAlert('Não foi possível carregar o modelo: a Ordem de Serviço solicitada não foi encontrada.', 'danger', false);
+            }
+          }
+          if (dataLoadHasIssue) {
+            showPageAlert('Erro ao carregar todos os dados da página. Alguns registros não puderam ser exibidos.', 'danger', false);
+            announceOperationStatus('Erro ao carregar todos os dados da página.');
+          }
+        } catch (error) {
+          console.error('Erro ao carregar os dados da Ordem de Serviço.', error);
+          showPageAlert('Erro ao carregar os dados. Atualize a página e tente novamente.', 'danger', false);
+          announceOperationStatus('Erro ao carregar os dados. Atualize a página e tente novamente.');
+        } finally {
+          setPageLoading(false);
+        }
+      }
+
+      initializePage();
+    });
+  </script>
 
 </body>
 

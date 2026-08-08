@@ -1,12 +1,19 @@
 <!DOCTYPE html>
-<html lang="en">
+<!-- Elemento original preservado: <html lang="en"> -->
+<html lang="pt-BR">
 
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!--
+  Metadados originais preservados:
   <title>CRM Dashboard - NiceAdmin</title>
   <meta name="description" content="NiceAdmin - Bootstrap Admin Template">
   <meta name="keywords" content="admin, dashboard, bootstrap">
+  -->
+  <title>Locais de Patrulhamento - Ordena</title>
+  <meta name="description" content="Cadastro de áreas geográficas de patrulhamento do sistema Ordena">
+  <meta name="keywords" content="ordena, locais de patrulhamento, polígonos, mapa, cadastro">
 
   <!-- Favicons -->
   <link href="assets/img/favicon.png" rel="icon">
@@ -33,6 +40,337 @@
   <!-- Template Main CSS File -->
   <link href="assets/css/main.css" rel="stylesheet">
 
+  <!-- Leaflet: mesma versão estável adotada na página de pontos de baseamento -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+
+  <!-- Estilos exclusivos do cadastro de locais de patrulhamento -->
+  <style>
+    .page-patrol-locations-body .header-search-wrap,
+    .page-patrol-locations-body .header-right,
+    .page-patrol-locations-body .mobile-search,
+    .page-patrol-locations-body .mobile-header-menu,
+    .page-patrol-locations-body .sidebar-footer {
+      display: none !important;
+    }
+
+    .patrol-page-intro {
+      max-width: 760px;
+      margin: 0;
+      color: var(--muted-color);
+      font-size: 0.9375rem;
+    }
+
+    .patrol-page-alert {
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .patrol-card-heading {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--spacing-sm);
+    }
+
+    .patrol-card-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      flex: 0 0 36px;
+      border-radius: var(--radius-md);
+      color: var(--accent-color);
+      background: color-mix(in srgb, var(--accent-color), transparent 90%);
+      font-size: 1.1rem;
+    }
+
+    .patrol-form-card .card-header {
+      align-items: flex-start;
+    }
+
+    .patrol-required-note {
+      color: var(--muted-color);
+      font-size: 0.8125rem;
+      white-space: nowrap;
+    }
+
+    .patrol-auto-code .form-control {
+      color: var(--accent-color);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 1rem;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .patrol-drawing-panel {
+      padding: var(--spacing-md);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      background: color-mix(in srgb, var(--background-color), var(--card-bg) 45%);
+    }
+
+    .patrol-drawing-panel-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--spacing-sm);
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .patrol-drawing-title {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin: 0;
+      color: var(--heading-color);
+      font-size: 0.875rem;
+      font-weight: 700;
+    }
+
+    .patrol-point-counter {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.75rem;
+    }
+
+    .patrol-drawing-summary {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--spacing-sm);
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .patrol-summary-item {
+      padding: 9px 10px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      background: var(--card-bg);
+    }
+
+    .patrol-summary-label {
+      display: block;
+      margin-bottom: 2px;
+      color: var(--muted-color);
+      font-size: 0.6875rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .patrol-summary-value {
+      color: var(--heading-color);
+      font-size: 0.8125rem;
+      font-weight: 700;
+    }
+
+    .patrol-coordinate-list {
+      min-height: 80px;
+      max-height: 174px;
+      margin: 0;
+      padding: 10px 10px 10px 34px;
+      overflow-y: auto;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      color: var(--body-color);
+      background: var(--card-bg);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.75rem;
+      line-height: 1.65;
+    }
+
+    .patrol-coordinate-list.is-empty {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--spacing-md);
+      color: var(--muted-color);
+      font-family: inherit;
+      text-align: center;
+      list-style: none;
+    }
+
+    .patrol-drawing-actions,
+    .patrol-form-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--spacing-sm);
+    }
+
+    .patrol-drawing-actions {
+      margin-top: var(--spacing-md);
+    }
+
+    .patrol-drawing-actions .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: 1 1 132px;
+    }
+
+    .patrol-form-actions {
+      padding-top: var(--spacing-xs);
+    }
+
+    .patrol-form-actions .btn-primary {
+      flex: 1 1 220px;
+    }
+
+    .patrol-map-column {
+      display: flex;
+      flex-direction: column;
+      min-height: 100%;
+    }
+
+    .patrol-map-label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--spacing-sm);
+    }
+
+    .patrol-map-shell {
+      position: relative;
+      overflow: hidden;
+      flex: 1;
+      min-height: 540px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      background: var(--background-color);
+    }
+
+    .patrol-map-shell.is-invalid {
+      border-color: var(--danger-color);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger-color), transparent 88%);
+    }
+
+    #patrolRegistrationMap {
+      width: 100%;
+      height: 100%;
+      min-height: 540px;
+      cursor: crosshair;
+    }
+
+    #patrolRegistrationMap:focus-visible {
+      outline: 3px solid color-mix(in srgb, var(--accent-color), transparent 60%);
+      outline-offset: -3px;
+    }
+
+    .patrol-map-status {
+      position: absolute;
+      z-index: 500;
+      top: var(--spacing-sm);
+      left: 50%;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      max-width: calc(100% - 96px);
+      padding: 7px 12px;
+      border: 1px solid color-mix(in srgb, var(--accent-color), transparent 78%);
+      border-radius: var(--radius-full);
+      color: var(--accent-color);
+      background: color-mix(in srgb, var(--card-bg), transparent 4%);
+      box-shadow: var(--shadow-sm);
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-align: center;
+      transform: translateX(-50%);
+      pointer-events: none;
+    }
+
+    .patrol-map-status.is-loading {
+      color: var(--warning-color);
+      border-color: color-mix(in srgb, var(--warning-color), transparent 72%);
+    }
+
+    .patrol-map-status.is-success {
+      color: var(--success-color);
+      border-color: color-mix(in srgb, var(--success-color), transparent 72%);
+    }
+
+    .patrol-map-status.is-error {
+      color: var(--danger-color);
+      border-color: color-mix(in srgb, var(--danger-color), transparent 72%);
+    }
+
+    .patrol-map-help {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--spacing-xs);
+      margin: var(--spacing-sm) 0 0;
+      color: var(--muted-color);
+      font-size: 0.8125rem;
+    }
+
+    .patrol-vertex-div-icon {
+      border: 0;
+      background: transparent;
+    }
+
+    .patrol-vertex-marker {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 30px;
+      height: 30px;
+      border: 3px solid #fff;
+      border-radius: 50%;
+      color: #fff;
+      background: var(--accent-color);
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.28);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .patrol-vertex-marker.is-first {
+      background: var(--success-color);
+      box-shadow: 0 0 0 4px color-mix(in srgb, var(--success-color), transparent 76%), 0 4px 12px rgba(15, 23, 42, 0.28);
+    }
+
+    .patrol-map-shell .leaflet-control-attribution {
+      font-size: 10px;
+    }
+
+    @media (max-width: 1199px) {
+      .patrol-map-shell,
+      #patrolRegistrationMap {
+        min-height: 430px;
+      }
+    }
+
+    @media (max-width: 767px) {
+      .patrol-page-intro {
+        font-size: 0.875rem;
+      }
+
+      .patrol-form-card .card-header {
+        flex-direction: column;
+        gap: var(--spacing-md);
+      }
+
+      .patrol-required-note {
+        width: 100%;
+      }
+
+      .patrol-map-shell,
+      #patrolRegistrationMap {
+        min-height: 350px;
+      }
+
+      .patrol-drawing-summary {
+        grid-template-columns: 1fr;
+      }
+
+      .patrol-drawing-actions .btn,
+      .patrol-form-actions .btn {
+        flex: 1 1 100%;
+      }
+
+      .patrol-map-status {
+        max-width: calc(100% - 72px);
+      }
+    }
+  </style>
+
   <!-- =======================================================
     * Template Name: NiceAdmin - Bootstrap Admin Template
     * Template URL: https://bootstrapmade.com/flex-admin-bootstrap-template/
@@ -42,7 +380,8 @@
     ======================================================== -->
 </head>
 
-<body>
+<!-- Elemento original preservado: <body> -->
+<body class="page-patrol-locations-body">
   <!-- Header -->
   <header class="header">
     <div class="header-left">
@@ -54,12 +393,19 @@
         </span>
       </button>
 
+      <!--
+      Marca original preservada:
       <a href="index.html" class="header-brand" aria-label="NiceAdmin home">
+        <span class="header-logo"><img src="assets/img/logo.webp" alt="NiceAdmin"></span>
+        <span class="header-context"><strong class="header-context-title">NiceAdmin</strong></span>
+      </a>
+      -->
+      <a href="index.html" class="header-brand" aria-label="Página inicial do Ordena">
         <span class="header-logo">
-          <img src="assets/img/logo.webp" alt="NiceAdmin">
+          <img src="assets/img/logo.webp" alt="Ordena">
         </span>
         <span class="header-context">
-          <strong class="header-context-title">NiceAdmin</strong>
+          <strong class="header-context-title">Ordena</strong>
         </span>
       </a>
     </div>
@@ -404,6 +750,8 @@
 
       <!-- Sidebar Navigation -->
       <nav class="sidebar-nav">
+        <!-- Navegação original preservada e desativada durante a implementação do Ordena. -->
+        <template id="crm-sidebar-original-markup">
         <ul class="nav-menu">
 
           <li class="nav-item">
@@ -709,6 +1057,76 @@
           </li>
 
         </ul>
+        </template>
+
+        <ul class="nav-menu">
+          <li class="nav-item">
+            <a class="nav-link " href="index.html">
+              <span class="nav-icon"><i class="ph-light ph-squares-four"></i></span>
+              <span class="nav-text">Painel Operacional</span>
+              <span class="nav-meta">Home</span>
+            </a>
+          </li>
+
+          <li class="nav-item has-submenu open">
+            <a class="nav-link" href="#" aria-expanded="true">
+              <span class="nav-icon"><i class="ph-light ph-gauge"></i></span>
+              <span class="nav-text">Cadastro</span>
+              <span class="nav-badge">5</span>
+              <span class="nav-arrow"><i class="bi bi-chevron-right"></i></span>
+            </a>
+            <ul class="nav-submenu show">
+              <li><a class="nav-link " href="dashboard-sales.html"><span class="nav-dot"></span>Viaturas</a></li>
+              <li><a class="nav-link " href="dashboard-analytics.html"><span class="nav-dot"></span>Pontos de Baseamento</a></li>
+              <li><a class="nav-link active" href="dashboard-crm.html"><span class="nav-dot"></span>Locais de Patrulhamento</a></li>
+              <li><a class="nav-link " href="dashboard-marketing.html"><span class="nav-dot"></span>Tipos de Serviço</a></li>
+              <li><a class="nav-link " href="dashboard-projects.html"><span class="nav-dot"></span>Operações Especiais</a></li>
+              <li class="d-none"><a class="nav-link " href="dashboard-finance.html"><span class="nav-dot"></span>Finance</a></li>
+            </ul>
+          </li>
+
+          <li class="nav-item has-submenu ">
+            <a class="nav-link" href="#" aria-expanded="false">
+              <span class="nav-icon"><i class="ph-light ph-magnifying-glass"></i></span>
+              <span class="nav-text">Consultas</span>
+              <span class="nav-badge">5</span>
+              <span class="nav-arrow"><i class="bi bi-chevron-right"></i></span>
+            </a>
+            <ul class="nav-submenu ">
+              <li><a class="nav-link " href="consulta-viaturas.html"><span class="nav-dot"></span>Viaturas</a></li>
+              <li><a class="nav-link " href="consulta-pontos-baseamento.html"><span class="nav-dot"></span>Pontos de Baseamento</a></li>
+              <li><a class="nav-link " href="consulta-locais-patrulhamento.html"><span class="nav-dot"></span>Locais de Patrulhamento</a></li>
+              <li><a class="nav-link " href="consulta-tipos-servico.html"><span class="nav-dot"></span>Tipos de Serviço</a></li>
+              <li><a class="nav-link " href="consulta-operacoes-especiais.html"><span class="nav-dot"></span>Operações Especiais</a></li>
+            </ul>
+          </li>
+
+          <li class="nav-item has-submenu ">
+            <a class="nav-link" href="#" aria-expanded="false">
+              <span class="nav-icon"><i class="ph-light ph-users-three"></i></span>
+              <span class="nav-text">Ordens de Serviço</span>
+              <span class="nav-badge">2</span>
+              <span class="nav-arrow"><i class="bi bi-chevron-right"></i></span>
+            </a>
+            <ul class="nav-submenu ">
+              <li><a class="nav-link " href="users.html"><span class="nav-dot"></span>Consultar Ordens de Serviço</a></li>
+              <li><a class="nav-link " href="users-view.html"><span class="nav-dot"></span>Criar Ordem de Serviço</a></li>
+            </ul>
+          </li>
+
+          <li class="nav-item has-submenu ">
+            <a class="nav-link" href="#" aria-expanded="false">
+              <span class="nav-icon"><i class="ph-light ph-shield-check"></i></span>
+              <span class="nav-text">Operação</span>
+              <span class="nav-badge">2</span>
+              <span class="nav-arrow"><i class="bi bi-chevron-right"></i></span>
+            </a>
+            <ul class="nav-submenu ">
+              <li><a class="nav-link " href="auth-login.html"><span class="nav-dot"></span>Ativação</a></li>
+              <li><a class="nav-link " href="auth-register.html"><span class="nav-dot"></span>Mapa Tático</a></li>
+            </ul>
+          </li>
+        </ul>
       </nav>
 
       <!-- Sidebar Footer -->
@@ -750,6 +1168,8 @@
 
   <!-- Main Content -->
   <main class="main">
+    <!-- Dashboard CRM original preservado e desativado durante a nova implementação. -->
+    <template id="crm-dashboard-original-markup">
     <div class="main-content page-dashboard-crm">
       <!-- Page Header -->
       <div class="page-header">
@@ -1333,9 +1753,146 @@
         </div>
       </div>
     </div>
+    </template>
+
+    <!-- Cadastro de Locais de Patrulhamento -->
+    <div class="main-content page-patrol-locations">
+      <!-- Page Header -->
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Locais de Patrulhamento</h1>
+          <p class="patrol-page-intro">Delimite no mapa as áreas destinadas ao patrulhamento e mantenha os vértices do polígono prontos para integração com o banco de dados.</p>
+        </div>
+        <nav class="breadcrumb" aria-label="Navegação estrutural">
+          <a href="index.html" class="breadcrumb-item">Painel Operacional</a>
+          <span class="breadcrumb-item">Cadastro</span>
+          <span class="breadcrumb-item active" aria-current="page">Locais de Patrulhamento</span>
+        </nav>
+      </div>
+
+      <div id="patrolPageAlert" class="alert patrol-page-alert d-none" role="status" aria-live="polite">
+        <div class="d-flex align-items-center gap-2">
+          <i id="patrolPageAlertIcon" class="bi" aria-hidden="true"></i>
+          <span id="patrolPageAlertMessage"></span>
+        </div>
+      </div>
+
+      <!-- Formulário de cadastro -->
+      <section class="section mb-4" aria-labelledby="patrolFormTitle">
+        <div class="card patrol-form-card">
+          <div class="card-header">
+            <div class="patrol-card-heading">
+              <span class="patrol-card-icon" aria-hidden="true"><i class="bi bi-bounding-box-circles"></i></span>
+              <div>
+                <h2 class="card-title" id="patrolFormTitle">Cadastrar novo local de patrulhamento</h2>
+                <p class="card-subtitle">Informe um nome e marque entre 3 e 12 pontos no mapa para formar a área.</p>
+              </div>
+            </div>
+            <span class="patrol-required-note"><span class="text-danger">*</span> Campos obrigatórios</span>
+          </div>
+
+          <div class="card-body">
+            <form id="patrolLocationForm" class="needs-validation" novalidate autocomplete="off">
+              <input type="hidden" id="patrolCoordinates" name="coordinates" value="[]">
+
+              <div class="row g-4 align-items-stretch">
+                <div class="col-xl-5">
+                  <div class="row g-3">
+                    <div class="col-md-4 patrol-auto-code">
+                      <label for="patrolLocationCode" class="form-label">Código <span class="form-label-optional">(automático)</span></label>
+                      <input type="text" class="form-control" id="patrolLocationCode" name="code" value="1" readonly aria-describedby="patrolLocationCodeHelp">
+                      <div class="form-text" id="patrolLocationCodeHelp">Gerado em ordem crescente.</div>
+                    </div>
+
+                    <div class="col-md-8">
+                      <label for="patrolLocationName" class="form-label required">Nome do polígono</label>
+                      <input type="text" class="form-control text-uppercase" id="patrolLocationName" name="name" placeholder="Ex.: Setor Centro 01" minlength="3" maxlength="80" aria-describedby="patrolLocationNameHelp patrolLocationNameFeedback" required>
+                      <div class="invalid-feedback" id="patrolLocationNameFeedback">Informe um nome com pelo menos 3 caracteres.</div>
+                      <div class="form-text" id="patrolLocationNameHelp">Use um nome tático claro e diferente dos locais já cadastrados.</div>
+                    </div>
+
+                    <div class="col-12">
+                      <div class="patrol-drawing-panel" aria-labelledby="patrolCoordinatesTitle">
+                        <div class="patrol-drawing-panel-header">
+                          <h3 class="patrol-drawing-title" id="patrolCoordinatesTitle"><i class="bi bi-bezier2" aria-hidden="true"></i> Coordenadas do polígono</h3>
+                          <span class="badge badge-soft-primary patrol-point-counter" id="patrolPointCounter" aria-live="polite">0 de 12 pontos</span>
+                        </div>
+
+                        <div class="patrol-drawing-summary">
+                          <div class="patrol-summary-item">
+                            <span class="patrol-summary-label">Situação</span>
+                            <span class="patrol-summary-value" id="patrolDrawingState">Aguardando desenho</span>
+                          </div>
+                          <div class="patrol-summary-item">
+                            <span class="patrol-summary-label">Área aproximada</span>
+                            <span class="patrol-summary-value" id="patrolAreaValue">—</span>
+                          </div>
+                        </div>
+
+                        <ol class="patrol-coordinate-list is-empty" id="patrolCoordinateList" aria-live="polite">
+                          <li>Clique no mapa para adicionar o primeiro ponto.</li>
+                        </ol>
+
+                        <div class="patrol-drawing-actions">
+                          <button type="button" class="btn btn-outline-secondary" id="patrolUndoButton" disabled>
+                            <i class="bi bi-arrow-counterclockwise me-1" aria-hidden="true"></i>
+                            Desfazer ponto
+                          </button>
+                          <button type="button" class="btn btn-outline-primary" id="patrolCloseButton" disabled>
+                            <i class="bi bi-bounding-box me-1" aria-hidden="true"></i>
+                            Fechar polígono
+                          </button>
+                          <button type="button" class="btn btn-outline-danger" id="patrolClearButton" disabled>
+                            <i class="bi bi-trash3 me-1" aria-hidden="true"></i>
+                            Limpar desenho
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="col-12">
+                      <div class="patrol-form-actions">
+                        <button type="submit" class="btn btn-primary" id="patrolSubmitButton" disabled>
+                          <i class="bi bi-check2-circle me-1" aria-hidden="true"></i>
+                          <span>Salvar local de patrulhamento</span>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary d-none" id="patrolCancelEditButton">
+                          <i class="bi bi-x-lg me-1" aria-hidden="true"></i>
+                          Cancelar edição
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-xl-7">
+                  <div class="patrol-map-column">
+                    <div class="patrol-map-label">
+                      <span class="form-label required mb-2" id="patrolRegistrationMapLabel">Mapa de cadastro</span>
+                      <span class="badge badge-soft-primary mb-2"><i class="bi bi-cursor me-1" aria-hidden="true"></i>Clique para marcar</span>
+                    </div>
+                    <div class="patrol-map-shell">
+                      <div id="patrolRegistrationMap" role="region" tabindex="0" aria-labelledby="patrolRegistrationMapLabel" aria-describedby="patrolRegistrationMapHelp patrolRegistrationMapFeedback"></div>
+                      <div class="patrol-map-status" id="patrolMapStatus" aria-live="polite">
+                        <i class="bi bi-bezier2" aria-hidden="true"></i>
+                        <span id="patrolMapStatusText">Marque o primeiro ponto da área</span>
+                      </div>
+                    </div>
+                    <div class="invalid-feedback" id="patrolRegistrationMapFeedback">Desenhe e feche um polígono válido com pelo menos 3 pontos.</div>
+                    <p class="patrol-map-help" id="patrolRegistrationMapHelp"><i class="bi bi-info-circle" aria-hidden="true"></i><span>Clique no mapa para adicionar os vértices. Os pontos podem ser arrastados para ajustes. Para fechar, clique no primeiro ponto ou use “Fechar polígono”. Pelo teclado, mova o mapa e pressione Enter ou Espaço para marcar o centro. Quando um ponto estiver focado, use as setas para ajustá-lo e Shift para um passo maior.</span></p>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+    </div>
 
     <!-- Footer -->
     <footer class="footer">
+      <!-- Rodapé original preservado e desativado. -->
+      <template id="crm-footer-original-markup">
       <div class="footer-content">
         <div class="footer-links">
           <a href="#">Docs</a>
@@ -1350,6 +1907,18 @@
           </div>
           <div class="footer-copyright">
           </div>
+        </div>
+      </div>
+      </template>
+
+      <div class="footer-content">
+        <div class="footer-links">
+          <a href="#">Documentação</a>
+          <a href="#">Privacidade</a>
+          <a href="#">Suporte</a>
+        </div>
+        <div class="footer-credits">
+          <div class="footer-copyright">&copy; 2026 <a href="index.html">Ordena</a></div>
         </div>
       </div>
     </footer>
@@ -1379,7 +1948,11 @@
   <!-- App Sidebar Toggle (for app pages with sidebars) -->
   <script src="assets/js/apps-sidebar-toggle.js"></script>
 
-  <script>
+  <!-- Leaflet: mesma versão estável adotada na página de pontos de baseamento -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+  <!-- Script original do dashboard CRM preservado e desativado. Tag original: <script> -->
+  <script type="text/plain" id="crm-dashboard-original-script">
     document.addEventListener('DOMContentLoaded', function() {
       // Get CSS custom properties
       const style = getComputedStyle(document.documentElement);
@@ -1505,6 +2078,1039 @@
       };
       const revenueTrendChart = new ApexCharts(document.querySelector('#revenueTrendChart'), revenueTrendOptions);
       revenueTrendChart.render();
+    });
+  </script>
+
+  <!-- Comportamento do cadastro e desenho dos locais de patrulhamento. -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const STORAGE_KEY = 'ordena.locais-patrulhamento.v1';
+      const DEFAULT_CENTER = [-22.9068, -43.1729];
+      const DEFAULT_ZOOM = 12;
+      const MIN_VERTICES = 3;
+      const MAX_VERTICES = 12;
+      const MINIMUM_AREA_SQUARE_METERS = 1;
+      const COORDINATE_EPSILON = 1e-8;
+      const EARTH_RADIUS_METERS = 6371008.8;
+      const mapConfiguration = window.ORDENA_MAP_CONFIG || {};
+      const TILE_URL = String(mapConfiguration.tileUrl || 'https://tile.openstreetmap.org/{z}/{x}/{y}.png');
+      const TILE_ATTRIBUTION = String(mapConfiguration.tileAttribution || '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors');
+
+      const form = document.getElementById('patrolLocationForm');
+      const formTitle = document.getElementById('patrolFormTitle');
+      const codeInput = document.getElementById('patrolLocationCode');
+      const nameInput = document.getElementById('patrolLocationName');
+      const nameFeedback = document.getElementById('patrolLocationNameFeedback');
+      const coordinatesInput = document.getElementById('patrolCoordinates');
+      const pointCounter = document.getElementById('patrolPointCounter');
+      const drawingState = document.getElementById('patrolDrawingState');
+      const areaValue = document.getElementById('patrolAreaValue');
+      const coordinateList = document.getElementById('patrolCoordinateList');
+      const undoButton = document.getElementById('patrolUndoButton');
+      const closeButton = document.getElementById('patrolCloseButton');
+      const clearButton = document.getElementById('patrolClearButton');
+      const submitButton = document.getElementById('patrolSubmitButton');
+      const cancelEditButton = document.getElementById('patrolCancelEditButton');
+      const mapElement = document.getElementById('patrolRegistrationMap');
+      const mapShell = mapElement ? mapElement.closest('.patrol-map-shell') : null;
+      const mapFeedback = document.getElementById('patrolRegistrationMapFeedback');
+      const mapStatus = document.getElementById('patrolMapStatus');
+      const mapStatusIcon = mapStatus ? mapStatus.querySelector('i') : null;
+      const mapStatusText = document.getElementById('patrolMapStatusText');
+      const alertBox = document.getElementById('patrolPageAlert');
+      const alertIcon = document.getElementById('patrolPageAlertIcon');
+      const alertMessage = document.getElementById('patrolPageAlertMessage');
+
+      if (!form || !mapElement) {
+        return;
+      }
+
+      let patrolLocations = loadPatrolLocations();
+      let editingId = null;
+      let vertices = [];
+      let polygonIsClosed = false;
+      let registrationMap = null;
+      let vertexLayer = null;
+      let shapeLayer = null;
+      let tileLayer = null;
+      let tileLayerReady = false;
+      let tileFailureReported = false;
+      let alertTimeout = null;
+
+      function isCoordinateValid(coordinate) {
+        const latitude = Number(coordinate && coordinate.latitude);
+        const longitude = Number(coordinate && coordinate.longitude);
+        return Number.isFinite(latitude) &&
+          latitude >= -90 &&
+          latitude <= 90 &&
+          Number.isFinite(longitude) &&
+          longitude >= -180 &&
+          longitude <= 180;
+      }
+
+      function normalizeStoredCoordinate(vertex, isGeoJsonCoordinate) {
+        let latitude;
+        let longitude;
+
+        if (Array.isArray(vertex) && vertex.length >= 2) {
+          latitude = Number(vertex[isGeoJsonCoordinate ? 1 : 0]);
+          longitude = Number(vertex[isGeoJsonCoordinate ? 0 : 1]);
+        } else if (vertex && typeof vertex === 'object') {
+          latitude = Number(vertex.latitude !== undefined ? vertex.latitude : vertex.lat);
+          longitude = Number(vertex.longitude !== undefined ? vertex.longitude : vertex.lng);
+        }
+
+        const coordinate = {
+          latitude: latitude,
+          longitude: longitude
+        };
+        return isCoordinateValid(coordinate) ? coordinate : null;
+      }
+
+      function normalizeStoredCoordinates(location) {
+        const geometryCoordinates = location && location.geometry && location.geometry.type === 'Polygon'
+          ? location.geometry.coordinates
+          : null;
+        const sourceCoordinates = Array.isArray(location && location.coordinates)
+          ? location.coordinates
+          : (Array.isArray(location && location.vertices)
+            ? location.vertices
+            : (Array.isArray(geometryCoordinates) && Array.isArray(geometryCoordinates[0])
+              ? geometryCoordinates[0]
+              : []));
+        const usesGeoJsonOrder = sourceCoordinates === (geometryCoordinates && geometryCoordinates[0]);
+        const normalizedCoordinates = sourceCoordinates.reduce(function(validCoordinates, vertex) {
+          const coordinate = normalizeStoredCoordinate(vertex, usesGeoJsonOrder);
+          if (!coordinate) {
+            return validCoordinates;
+          }
+          const isRepeated = validCoordinates.some(function(savedCoordinate) {
+            return coordinatesAreEqual(savedCoordinate, coordinate);
+          });
+          if (!isRepeated) {
+            validCoordinates.push(coordinate);
+          }
+          return validCoordinates;
+        }, []);
+
+        if (normalizedCoordinates.length > 3 &&
+          coordinatesAreEqual(normalizedCoordinates[0], normalizedCoordinates[normalizedCoordinates.length - 1])) {
+          normalizedCoordinates.pop();
+        }
+        return normalizedCoordinates;
+      }
+
+      function loadPatrolLocations() {
+        try {
+          const storedLocations = window.localStorage.getItem(STORAGE_KEY);
+          if (!storedLocations) {
+            return [];
+          }
+
+          const parsedLocations = JSON.parse(storedLocations);
+          if (!Array.isArray(parsedLocations)) {
+            return [];
+          }
+
+          return parsedLocations.reduce(function(validLocations, location, index) {
+            const code = Number(location && location.code);
+            const name = String(location && (location.name || location.nickname) || '').trim();
+            /*
+            Normalização anterior preservada. A versão ativa também aceita aliases e GeoJSON usados pela consulta.
+            const name = String(location && location.name || '').trim();
+            const storedCoordinates = Array.isArray(location && location.coordinates)
+              ? location.coordinates
+              : [];
+            const normalizedCoordinates = storedCoordinates.filter(isCoordinateValid).map(function(coordinate) {
+              return {
+                latitude: Number(coordinate.latitude),
+                longitude: Number(coordinate.longitude)
+              };
+            });
+            */
+            const normalizedCoordinates = normalizeStoredCoordinates(location || {});
+
+            /*
+            Validação anterior preservada:
+            if (!Number.isFinite(code) || code < 1 || !name ||
+              normalizedCoordinates.length !== storedCoordinates.length ||
+              normalizedCoordinates.length < MIN_VERTICES ||
+              normalizedCoordinates.length > MAX_VERTICES) {
+              return validLocations;
+            }
+            */
+            if (!Number.isFinite(code) || code < 1 || !name ||
+              normalizedCoordinates.length < MIN_VERTICES ||
+              normalizedCoordinates.length > MAX_VERTICES) {
+              return validLocations;
+            }
+
+            validLocations.push({
+              id: String(location.id || ('patrol-location-stored-' + index)),
+              code: Math.trunc(code),
+              name: name,
+              coordinates: normalizedCoordinates,
+              active: location.active !== false
+            });
+            return validLocations;
+          }, []);
+        } catch (error) {
+          return [];
+        }
+      }
+
+      function savePatrolLocations() {
+        try {
+          window.localStorage.setItem(STORAGE_KEY, JSON.stringify(patrolLocations));
+          return true;
+        } catch (error) {
+          return false;
+        }
+      }
+
+      function nextCode() {
+        return patrolLocations.reduce(function(highestCode, location) {
+          return Math.max(highestCode, Number(location.code) || 0);
+        }, 0) + 1;
+      }
+
+      function normalizeName(value) {
+        return String(value || '').trim().toLocaleUpperCase('pt-BR');
+      }
+
+      function duplicateName(value) {
+        const normalizedValue = normalizeName(value);
+        return patrolLocations.some(function(location) {
+          return location.id !== editingId && normalizeName(location.name) === normalizedValue;
+        });
+      }
+
+      function showPageAlert(message, type) {
+        const alertType = type || 'success';
+        const iconByType = {
+          success: 'bi-check-circle-fill',
+          danger: 'bi-exclamation-triangle-fill',
+          warning: 'bi-exclamation-circle-fill',
+          info: 'bi-info-circle-fill'
+        };
+
+        window.clearTimeout(alertTimeout);
+        alertBox.className = 'alert alert-' + alertType + ' patrol-page-alert';
+        alertBox.setAttribute('role', alertType === 'danger' ? 'alert' : 'status');
+        alertBox.setAttribute('aria-live', alertType === 'danger' ? 'assertive' : 'polite');
+        alertIcon.className = 'bi ' + (iconByType[alertType] || iconByType.info);
+        alertMessage.textContent = message;
+        alertTimeout = window.setTimeout(function() {
+          alertBox.classList.add('d-none');
+        }, 5500);
+      }
+
+      function setMapStatus(message, state) {
+        const status = state || 'neutral';
+        const iconByStatus = {
+          neutral: 'bi bi-bezier2',
+          success: 'bi bi-check-circle-fill',
+          error: 'bi bi-exclamation-triangle-fill'
+        };
+
+        mapStatus.classList.remove('is-loading', 'is-success', 'is-error');
+        if (status === 'loading') {
+          mapStatus.classList.add('is-loading');
+          mapStatusIcon.className = 'spinner-border spinner-border-sm';
+        } else {
+          if (status === 'success') {
+            mapStatus.classList.add('is-success');
+          } else if (status === 'error') {
+            mapStatus.classList.add('is-error');
+          }
+          mapStatusIcon.className = iconByStatus[status] || iconByStatus.neutral;
+        }
+        mapStatusText.textContent = message;
+      }
+
+      function setMapValidation(isInvalid, message) {
+        mapShell.classList.toggle('is-invalid', isInvalid);
+        mapFeedback.classList.toggle('d-block', isInvalid);
+        mapElement.setAttribute('aria-invalid', String(isInvalid));
+        if (message) {
+          mapFeedback.textContent = message;
+        }
+      }
+
+      function coordinatesAreEqual(firstCoordinate, secondCoordinate) {
+        return Math.abs(Number(firstCoordinate.latitude) - Number(secondCoordinate.latitude)) <= COORDINATE_EPSILON &&
+          Math.abs(Number(firstCoordinate.longitude) - Number(secondCoordinate.longitude)) <= COORDINATE_EPSILON;
+      }
+
+      function hasDuplicateVertices(coordinates) {
+        for (let firstIndex = 0; firstIndex < coordinates.length; firstIndex += 1) {
+          for (let secondIndex = firstIndex + 1; secondIndex < coordinates.length; secondIndex += 1) {
+            if (coordinatesAreEqual(coordinates[firstIndex], coordinates[secondIndex])) {
+              return true;
+            }
+          }
+        }
+        return false;
+      }
+
+      function orientation(firstPoint, secondPoint, thirdPoint) {
+        const value = (Number(secondPoint.longitude) - Number(firstPoint.longitude)) *
+          (Number(thirdPoint.latitude) - Number(firstPoint.latitude)) -
+          (Number(secondPoint.latitude) - Number(firstPoint.latitude)) *
+          (Number(thirdPoint.longitude) - Number(firstPoint.longitude));
+        if (Math.abs(value) <= 1e-12) {
+          return 0;
+        }
+        return value > 0 ? 1 : -1;
+      }
+
+      function pointIsOnSegment(firstPoint, middlePoint, lastPoint) {
+        return Number(middlePoint.longitude) <= Math.max(Number(firstPoint.longitude), Number(lastPoint.longitude)) + 1e-12 &&
+          Number(middlePoint.longitude) >= Math.min(Number(firstPoint.longitude), Number(lastPoint.longitude)) - 1e-12 &&
+          Number(middlePoint.latitude) <= Math.max(Number(firstPoint.latitude), Number(lastPoint.latitude)) + 1e-12 &&
+          Number(middlePoint.latitude) >= Math.min(Number(firstPoint.latitude), Number(lastPoint.latitude)) - 1e-12;
+      }
+
+      function segmentsIntersect(firstStart, firstEnd, secondStart, secondEnd) {
+        const firstOrientation = orientation(firstStart, firstEnd, secondStart);
+        const secondOrientation = orientation(firstStart, firstEnd, secondEnd);
+        const thirdOrientation = orientation(secondStart, secondEnd, firstStart);
+        const fourthOrientation = orientation(secondStart, secondEnd, firstEnd);
+
+        if (firstOrientation !== secondOrientation && thirdOrientation !== fourthOrientation) {
+          return true;
+        }
+        if (firstOrientation === 0 && pointIsOnSegment(firstStart, secondStart, firstEnd)) {
+          return true;
+        }
+        if (secondOrientation === 0 && pointIsOnSegment(firstStart, secondEnd, firstEnd)) {
+          return true;
+        }
+        if (thirdOrientation === 0 && pointIsOnSegment(secondStart, firstStart, secondEnd)) {
+          return true;
+        }
+        return fourthOrientation === 0 && pointIsOnSegment(secondStart, firstEnd, secondEnd);
+      }
+
+      function polygonSelfIntersects(coordinates) {
+        const coordinateCount = coordinates.length;
+        for (let firstIndex = 0; firstIndex < coordinateCount; firstIndex += 1) {
+          const firstEndIndex = (firstIndex + 1) % coordinateCount;
+          for (let secondIndex = firstIndex + 1; secondIndex < coordinateCount; secondIndex += 1) {
+            const secondEndIndex = (secondIndex + 1) % coordinateCount;
+            const segmentsAreAdjacent = firstIndex === secondIndex ||
+              firstEndIndex === secondIndex ||
+              secondEndIndex === firstIndex;
+            if (segmentsAreAdjacent) {
+              continue;
+            }
+            if (segmentsIntersect(
+              coordinates[firstIndex],
+              coordinates[firstEndIndex],
+              coordinates[secondIndex],
+              coordinates[secondEndIndex]
+            )) {
+              return true;
+            }
+          }
+        }
+        return false;
+      }
+
+      function polygonAreaSquareMeters(coordinates) {
+        if (coordinates.length < MIN_VERTICES) {
+          return 0;
+        }
+        const meanLatitudeRadians = coordinates.reduce(function(total, coordinate) {
+          return total + Number(coordinate.latitude);
+        }, 0) / coordinates.length * Math.PI / 180;
+        const projectedCoordinates = coordinates.map(function(coordinate) {
+          return {
+            x: EARTH_RADIUS_METERS * Number(coordinate.longitude) * Math.PI / 180 * Math.cos(meanLatitudeRadians),
+            y: EARTH_RADIUS_METERS * Number(coordinate.latitude) * Math.PI / 180
+          };
+        });
+        const doubleArea = projectedCoordinates.reduce(function(total, coordinate, index) {
+          const nextCoordinate = projectedCoordinates[(index + 1) % projectedCoordinates.length];
+          return total + coordinate.x * nextCoordinate.y - nextCoordinate.x * coordinate.y;
+        }, 0);
+        return Math.abs(doubleArea) / 2;
+      }
+
+      function validateGeometry(coordinates) {
+        const area = polygonAreaSquareMeters(coordinates);
+        if (coordinates.length < MIN_VERTICES) {
+          return {
+            valid: false,
+            area: area,
+            message: 'Marque pelo menos 3 pontos para formar o polígono.'
+          };
+        }
+        if (coordinates.length > MAX_VERTICES) {
+          return {
+            valid: false,
+            area: area,
+            message: 'O polígono pode ter no máximo 12 pontos.'
+          };
+        }
+        if (hasDuplicateVertices(coordinates)) {
+          return {
+            valid: false,
+            area: area,
+            message: 'O polígono possui pontos repetidos. Arraste ou remova o ponto duplicado.'
+          };
+        }
+        if (area < MINIMUM_AREA_SQUARE_METERS) {
+          return {
+            valid: false,
+            area: area,
+            message: 'Os pontos não formam uma área válida. Ajuste o desenho antes de fechar.'
+          };
+        }
+        if (polygonSelfIntersects(coordinates)) {
+          return {
+            valid: false,
+            area: area,
+            message: 'As linhas do polígono se cruzam. Ajuste os pontos para não haver interseções.'
+          };
+        }
+        return {
+          valid: true,
+          area: area,
+          message: ''
+        };
+      }
+
+      function formatArea(area) {
+        const numericArea = Number(area);
+        if (!Number.isFinite(numericArea) || numericArea <= 0) {
+          return '—';
+        }
+        if (numericArea >= 1000000) {
+          return (numericArea / 1000000).toLocaleString('pt-BR', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+          }) + ' km²';
+        }
+        if (numericArea >= 10000) {
+          return (numericArea / 10000).toLocaleString('pt-BR', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+          }) + ' ha';
+        }
+        return numericArea.toLocaleString('pt-BR', {
+          maximumFractionDigits: 0
+        }) + ' m²';
+      }
+
+      function createVertexIcon(index) {
+        const firstPointClass = index === 0 ? ' is-first' : '';
+        return window.L.divIcon({
+          className: 'patrol-vertex-div-icon',
+          html: '<span class="patrol-vertex-marker' + firstPointClass + '">' + String(index + 1) + '</span>',
+          iconSize: [30, 30],
+          iconAnchor: [15, 15]
+        });
+      }
+
+      function getLatLngs() {
+        return vertices.map(function(vertex) {
+          return [Number(vertex.latitude), Number(vertex.longitude)];
+        });
+      }
+
+      function updateShapeLayer() {
+        if (!registrationMap || !window.L) {
+          return;
+        }
+        if (shapeLayer) {
+          registrationMap.removeLayer(shapeLayer);
+          shapeLayer = null;
+        }
+        if (vertices.length < 2) {
+          return;
+        }
+
+        if (polygonIsClosed) {
+          shapeLayer = window.L.polygon(getLatLngs(), {
+            color: '#4154f1',
+            weight: 3,
+            opacity: 0.9,
+            fillColor: '#4154f1',
+            fillOpacity: 0.2
+          }).addTo(registrationMap);
+        } else {
+          shapeLayer = window.L.polyline(getLatLngs(), {
+            color: '#4154f1',
+            weight: 3,
+            opacity: 0.85,
+            dashArray: '8 7'
+          }).addTo(registrationMap);
+        }
+      }
+
+      function rebuildVertexMarkers() {
+        if (!vertexLayer || !window.L) {
+          return;
+        }
+        vertexLayer.clearLayers();
+        vertices.forEach(function(vertex, index) {
+          const marker = window.L.marker([vertex.latitude, vertex.longitude], {
+            draggable: true,
+            autoPan: true,
+            keyboard: true,
+            icon: createVertexIcon(index),
+            title: index === 0 && !polygonIsClosed
+              ? 'Primeiro ponto: clique para fechar o polígono'
+              : 'Ponto ' + String(index + 1) + ': arraste para ajustar'
+          }).addTo(vertexLayer);
+
+          const tooltipText = index === 0 && !polygonIsClosed && vertices.length >= MIN_VERTICES
+            ? 'Ponto 1 — clique para fechar'
+            : 'Ponto ' + String(index + 1) + ' — arraste para ajustar';
+          marker.bindTooltip(tooltipText, {
+            direction: 'top',
+            offset: [0, -12]
+          });
+
+          marker.on('click', function(event) {
+            if (event.originalEvent) {
+              window.L.DomEvent.stopPropagation(event.originalEvent);
+            }
+            if (index === 0 && !polygonIsClosed && vertices.length >= MIN_VERTICES) {
+              closePolygon(false);
+            }
+          });
+
+          marker.on('dragstart', function() {
+            setMapStatus('Solte o ponto para validar novamente a área', 'neutral');
+          });
+
+          marker.on('dragend', function(event) {
+            const position = event.target.getLatLng();
+            vertices[index] = {
+              latitude: Number(position.lat),
+              longitude: Number(position.lng)
+            };
+            updateShapeLayer();
+            updateDrawingPanel();
+
+            const geometry = validateGeometry(vertices);
+            if (polygonIsClosed && !geometry.valid) {
+              setMapValidation(true, geometry.message);
+              setMapStatus(geometry.message, 'error');
+            } else if (polygonIsClosed) {
+              setMapValidation(false);
+              setMapStatus('Polígono fechado e pronto para salvar', 'success');
+            } else {
+              setMapValidation(false);
+              setMapStatus('Ponto ajustado. Continue o desenho ou feche o polígono.', 'neutral');
+            }
+          });
+
+          const markerElement = marker.getElement();
+          if (markerElement) {
+            markerElement.setAttribute(
+              'aria-label',
+              'Ponto ' + String(index + 1) + '. Use as setas para ajustar a posição e Shift para um passo maior.'
+            );
+            markerElement.addEventListener('keydown', function(event) {
+              const supportedKeys = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'];
+              if (!supportedKeys.includes(event.key) || !registrationMap) {
+                return;
+              }
+
+              event.preventDefault();
+              event.stopPropagation();
+              const step = event.shiftKey ? 24 : 8;
+              const markerPoint = registrationMap.latLngToContainerPoint(marker.getLatLng());
+              if (event.key === 'ArrowLeft') {
+                markerPoint.x -= step;
+              } else if (event.key === 'ArrowRight') {
+                markerPoint.x += step;
+              } else if (event.key === 'ArrowUp') {
+                markerPoint.y -= step;
+              } else if (event.key === 'ArrowDown') {
+                markerPoint.y += step;
+              }
+
+              const position = registrationMap.containerPointToLatLng(markerPoint);
+              marker.setLatLng(position);
+              vertices[index] = {
+                latitude: Number(position.lat),
+                longitude: Number(position.lng)
+              };
+              updateShapeLayer();
+              updateDrawingPanel();
+
+              const geometry = validateGeometry(vertices);
+              if (polygonIsClosed && !geometry.valid) {
+                setMapValidation(true, geometry.message);
+                setMapStatus(geometry.message, 'error');
+              } else if (polygonIsClosed) {
+                setMapValidation(false);
+                setMapStatus('Ponto ' + String(index + 1) + ' ajustado pelo teclado', 'success');
+              } else {
+                setMapValidation(false);
+                setMapStatus('Ponto ' + String(index + 1) + ' ajustado. Continue o desenho ou feche o polígono.', 'neutral');
+              }
+            });
+          }
+        });
+      }
+
+      function renderCoordinateList() {
+        coordinateList.replaceChildren();
+        coordinateList.classList.toggle('is-empty', vertices.length === 0);
+
+        if (!vertices.length) {
+          const emptyItem = document.createElement('li');
+          emptyItem.textContent = 'Clique no mapa para adicionar o primeiro ponto.';
+          coordinateList.appendChild(emptyItem);
+          return;
+        }
+
+        vertices.forEach(function(vertex) {
+          const item = document.createElement('li');
+          item.textContent = Number(vertex.latitude).toFixed(6) + ', ' + Number(vertex.longitude).toFixed(6);
+          coordinateList.appendChild(item);
+        });
+      }
+
+      function validateName() {
+        const value = nameInput.value.trim();
+        const defaultMessage = 'Informe um nome com pelo menos 3 caracteres.';
+        let message = '';
+
+        if (!value || value.length < 3) {
+          message = defaultMessage;
+        } else if (value.length > 80) {
+          message = 'O nome deve conter no máximo 80 caracteres.';
+        } else if (duplicateName(value)) {
+          message = 'Já existe um local de patrulhamento com este nome.';
+        }
+
+        nameInput.setCustomValidity(message);
+        nameFeedback.textContent = message || defaultMessage;
+        nameInput.classList.toggle('is-valid', value !== '' && message === '');
+        nameInput.classList.toggle('is-invalid', value !== '' && message !== '');
+        nameInput.setAttribute('aria-invalid', String(message !== ''));
+        return message === '';
+      }
+
+      function updateSubmitState() {
+        const geometry = validateGeometry(vertices);
+        const currentName = nameInput.value.trim();
+        const nameIsReady = currentName.length >= 3 &&
+          currentName.length <= 80 &&
+          !duplicateName(currentName);
+        submitButton.disabled = !registrationMap || !polygonIsClosed || !geometry.valid || !nameIsReady;
+      }
+
+      function updateDrawingPanel() {
+        const geometry = validateGeometry(vertices);
+        const serializableCoordinates = vertices.map(function(vertex) {
+          return {
+            latitude: Number(Number(vertex.latitude).toFixed(6)),
+            longitude: Number(Number(vertex.longitude).toFixed(6))
+          };
+        });
+
+        pointCounter.textContent = String(vertices.length) + ' de ' + String(MAX_VERTICES) + ' pontos';
+        coordinatesInput.value = JSON.stringify(serializableCoordinates);
+        areaValue.textContent = vertices.length >= MIN_VERTICES ? formatArea(geometry.area) : '—';
+        if (polygonIsClosed && geometry.valid) {
+          drawingState.textContent = 'Polígono fechado';
+        } else if (polygonIsClosed) {
+          drawingState.textContent = 'Ajuste necessário';
+        } else if (vertices.length) {
+          drawingState.textContent = 'Rascunho em andamento';
+        } else {
+          drawingState.textContent = 'Aguardando desenho';
+        }
+
+        undoButton.disabled = vertices.length === 0;
+        clearButton.disabled = vertices.length === 0;
+        closeButton.disabled = polygonIsClosed || vertices.length < MIN_VERTICES;
+        renderCoordinateList();
+        updateSubmitState();
+      }
+
+      function renderDrawing() {
+        updateShapeLayer();
+        rebuildVertexMarkers();
+        updateDrawingPanel();
+      }
+
+      function addVertex(latitude, longitude) {
+        if (polygonIsClosed) {
+          setMapStatus('O polígono já está fechado. Desfaça um ponto ou limpe para alterar.', 'neutral');
+          return;
+        }
+        if (vertices.length >= MAX_VERTICES) {
+          setMapStatus('O limite de 12 pontos foi atingido.', 'error');
+          return;
+        }
+
+        const newVertex = {
+          latitude: Number(latitude),
+          longitude: Number(longitude)
+        };
+        if (!isCoordinateValid(newVertex)) {
+          return;
+        }
+        if (vertices.some(function(vertex) {
+          return coordinatesAreEqual(vertex, newVertex);
+        })) {
+          setMapValidation(true, 'Escolha uma posição diferente: este ponto já faz parte do polígono.');
+          setMapStatus('Este ponto já foi marcado. Escolha outra posição.', 'error');
+          return;
+        }
+
+        vertices.push(newVertex);
+        polygonIsClosed = false;
+        setMapValidation(false);
+        renderDrawing();
+
+        if (vertices.length === MAX_VERTICES) {
+          closePolygon(true);
+          return;
+        }
+        if (vertices.length < MIN_VERTICES) {
+          const remainingPoints = MIN_VERTICES - vertices.length;
+          setMapStatus('Marque mais ' + String(remainingPoints) + (remainingPoints === 1 ? ' ponto' : ' pontos') + ' para poder fechar', 'neutral');
+        } else {
+          setMapStatus('Continue marcando ou clique no primeiro ponto para fechar', 'neutral');
+        }
+      }
+
+      function closePolygon(wasAutomatic) {
+        const geometry = validateGeometry(vertices);
+        if (!geometry.valid) {
+          polygonIsClosed = false;
+          renderDrawing();
+          setMapValidation(true, geometry.message);
+          setMapStatus(geometry.message, 'error');
+          showPageAlert(geometry.message, 'danger');
+          mapElement.focus();
+          return;
+        }
+
+        polygonIsClosed = true;
+        setMapValidation(false);
+        renderDrawing();
+        setMapStatus(
+          wasAutomatic
+            ? 'Limite de 12 pontos atingido: polígono fechado automaticamente'
+            : 'Polígono fechado e pronto para salvar',
+          'success'
+        );
+      }
+
+      function undoLastVertex() {
+        if (!vertices.length) {
+          return;
+        }
+        polygonIsClosed = false;
+        vertices.pop();
+        setMapValidation(false);
+        renderDrawing();
+        if (!vertices.length) {
+          setMapStatus('Marque o primeiro ponto da área', 'neutral');
+        } else if (vertices.length < MIN_VERTICES) {
+          setMapStatus('Continue marcando até completar pelo menos 3 pontos', 'neutral');
+        } else {
+          setMapStatus('Ponto removido. Continue o desenho ou feche o polígono.', 'neutral');
+        }
+      }
+
+      function clearDrawing() {
+        vertices = [];
+        polygonIsClosed = false;
+        setMapValidation(false);
+        renderDrawing();
+        setMapStatus('Marque o primeiro ponto da área', 'neutral');
+      }
+
+      function initializeRegistrationMap() {
+        if (!window.L) {
+          setMapStatus('Mapa indisponível: verifique a conexão com a internet', 'error');
+          mapElement.setAttribute('aria-label', 'Mapa indisponível');
+          submitButton.disabled = true;
+          return;
+        }
+
+        registrationMap = window.L.map(mapElement, {
+          zoomControl: true,
+          preferCanvas: true
+        }).setView(DEFAULT_CENTER, DEFAULT_ZOOM);
+        vertexLayer = window.L.layerGroup().addTo(registrationMap);
+        tileLayer = window.L.tileLayer(TILE_URL, {
+          maxZoom: 19,
+          updateWhenIdle: true,
+          attribution: TILE_ATTRIBUTION
+        });
+
+        tileLayer.on('loading', function() {
+          if (!vertices.length) {
+            setMapStatus('Carregando mapa...', 'loading');
+          }
+        });
+        tileLayer.on('load', function() {
+          tileLayerReady = true;
+          if (!vertices.length) {
+            setMapStatus('Marque o primeiro ponto da área', 'neutral');
+          }
+        });
+        tileLayer.on('tileerror', function() {
+          if (tileFailureReported) {
+            return;
+          }
+          window.setTimeout(function() {
+            if (!tileLayerReady && !tileFailureReported && !vertices.length) {
+              tileFailureReported = true;
+              setMapStatus('O fundo do mapa não carregou. Verifique a conexão e tente novamente.', 'error');
+            }
+          }, 1200);
+        });
+        tileLayer.addTo(registrationMap);
+
+        window.L.control.scale({
+          imperial: false,
+          position: 'bottomleft'
+        }).addTo(registrationMap);
+
+        registrationMap.on('click', function(event) {
+          addVertex(event.latlng.lat, event.latlng.lng);
+        });
+
+        mapElement.addEventListener('keydown', function(event) {
+          if (event.target !== mapElement) {
+            return;
+          }
+          if ((event.key === 'Enter' || event.key === ' ') && registrationMap) {
+            event.preventDefault();
+            const center = registrationMap.getCenter();
+            addVertex(center.lat, center.lng);
+          }
+        });
+
+        if (typeof window.ResizeObserver === 'function') {
+          const mapResizeObserver = new window.ResizeObserver(function() {
+            if (registrationMap) {
+              registrationMap.invalidateSize(false);
+            }
+          });
+          mapResizeObserver.observe(mapElement);
+        }
+
+        window.requestAnimationFrame(function() {
+          registrationMap.invalidateSize();
+        });
+      }
+
+      function clearEditQueryParameter() {
+        try {
+          const currentUrl = new URL(window.location.href);
+          if (!currentUrl.searchParams.has('edit')) {
+            return;
+          }
+          currentUrl.searchParams.delete('edit');
+          window.history.replaceState({}, '', currentUrl.pathname + currentUrl.search + currentUrl.hash);
+        } catch (error) {
+          // A edição continua funcional mesmo quando o navegador restringe a History API.
+        }
+      }
+
+      function clearValidationState() {
+        form.classList.remove('was-validated');
+        nameInput.classList.remove('is-valid', 'is-invalid');
+        nameInput.setCustomValidity('');
+        nameInput.removeAttribute('aria-invalid');
+        nameFeedback.textContent = 'Informe um nome com pelo menos 3 caracteres.';
+        setMapValidation(false);
+      }
+
+      function resetForm(removeEditParameter) {
+        editingId = null;
+        form.reset();
+        vertices = [];
+        polygonIsClosed = false;
+        codeInput.value = String(nextCode());
+        formTitle.textContent = 'Cadastrar novo local de patrulhamento';
+        submitButton.querySelector('span').textContent = 'Salvar local de patrulhamento';
+        cancelEditButton.classList.add('d-none');
+        clearValidationState();
+        renderDrawing();
+        setMapStatus('Marque o primeiro ponto da área', 'neutral');
+        if (registrationMap) {
+          registrationMap.setView(DEFAULT_CENTER, DEFAULT_ZOOM);
+        }
+        if (removeEditParameter !== false) {
+          clearEditQueryParameter();
+        }
+      }
+
+      function startEditing(locationId) {
+        const location = patrolLocations.find(function(item) {
+          return item.id === locationId;
+        });
+        if (!location) {
+          clearEditQueryParameter();
+          showPageAlert('O local solicitado para edição não foi encontrado.', 'warning');
+          return;
+        }
+
+        editingId = location.id;
+        codeInput.value = String(location.code);
+        nameInput.value = location.name;
+        vertices = location.coordinates.map(function(coordinate) {
+          return {
+            latitude: Number(coordinate.latitude),
+            longitude: Number(coordinate.longitude)
+          };
+        });
+        polygonIsClosed = true;
+        formTitle.textContent = 'Editar local de patrulhamento';
+        submitButton.querySelector('span').textContent = 'Salvar alterações';
+        cancelEditButton.classList.remove('d-none');
+        clearValidationState();
+        validateName();
+        renderDrawing();
+
+        const geometry = validateGeometry(vertices);
+        if (geometry.valid) {
+          setMapStatus('Polígono carregado para edição', 'success');
+        } else {
+          setMapValidation(true, geometry.message);
+          setMapStatus(geometry.message, 'error');
+        }
+
+        if (registrationMap && vertices.length) {
+          window.requestAnimationFrame(function() {
+            registrationMap.invalidateSize();
+            registrationMap.fitBounds(window.L.latLngBounds(getLatLngs()), {
+              padding: [32, 32],
+              maxZoom: 16
+            });
+          });
+        }
+        showPageAlert('Editando o local ' + location.name + '.', 'info');
+      }
+
+      nameInput.addEventListener('input', function() {
+        validateName();
+        updateSubmitState();
+      });
+
+      nameInput.addEventListener('blur', validateName);
+      undoButton.addEventListener('click', undoLastVertex);
+      closeButton.addEventListener('click', function() {
+        closePolygon(false);
+      });
+      clearButton.addEventListener('click', function() {
+        clearDrawing();
+        mapElement.focus();
+      });
+      cancelEditButton.addEventListener('click', function() {
+        resetForm(true);
+        showPageAlert('Edição cancelada. O formulário está pronto para um novo local.', 'info');
+        nameInput.focus();
+      });
+
+      form.addEventListener('submit', function(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        form.classList.add('was-validated');
+
+        const wasEditing = editingId !== null;
+        patrolLocations = loadPatrolLocations();
+        if (!wasEditing) {
+          codeInput.value = String(nextCode());
+        }
+
+        const nameIsValid = validateName();
+        const geometry = validateGeometry(vertices);
+        const mapIsValid = polygonIsClosed && geometry.valid;
+        setMapValidation(!mapIsValid, geometry.message || 'Feche o polígono antes de salvar.');
+
+        if (!nameIsValid || !mapIsValid || !form.checkValidity()) {
+          showPageAlert(
+            !nameIsValid
+              ? nameFeedback.textContent
+              : geometry.message || 'Desenhe e feche um polígono válido antes de salvar.',
+            'danger'
+          );
+          if (!nameIsValid) {
+            nameInput.focus();
+          } else {
+            mapElement.focus();
+          }
+          return;
+        }
+
+        const existingLocation = patrolLocations.find(function(location) {
+          return location.id === editingId;
+        });
+        if (wasEditing && !existingLocation) {
+          showPageAlert('Este local não está mais disponível. Reabra a edição pela página de consulta.', 'warning');
+          return;
+        }
+
+        const locationData = {
+          name: normalizeName(nameInput.value),
+          coordinates: vertices.map(function(vertex) {
+            return {
+              latitude: Number(vertex.latitude),
+              longitude: Number(vertex.longitude)
+            };
+          })
+        };
+
+        if (existingLocation) {
+          existingLocation.name = locationData.name;
+          existingLocation.coordinates = locationData.coordinates;
+        } else {
+          patrolLocations.unshift({
+            id: window.crypto && typeof window.crypto.randomUUID === 'function'
+              ? window.crypto.randomUUID()
+              : 'patrol-location-' + Date.now() + '-' + Math.random().toString(16).slice(2),
+            code: nextCode(),
+            name: locationData.name,
+            coordinates: locationData.coordinates,
+            active: true
+          });
+        }
+
+        const savedName = locationData.name;
+        if (!savePatrolLocations()) {
+          patrolLocations = loadPatrolLocations();
+          showPageAlert('Não foi possível salvar o local neste navegador. Verifique o armazenamento disponível.', 'danger');
+          return;
+        }
+
+        resetForm(true);
+        showPageAlert(
+          wasEditing
+            ? 'Local ' + savedName + ' atualizado com sucesso.'
+            : 'Local ' + savedName + ' cadastrado com sucesso.',
+          'success'
+        );
+        nameInput.focus();
+      });
+
+      codeInput.value = String(nextCode());
+      initializeRegistrationMap();
+      renderDrawing();
+
+      try {
+        const editId = new URL(window.location.href).searchParams.get('edit');
+        if (editId) {
+          startEditing(editId);
+        }
+      } catch (error) {
+        // Mantém o cadastro disponível quando a URL não puder ser interpretada.
+      }
     });
   </script>
 </body>
