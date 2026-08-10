@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard - NiceAdmin</title>
-  <meta name="description" content="NiceAdmin - Bootstrap Admin Template">
-  <meta name="keywords" content="admin, dashboard, bootstrap">
+  <title>Painel Operacional - Ordena</title>
+  <meta name="description" content="Visão geral dos cadastros, recursos e indicadores operacionais do sistema Ordena">
+  <meta name="keywords" content="ordena, painel operacional, indicadores, viaturas, ordens de serviço">
 
   <!-- Favicons -->
   <link href="assets/img/favicon.png" rel="icon">
@@ -32,6 +32,298 @@
 
   <!-- Template Main CSS File -->
   <link href="assets/css/main.css" rel="stylesheet">
+
+  <!-- Estilos exclusivos do Painel Operacional. -->
+  <style>
+    .op-dashboard-status {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .op-dashboard-updated {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--muted-color);
+      font-size: 0.72rem;
+      font-weight: 600;
+    }
+
+    .op-dashboard-stage {
+      position: relative;
+    }
+
+    .op-dashboard-content {
+      transition: opacity 0.2s ease;
+    }
+
+    .op-dashboard-stage.is-loading .op-dashboard-content {
+      visibility: hidden;
+      opacity: 0;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .op-dashboard-updated.is-success {
+      color: var(--success-color);
+    }
+
+    .op-dashboard-updated.is-error {
+      color: var(--danger-color);
+    }
+
+    .op-dashboard-loading {
+      position: absolute;
+      z-index: 5;
+      top: 0;
+      right: calc(var(--bs-gutter-x, 1.5rem) * 0.5);
+      left: calc(var(--bs-gutter-x, 1.5rem) * 0.5);
+      min-height: 250px;
+      margin: 0;
+      background: color-mix(in srgb, var(--surface-color), transparent 4%);
+      box-shadow: 0 16px 42px color-mix(in srgb, var(--heading-color), transparent 90%);
+    }
+
+    .op-dashboard-loading .card-body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      text-align: center;
+    }
+
+    .op-dashboard-loading strong {
+      color: var(--heading-color);
+      font-size: 0.9rem;
+    }
+
+    .op-dashboard-loading small {
+      color: var(--muted-color);
+    }
+
+    .op-growing-dots {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      color: var(--accent-color);
+    }
+
+    .op-growing-dots .spinner-grow {
+      width: 0.625rem;
+      height: 0.625rem;
+      color: currentColor;
+    }
+
+    .op-kpi-detail {
+      position: relative;
+      z-index: 1;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 7px;
+      color: var(--muted-color);
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+
+    .op-kpi-detail.is-positive {
+      color: color-mix(in srgb, var(--success-color), var(--heading-color) 24%);
+    }
+
+    .op-card-heading {
+      min-width: 0;
+    }
+
+    .op-dashboard-content .card-header.d-flex {
+      flex-wrap: wrap;
+    }
+
+    .op-card-subtitle {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted-color);
+      font-size: 0.72rem;
+      font-weight: 500;
+    }
+
+    .op-card-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      flex: 0 0 auto;
+    }
+
+    .op-chart-canvas {
+      min-height: 310px;
+    }
+
+    .op-force-charts {
+      margin-top: 2px;
+    }
+
+    .op-force-chart-panel {
+      height: 100%;
+      padding: 12px 12px 4px;
+      border: 1px solid var(--border-color-light);
+      border-top-width: 3px;
+      border-radius: var(--radius-md);
+      background: color-mix(in srgb, var(--surface-color), var(--background-color) 14%);
+    }
+
+    .op-force-chart-panel.is-officers {
+      border-top-color: var(--warning-color);
+    }
+
+    .op-force-chart-panel.is-enlisted {
+      border-top-color: var(--accent-color);
+    }
+
+    .op-force-chart-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 2px;
+    }
+
+    .op-force-chart-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .op-force-chart-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 30px;
+      height: 30px;
+      flex: 0 0 30px;
+      border-radius: var(--radius-md);
+      font-size: 0.92rem;
+    }
+
+    .is-officers .op-force-chart-icon {
+      color: var(--warning-color);
+      background: color-mix(in srgb, var(--warning-color), transparent 86%);
+    }
+
+    .is-enlisted .op-force-chart-icon {
+      color: var(--accent-color);
+      background: color-mix(in srgb, var(--accent-color), transparent 88%);
+    }
+
+    .op-force-chart-title h6 {
+      margin: 0;
+      color: var(--heading-color);
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+
+    .op-force-chart-title small {
+      display: block;
+      margin-top: 2px;
+      color: var(--muted-color);
+      font-size: 0.67rem;
+    }
+
+    .op-force-chart-canvas {
+      min-height: 290px;
+    }
+
+    .op-registry-chart {
+      min-height: 330px;
+    }
+
+    .op-legend-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .op-legend-dot {
+      width: 7px;
+      height: 7px;
+      flex: 0 0 7px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .op-legend-value {
+      color: var(--heading-color);
+      white-space: nowrap;
+    }
+
+    .op-legend-share {
+      margin-left: 3px;
+      color: var(--muted-color);
+      font-size: 0.65rem;
+      font-weight: 500;
+    }
+
+    .op-shift-label {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 6px;
+    }
+
+    .op-shift-label small {
+      color: var(--light-color);
+      font-size: 0.64rem;
+    }
+
+    .op-chart-note {
+      display: flex;
+      align-items: flex-start;
+      gap: 7px;
+      margin: 6px 0 0;
+      color: var(--muted-color);
+      font-size: 0.7rem;
+      line-height: 1.45;
+    }
+
+    .op-dashboard-alert {
+      margin-right: calc(var(--bs-gutter-x, 1.5rem) * 0.5);
+      margin-left: calc(var(--bs-gutter-x, 1.5rem) * 0.5);
+    }
+
+    @media (max-width: 767px) {
+      .op-dashboard-status {
+        width: 100%;
+        justify-content: flex-start;
+      }
+
+      .op-dashboard-loading {
+        min-height: 220px;
+      }
+
+      .op-card-link {
+        margin-top: 4px;
+      }
+
+      .op-chart-canvas,
+      .op-registry-chart {
+        min-height: 280px;
+      }
+
+      .op-force-chart-canvas {
+        min-height: 270px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .op-dashboard-content {
+        transition: none;
+      }
+    }
+  </style>
 
 </head>
 
@@ -429,7 +721,7 @@
             <a class="nav-link" href="#" aria-expanded="false">
               <span class="nav-icon"><i class="ph-light ph-magnifying-glass"></i></span>
               <span class="nav-text">Consultas</span>
-              <span class="nav-badge">5</span>
+              <span class="nav-badge">6</span>
               <span class="nav-arrow"><i class="bi bi-chevron-right"></i></span>
             </a>
             <ul class="nav-submenu ">
@@ -438,6 +730,7 @@
               <li><a class="nav-link " href="consulta-locais-patrulhamento.html"><span class="nav-dot"></span>Locais de Patrulhamento</a></li>
               <li><a class="nav-link " href="consulta-tipos-servico.html"><span class="nav-dot"></span>Tipos de Serviço</a></li>
               <li><a class="nav-link " href="consulta-operacoes-especiais.html"><span class="nav-dot"></span>Operações Especiais</a></li>
+              <li><a class="nav-link " href="users.html"><span class="nav-dot"></span>Ordens de Serviço</a></li>
             </ul>
           </li>
 
@@ -445,11 +738,13 @@
             <a class="nav-link" href="#" aria-expanded="false">
               <span class="nav-icon"><i class="ph-light ph-users-three"></i></span>
               <span class="nav-text">Ordens de Serviço</span>
-              <span class="nav-badge">2</span>
+              <span class="nav-badge">1</span>
               <span class="nav-arrow"><i class="bi bi-chevron-right"></i></span>
             </a>
             <ul class="nav-submenu ">
+              <!-- Link anterior preservado; a consulta agora pertence ao grupo Consultas.
               <li><a class="nav-link " href="users.html"><span class="nav-dot"></span>Consultar Ordens de Serviço</a></li>
+              -->
               <li><a class="nav-link " href="users-view.html"><span class="nav-dot"></span>Criar Ordem de Serviço</a></li>
               <!-- <li><a class="nav-link " href="users-edit.html"><span class="nav-dot"></span>User Edit</a></li>
               <li><a class="nav-link " href="profile.html"><span class="nav-dot"></span>Profile</a></li> -->
@@ -471,18 +766,22 @@
           <li class="nav-item has-submenu ">
             <a class="nav-link" href="#" aria-expanded="false">
               <span class="nav-icon"><i class="ph-light ph-shield-check"></i></span>
-              <span class="nav-text">Operação<optgroup></optgroup></span>
-              <span class="nav-badge">2</span>
+              <!-- Rótulo anterior preservado: <span class="nav-text">Operação<optgroup></optgroup></span> -->
+              <span class="nav-text">Operação</span>
+              <span class="nav-badge">3</span>
               <span class="nav-arrow"><i class="bi bi-chevron-right"></i></span>
             </a>
             <ul class="nav-submenu ">
-              <li><a class="nav-link " href="auth-login.html"><span class="nav-dot"></span>Ativação</a></li>
+              <li><a class="nav-link " href="ativacao.html"><span class="nav-dot"></span>Ativar Guarnição</a></li>
+              <li><a class="nav-link " href="painel-ativacoes.html"><span class="nav-dot"></span>Painel de Ativações</a></li>
               <li><a class="nav-link " href="auth-register.html"><span class="nav-dot"></span>Mapa Tático</a></li>
+              <!-- Itens de autenticação originais preservados, mas retirados do menu operacional.
               <li><a class="nav-link " href="auth-forgot-password.html"><span class="nav-dot"></span>Forgot Password</a></li>
               <li><a class="nav-link " href="auth-reset-password.html"><span class="nav-dot"></span>Reset Password</a></li>
               <li><a class="nav-link " href="auth-verify-email.html"><span class="nav-dot"></span>Email Verification</a></li>
               <li><a class="nav-link " href="auth-two-factor.html"><span class="nav-dot"></span>Two Factor Auth</a></li>
               <li><a class="nav-link " href="auth-lock-screen.html"><span class="nav-dot"></span>Lock Screen</a></li>
+              -->
             </ul>
           </li>
 
@@ -766,16 +1065,54 @@
         <section class="nd-topbar">
           <div>
             <h1 class="nd-title">Painel Operacional</h1>
-            <p class="nd-subtitle">Visão geral da operação e dos recursos empregados no convênio.</p>
+            <p class="nd-subtitle">Visão integrada dos cadastros, recursos e indicadores operacionais do convênio.</p>
+          </div>
+          <div class="op-dashboard-status" aria-label="Status do painel">
+            <span class="badge badge-soft-warning">
+              <i class="bi bi-stars me-1" aria-hidden="true"></i>Dados demonstrativos
+            </span>
+            <span class="op-dashboard-updated" id="dashboardUpdatedAt" role="status" aria-live="polite">
+              <i class="bi bi-arrow-repeat" aria-hidden="true"></i>
+              <span>Preparando indicadores...</span>
+            </span>
           </div>
         </section>
 
+        <div class="alert alert-danger d-none op-dashboard-alert" id="dashboardAlert" role="alert" aria-live="assertive">
+          <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+            <span>
+              <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>
+              Não foi possível carregar todos os gráficos do painel. Tente novamente.
+            </span>
+            <button class="btn btn-sm btn-outline-danger" id="dashboardRetryButton" type="button">
+              <i class="bi bi-arrow-clockwise me-1" aria-hidden="true"></i>Recarregar painel
+            </button>
+          </div>
+        </div>
+
+        <div class="op-dashboard-stage is-loading" id="dashboardStage">
+          <div class="card op-dashboard-loading" id="dashboardLoading" role="status" aria-live="polite" aria-atomic="true">
+            <div class="card-body">
+              <span class="op-growing-dots" aria-hidden="true">
+                <span class="spinner-grow spinner-grow-sm" style="animation-delay: 0s;"></span>
+                <span class="spinner-grow spinner-grow-sm" style="animation-delay: 0.15s;"></span>
+                <span class="spinner-grow spinner-grow-sm" style="animation-delay: 0.3s;"></span>
+              </span>
+              <strong>Montando a visão operacional</strong>
+              <small>Processando indicadores e gráficos demonstrativos...</small>
+            </div>
+          </div>
+
+          <div class="op-dashboard-content" id="dashboardContent" aria-busy="true" inert>
+
+        <!-- Valores demonstrativos anteriores preservados: Frota 10; Pontos 200; Ordem 20; Efetivo 16. -->
         <section class="row g-3 mb-3 nd-kpi-rail">
           <div class="col-xxl-3 col-md-6">
             <article class="nd-kpi-card nd-kpi-revenue">
               <span class="nd-kpi-icon"><i class="bi bi-car-front-fill"></i></span>
               <span class="nd-kpi-label">Frota Operante</span>
-              <strong class="nd-kpi-value">10</strong>
+              <strong class="nd-kpi-value">42</strong>
+              <span class="op-kpi-detail is-positive"><i class="bi bi-check-circle-fill" aria-hidden="true"></i>42 de 48 viaturas disponíveis</span>
               <!-- <span class="nd-kpi-trend up"><i class="bi bi-arrow-up-right"></i> 9.4%</span> -->
             </article>
           </div>
@@ -783,23 +1120,26 @@
             <article class="nd-kpi-card nd-kpi-leads">
               <span class="nd-kpi-icon"><i class="bi bi-geo-alt-fill"></i></span>
               <span class="nd-kpi-label">Pontos Mapeados</span>
-              <strong class="nd-kpi-value">200</strong>
+              <strong class="nd-kpi-value">50</strong>
+              <span class="op-kpi-detail"><i class="bi bi-diagram-3-fill" aria-hidden="true"></i>18 bases e 32 locais</span>
               <!-- <span class="nd-kpi-trend up"><i class="bi bi-arrow-up-right"></i> 6.1%</span> -->
             </article>
           </div>
           <div class="col-xxl-3 col-md-6">
             <article class="nd-kpi-card nd-kpi-cycle">
               <span class="nd-kpi-icon"><i class="bi bi-clipboard-check-fill"></i></span>
-              <span class="nd-kpi-label">Ordem em Vigor</span>
-              <strong class="nd-kpi-value">20</strong>
+              <span class="nd-kpi-label">Ordens em Vigor</span>
+              <strong class="nd-kpi-value">26</strong>
+              <span class="op-kpi-detail"><i class="bi bi-exclamation-circle-fill text-warning" aria-hidden="true"></i>23 no prazo e 3 em atenção</span>
               <!-- <span class="nd-kpi-trend down"><i class="bi bi-arrow-down-right"></i> 3.5%</span> -->
             </article>
           </div>
           <div class="col-xxl-3 col-md-6">
             <article class="nd-kpi-card nd-kpi-retention">
               <span class="nd-kpi-icon"><i class="bi bi-people-fill"></i></span>
-              <span class="nd-kpi-label">Efetivo Medio diário</span>
-              <strong class="nd-kpi-value">16</strong>
+              <span class="nd-kpi-label">Efetivo Médio Diário</span>
+              <strong class="nd-kpi-value">66</strong>
+              <span class="op-kpi-detail is-positive"><i class="bi bi-broadcast-pin" aria-hidden="true"></i>5 guarnições ativas na simulação</span>
               <!-- <span class="nd-kpi-trend up"><i class="bi bi-arrow-up-right"></i> 1.8%</span> -->
             </article>
           </div>
@@ -812,80 +1152,145 @@
 
     <!-- MÉDIA SEMANAL DE POLICIAIS -->
     <div class="card flex-grow-1">
-      <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="card-title mb-0">
-          Distribuição Média de Policiais por Semana
-        </h5>
+      <div class="card-header d-flex justify-content-between align-items-start gap-2">
+        <div class="op-card-heading">
+          <h5 class="card-title mb-0">Efetivo mobilizado na semana</h5>
+          <small class="op-card-subtitle">Acompanhamento independente de oficiais e praças</small>
+        </div>
 
-        <span class="badge bg-primary-light text-primary">
-          Média semanal
-        </span>
+        <span class="badge bg-primary-light text-primary">Semana demonstrativa</span>
       </div>
 
       <div class="card-body">
+        <div class="nd-chart-summary" aria-label="Resumo do efetivo semanal">
+          <div>
+            <span>Efetivo médio</span>
+            <strong>66 policiais</strong>
+          </div>
+          <div>
+            <span>Pico semanal</span>
+            <strong>78 na sexta</strong>
+          </div>
+          <div>
+            <span>Referência total (65)</span>
+            <strong>4 de 7 dias</strong>
+          </div>
+        </div>
+
+        <!-- Gráfico empilhado anterior preservado e substituído pela visualização separada.
         <div id="revenueChart" class="nd-chart-canvas"></div>
+        -->
+
+        <div class="row g-3 op-force-charts">
+          <div class="col-lg-6">
+            <div class="op-force-chart-panel is-officers">
+              <div class="op-force-chart-header">
+                <div class="op-force-chart-title">
+                  <span class="op-force-chart-icon"><i class="bi bi-person-badge-fill" aria-hidden="true"></i></span>
+                  <div>
+                    <h6>Oficiais por dia</h6>
+                    <small>Média 7,9 · pico de 10</small>
+                  </div>
+                </div>
+                <span class="badge badge-soft-warning">Referência 8</span>
+              </div>
+              <div id="officersChart" class="op-force-chart-canvas"></div>
+            </div>
+          </div>
+
+          <div class="col-lg-6">
+            <div class="op-force-chart-panel is-enlisted">
+              <div class="op-force-chart-header">
+                <div class="op-force-chart-title">
+                  <span class="op-force-chart-icon"><i class="bi bi-people-fill" aria-hidden="true"></i></span>
+                  <div>
+                    <h6>Praças por dia</h6>
+                    <small>Média 58,3 · pico de 68</small>
+                  </div>
+                </div>
+                <span class="badge badge-soft-primary">Referência 57</span>
+              </div>
+              <div id="enlistedChart" class="op-force-chart-canvas"></div>
+            </div>
+          </div>
+        </div>
+
+        <p class="op-chart-note">
+          <i class="bi bi-info-circle" aria-hidden="true"></i>
+          <span>As referências de 8 oficiais e 57 praças compõem o parâmetro diário de 65 policiais.</span>
+        </p>
       </div>
     </div>
 
 
     <!-- CONCENTRAÇÃO POR TURNO -->
     <div class="card">
-      <div class="card-header">
-        <h5 class="card-title mb-0">
-          Concentração Média por Turno
-        </h5>
+      <div class="card-header d-flex justify-content-between align-items-start gap-2">
+        <div class="op-card-heading">
+          <h5 class="card-title mb-0">Cobertura operacional por turno</h5>
+          <small class="op-card-subtitle">Cenário demonstrativo da escala prevista para o dia</small>
+        </div>
+        <span class="badge badge-soft-success">Cobertura média 80%</span>
       </div>
 
       <div class="card-body">
 
+        <!-- Cobertura anterior preservada: Manhã 50%; Tarde 30%; Noite 90%. -->
+
         <!-- MANHÃ -->
         <div class="nd-health-row">
-          <span>Manhã</span>
-          <strong>50%</strong>
+          <span class="op-shift-label">Manhã <small>25 de 32 previstos</small></span>
+          <strong>78%</strong>
         </div>
 
         <div class="progress mb-3">
           <div
             class="progress-bar bg-info"
             role="progressbar"
-            style="width: 50%"
-            aria-valuenow="50"
+            style="width: 78%"
+            aria-valuenow="78"
             aria-valuemin="0"
-            aria-valuemax="100">
+            aria-valuemax="100"
+            aria-label="Cobertura operacional no turno da manhã"
+            aria-valuetext="78%, com 25 dos 32 policiais previstos">
           </div>
         </div>
 
         <!-- TARDE -->
         <div class="nd-health-row">
-          <span>Tarde</span>
-          <strong>30%</strong>
+          <span class="op-shift-label">Tarde <small>21 de 30 previstos</small></span>
+          <strong>70%</strong>
         </div>
 
         <div class="progress mb-3">
           <div
             class="progress-bar bg-warning"
             role="progressbar"
-            style="width: 30%"
-            aria-valuenow="30"
+            style="width: 70%"
+            aria-valuenow="70"
             aria-valuemin="0"
-            aria-valuemax="100">
+            aria-valuemax="100"
+            aria-label="Cobertura operacional no turno da tarde"
+            aria-valuetext="70%, com 21 dos 30 policiais previstos">
           </div>
         </div>
 
         <!-- NOITE -->
         <div class="nd-health-row">
-          <span>Noite</span>
-          <strong>90%</strong>
+          <span class="op-shift-label">Noite <small>24 de 26 previstos</small></span>
+          <strong>92%</strong>
         </div>
 
         <div class="progress">
           <div
             class="progress-bar bg-primary"
             role="progressbar"
-            style="width: 90%"
-            aria-valuenow="90"
+            style="width: 92%"
+            aria-valuenow="92"
             aria-valuemin="0"
-            aria-valuemax="100">
+            aria-valuemax="100"
+            aria-label="Cobertura operacional no turno da noite"
+            aria-valuetext="92%, com 24 dos 26 policiais previstos">
           </div>
         </div>
 
@@ -901,10 +1306,14 @@
     <!-- DISTRIBUIÇÃO DAS VIATURAS -->
     <div class="card w-100 h-100">
 
-      <div class="card-header">
-        <h5 class="card-title mb-0">
-          Distribuição por Tipo de Viatura
-        </h5>
+      <div class="card-header d-flex justify-content-between align-items-start gap-2">
+        <div class="op-card-heading">
+          <h5 class="card-title mb-0">Composição da frota cadastrada</h5>
+          <small class="op-card-subtitle">Distribuição das 48 viaturas por categoria</small>
+        </div>
+        <a href="consulta-viaturas.html" class="nd-inline-link op-card-link">
+          Ver frota <i class="bi bi-arrow-right" aria-hidden="true"></i>
+        </a>
       </div>
 
       <div class="card-body d-flex flex-column">
@@ -917,23 +1326,33 @@
         <div class="nd-acq-list mt-3">
 
           <div>
-            <span>Carro</span>
-            <strong>45%</strong>
+            <span class="op-legend-label"><i class="op-legend-dot text-primary" aria-hidden="true"></i>Carro</span>
+            <strong class="op-legend-value">20 <span class="op-legend-share">41,7%</span></strong>
           </div>
 
           <div>
-            <span>Moto</span>
-            <strong>30%</strong>
+            <span class="op-legend-label"><i class="op-legend-dot text-success" aria-hidden="true"></i>Motocicleta</span>
+            <strong class="op-legend-value">10 <span class="op-legend-share">20,8%</span></strong>
           </div>
 
           <div>
-            <span>Bicicleta</span>
-            <strong>15%</strong>
+            <span class="op-legend-label"><i class="op-legend-dot text-warning" aria-hidden="true"></i>Caminhonete</span>
+            <strong class="op-legend-value">8 <span class="op-legend-share">16,7%</span></strong>
           </div>
 
           <div>
-            <span>Triciclo</span>
-            <strong>10%</strong>
+            <span class="op-legend-label"><i class="op-legend-dot text-info" aria-hidden="true"></i>Van</span>
+            <strong class="op-legend-value">4 <span class="op-legend-share">8,3%</span></strong>
+          </div>
+
+          <div>
+            <span class="op-legend-label"><i class="op-legend-dot" style="color: #8b5cf6;" aria-hidden="true"></i>Bicicleta</span>
+            <strong class="op-legend-value">4 <span class="op-legend-share">8,3%</span></strong>
+          </div>
+
+          <div>
+            <span class="op-legend-label"><i class="op-legend-dot text-danger" aria-hidden="true"></i>Triciclo</span>
+            <strong class="op-legend-value">2 <span class="op-legend-share">4,2%</span></strong>
           </div>
 
         </div>
@@ -944,6 +1363,70 @@
   </div>
 
 </section>
+
+        <section class="row g-3 mb-3 align-items-stretch">
+          <div class="col-xl-7 d-flex">
+            <div class="card w-100 h-100">
+              <div class="card-header d-flex justify-content-between align-items-start gap-2">
+                <div class="op-card-heading">
+                  <h5 class="card-title mb-0">Evolução das Ordens de Serviço</h5>
+                  <small class="op-card-subtitle">Ordens emitidas e concluídas · mar–ago/2026</small>
+                </div>
+                <a href="users.html" class="nd-inline-link op-card-link">
+                  Consultar ordens <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                </a>
+              </div>
+              <div class="card-body">
+                <div class="nd-chart-summary" aria-label="Resumo das ordens de serviço">
+                  <div>
+                    <span>Ordens emitidas</span>
+                    <strong>220</strong>
+                  </div>
+                  <div>
+                    <span>Ordens concluídas</span>
+                    <strong>194</strong>
+                  </div>
+                  <div>
+                    <span>Taxa de conclusão</span>
+                    <strong>88,2%</strong>
+                  </div>
+                </div>
+                <div id="serviceOrdersChart" class="op-chart-canvas"></div>
+                <p class="visually-hidden">
+                  Março: 29 ordens emitidas e 24 concluídas. Abril: 34 emitidas e 30 concluídas.
+                  Maio: 31 emitidas e 29 concluídas. Junho: 38 emitidas e 33 concluídas.
+                  Julho: 42 emitidas e 37 concluídas. Agosto: 46 emitidas e 41 concluídas.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-xl-5 d-flex">
+            <div class="card w-100 h-100">
+              <div class="card-header d-flex justify-content-between align-items-start gap-2">
+                <div class="op-card-heading">
+                  <h5 class="card-title mb-0">Panorama dos cadastros</h5>
+                  <small class="op-card-subtitle">Volume de registros nos cinco módulos de cadastro</small>
+                </div>
+                <span class="badge badge-soft-primary">114 registros</span>
+              </div>
+              <div class="card-body d-flex flex-column">
+                <div id="registryChart" class="op-registry-chart flex-grow-1"></div>
+                <p class="visually-hidden">
+                  Viaturas: 48 registros. Pontos de baseamento: 18. Locais de patrulhamento: 32.
+                  Tipos de serviço: 9. Operações especiais: 7.
+                </p>
+                <p class="op-chart-note">
+                  <i class="bi bi-info-circle" aria-hidden="true"></i>
+                  <span>As categorias representam volumes de cadastro e não uma comparação de desempenho entre os módulos.</span>
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+          </div>
+        </div>
 
         <!-- <section class="row g-3">
           <div class="col-12">
@@ -1027,14 +1510,104 @@
   var infoColor =
     rootStyles.getPropertyValue('--info-color').trim() || '#4285e8';
 
+  var dangerColor =
+    rootStyles.getPropertyValue('--danger-color').trim() || '#e74c63';
+
   var borderColor =
     rootStyles.getPropertyValue('--border-color').trim() || '#e5e7eb';
 
   var mutedColor =
     rootStyles.getPropertyValue('--muted-color').trim() || '#64748b';
 
+  var headingColor =
+    rootStyles.getPropertyValue('--heading-color').trim() || '#012970';
+
   var surfaceColor =
     rootStyles.getPropertyValue('--surface-color').trim() || '#ffffff';
+
+  var contrastColor =
+    rootStyles.getPropertyValue('--contrast-color').trim() || '#ffffff';
+
+  var dashboardStage = document.querySelector('#dashboardStage');
+  var dashboardContent = document.querySelector('#dashboardContent');
+  var dashboardLoading = document.querySelector('#dashboardLoading');
+  var dashboardAlert = document.querySelector('#dashboardAlert');
+  var dashboardUpdatedStatus = document.querySelector('#dashboardUpdatedAt');
+  var dashboardUpdatedIcon = document.querySelector('#dashboardUpdatedAt i');
+  var dashboardUpdatedAt = document.querySelector('#dashboardUpdatedAt span');
+  var dashboardRetryButton = document.querySelector('#dashboardRetryButton');
+  var chartRenderPromises = [];
+
+  function releaseDashboard() {
+    if (dashboardStage) {
+      dashboardStage.classList.remove('is-loading');
+      dashboardStage.classList.add('is-ready');
+    }
+
+    if (dashboardContent) {
+      dashboardContent.setAttribute('aria-busy', 'false');
+      dashboardContent.removeAttribute('inert');
+    }
+
+    if (dashboardLoading) {
+      dashboardLoading.hidden = true;
+    }
+  }
+
+  function markDashboardReady() {
+    var currentTime = new Intl.DateTimeFormat('pt-BR', {
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(new Date());
+
+    releaseDashboard();
+
+    if (dashboardUpdatedAt) {
+      dashboardUpdatedAt.textContent = 'Simulação carregada às ' + currentTime;
+    }
+
+    if (dashboardUpdatedStatus) {
+      dashboardUpdatedStatus.classList.remove('is-error');
+      dashboardUpdatedStatus.classList.add('is-success');
+    }
+
+    if (dashboardUpdatedIcon) {
+      dashboardUpdatedIcon.className = 'bi bi-check-circle-fill';
+    }
+  }
+
+  function showDashboardError(error) {
+    releaseDashboard();
+
+    if (dashboardAlert) {
+      dashboardAlert.classList.remove('d-none');
+    }
+
+    if (dashboardUpdatedAt) {
+      dashboardUpdatedAt.textContent = 'Falha ao carregar os gráficos';
+    }
+
+    if (dashboardUpdatedStatus) {
+      dashboardUpdatedStatus.classList.remove('is-success');
+      dashboardUpdatedStatus.classList.add('is-error');
+    }
+
+    if (dashboardUpdatedIcon) {
+      dashboardUpdatedIcon.className = 'bi bi-exclamation-circle-fill';
+    }
+
+    if (window.console && typeof window.console.error === 'function') {
+      window.console.error('Falha ao montar o Painel Operacional:', error);
+    }
+  }
+
+  if (dashboardRetryButton) {
+    dashboardRetryButton.addEventListener('click', function () {
+      dashboardRetryButton.disabled = true;
+      dashboardRetryButton.innerHTML = '<span class="spinner-grow spinner-grow-sm me-1" aria-hidden="true"></span>Recarregando...';
+      window.location.reload();
+    });
+  }
 
 
   /*
@@ -1042,6 +1615,12 @@
    *
    * O total de cada dia é:
    * Oficiais + Praças
+   */
+  /*
+   * Dados demonstrativos anteriores preservados por segurança:
+   * oficiais: [4, 5, 4, 6, 5, 4, 3]
+   * pracas: [22, 25, 21, 28, 27, 23, 20]
+   * frota: [45, 30, 15, 10] para Carro, Moto, Bicicleta e Triciclo
    */
   var dadosSemanais = {
     categorias: [
@@ -1054,24 +1633,78 @@
       'Domingo'
     ],
 
-    oficiais: [4, 5, 4, 6, 5, 4, 3],
+    oficiais: [8, 8, 7, 9, 10, 7, 6],
 
-    pracas: [22, 25, 21, 28, 27, 23, 20]
+    pracas: [56, 60, 59, 63, 68, 54, 48]
   };
+
+  var totaisSemanais = dadosSemanais.oficiais.map(function (oficiais, indice) {
+    return oficiais + dadosSemanais.pracas[indice];
+  });
+
+  var limiteEfetivoSemanal = Math.ceil(Math.max.apply(null, totaisSemanais) / 10) * 10 + 10;
+  var limiteOficiais = Math.ceil(Math.max.apply(null, dadosSemanais.oficiais) / 2) * 2 + 2;
+  var limitePracas = Math.ceil(Math.max.apply(null, dadosSemanais.pracas) / 10) * 10 + 10;
+
+  /* Dados demonstrativos centralizados para futura integração com a API. */
+  var dadosFrota = {
+    categorias: ['Carro', 'Motocicleta', 'Caminhonete', 'Van', 'Bicicleta', 'Triciclo'],
+    valores: [20, 10, 8, 4, 4, 2]
+  };
+
+  var totalFrota = dadosFrota.valores.reduce(function (total, valor) {
+    return total + valor;
+  }, 0);
+
+  var dadosOrdens = {
+    categorias: ['Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago'],
+    emitidas: [29, 34, 31, 38, 42, 46],
+    concluidas: [24, 30, 29, 33, 37, 41]
+  };
+
+  var dadosCadastros = {
+    categorias: [
+      'Viaturas',
+      'Pontos de baseamento',
+      'Locais de patrulhamento',
+      'Tipos de serviço',
+      'Operações especiais'
+    ],
+    valores: [48, 18, 32, 9, 7]
+  };
+
+  var limiteCadastros = Math.ceil(Math.max.apply(null, dadosCadastros.valores) / 10) * 10 + 10;
 
 
   /*
    * ELEMENTOS DOS GRÁFICOS
    */
+  /* Contêiner anterior preservado; permanece nulo enquanto o gráfico empilhado estiver desativado. */
   var revenueTarget = document.querySelector('#revenueChart');
+  var officersTarget = document.querySelector('#officersChart');
+  var enlistedTarget = document.querySelector('#enlistedChart');
   var trafficTarget = document.querySelector('#trafficChart');
+  var serviceOrdersTarget = document.querySelector('#serviceOrdersChart');
+  var registryTarget = document.querySelector('#registryChart');
+
+  if (!officersTarget || !enlistedTarget || !trafficTarget || !serviceOrdersTarget || !registryTarget) {
+    showDashboardError(new Error('Um ou mais contêineres de gráficos não foram encontrados.'));
+    return;
+  }
+
+  if (typeof ApexCharts === 'undefined') {
+    showDashboardError(new Error('A biblioteca de gráficos não está disponível.'));
+    return;
+  }
+
+  try {
 
 
   /*
-   * GRÁFICO DE BARRAS:
+   * GRÁFICO EMPILHADO ANTERIOR PRESERVADO E DESATIVADO:
    * DISTRIBUIÇÃO MÉDIA DE POLICIAIS POR SEMANA
    */
-  if (revenueTarget && typeof ApexCharts !== 'undefined') {
+  if (false && revenueTarget && typeof ApexCharts !== 'undefined') {
 
     var weeklyPoliceChart = new ApexCharts(revenueTarget, {
 
@@ -1088,7 +1721,11 @@
           enabled: false
         },
 
-        fontFamily: 'inherit'
+        fontFamily: 'inherit',
+        accessibility: {
+          enabled: true,
+          description: 'Efetivo diário da semana demonstrativa, dividido entre oficiais e praças.'
+        }
       },
 
       series: [
@@ -1153,8 +1790,8 @@
 
       yaxis: {
         min: 0,
-        max: 50,
-        tickAmount: 5,
+        max: limiteEfetivoSemanal,
+        tickAmount: 6,
 
         title: {
           text: 'Quantidade de policiais',
@@ -1198,7 +1835,7 @@
         },
 
         markers: {
-          radius: 12
+          shape: 'circle'
         }
       },
 
@@ -1216,12 +1853,12 @@
       annotations: {
         yaxis: [
           {
-            y: 30,
+            y: 65,
             borderColor: mutedColor,
             strokeDashArray: 5,
 
             label: {
-              text: 'Referência: 30 policiais',
+              text: 'Referência: 65 policiais',
               position: 'right',
 
               style: {
@@ -1232,12 +1869,231 @@
             }
           }
         ]
-      }
+      },
+      responsive: [
+        {
+          breakpoint: 576,
+          options: {
+            chart: {
+              height: 290
+            },
+            plotOptions: {
+              bar: {
+                columnWidth: '58%'
+              }
+            },
+            xaxis: {
+              labels: {
+                trim: true,
+                formatter: function (valor) {
+                  return valor.slice(0, 3);
+                },
+                style: {
+                  fontSize: '10px'
+                }
+              }
+            }
+          }
+        }
+      ]
 
     });
 
-    weeklyPoliceChart.render();
+    chartRenderPromises.push(Promise.resolve(weeklyPoliceChart.render()));
   }
+
+
+  /*
+   * GRÁFICOS DE BARRAS SEPARADOS:
+   * OFICIAIS E PRAÇAS POR DIA
+   */
+  function renderWeeklyForceChart(target, settings) {
+    var forceChart = new ApexCharts(target, {
+      chart: {
+        type: 'bar',
+        height: 290,
+        toolbar: {
+          show: false
+        },
+        zoom: {
+          enabled: false
+        },
+        fontFamily: 'inherit',
+        accessibility: {
+          enabled: true,
+          description: settings.description
+        }
+      },
+      series: [
+        {
+          name: settings.seriesName,
+          data: settings.data
+        }
+      ],
+      colors: [settings.color],
+      plotOptions: {
+        bar: {
+          horizontal: false,
+          columnWidth: '52%',
+          borderRadius: 4,
+          dataLabels: {
+            position: 'top'
+          }
+        }
+      },
+      dataLabels: {
+        enabled: true,
+        offsetY: -8,
+        formatter: function (valor) {
+          return Math.round(valor);
+        },
+        style: {
+          colors: [headingColor],
+          fontSize: '10px',
+          fontWeight: 700
+        },
+        dropShadow: {
+          enabled: false
+        }
+      },
+      xaxis: {
+        categories: dadosSemanais.categorias,
+        axisBorder: {
+          show: false
+        },
+        axisTicks: {
+          show: false
+        },
+        labels: {
+          rotate: 0,
+          trim: false,
+          style: {
+            colors: mutedColor,
+            fontSize: '11px'
+          }
+        }
+      },
+      yaxis: {
+        min: 0,
+        max: settings.max,
+        tickAmount: settings.tickAmount,
+        title: {
+          text: settings.axisTitle,
+          style: {
+            color: mutedColor,
+            fontSize: '11px',
+            fontWeight: 400
+          }
+        },
+        labels: {
+          formatter: function (valor) {
+            return Math.round(valor);
+          },
+          style: {
+            colors: mutedColor,
+            fontSize: '11px'
+          }
+        }
+      },
+      grid: {
+        borderColor: borderColor,
+        strokeDashArray: 4,
+        xaxis: {
+          lines: {
+            show: false
+          }
+        }
+      },
+      legend: {
+        show: false
+      },
+      tooltip: {
+        y: {
+          formatter: function (valor) {
+            return valor + ' ' + settings.tooltipUnit;
+          }
+        }
+      },
+      annotations: {
+        yaxis: [
+          {
+            y: settings.reference,
+            borderColor: settings.color,
+            strokeDashArray: 5,
+            label: {
+              text: 'Ref. ' + settings.reference,
+              position: 'right',
+              offsetX: -4,
+              style: {
+                color: settings.referenceTextColor,
+                background: settings.color,
+                fontSize: '10px'
+              }
+            }
+          }
+        ]
+      },
+      responsive: [
+        {
+          breakpoint: 576,
+          options: {
+            chart: {
+              height: 270
+            },
+            plotOptions: {
+              bar: {
+                columnWidth: '60%'
+              }
+            },
+            dataLabels: {
+              style: {
+                fontSize: '9px'
+              }
+            },
+            xaxis: {
+              labels: {
+                trim: true,
+                formatter: function (valor) {
+                  return valor.slice(0, 3);
+                },
+                style: {
+                  fontSize: '10px'
+                }
+              }
+            }
+          }
+        }
+      ]
+    });
+
+    chartRenderPromises.push(Promise.resolve(forceChart.render()));
+  }
+
+  renderWeeklyForceChart(officersTarget, {
+    seriesName: 'Oficiais',
+    data: dadosSemanais.oficiais,
+    color: warningColor,
+    max: limiteOficiais,
+    tickAmount: 6,
+    reference: 8,
+    referenceTextColor: headingColor,
+    axisTitle: 'Oficiais',
+    tooltipUnit: 'oficiais',
+    description: 'Quantidade diária de oficiais na semana demonstrativa.'
+  });
+
+  renderWeeklyForceChart(enlistedTarget, {
+    seriesName: 'Praças',
+    data: dadosSemanais.pracas,
+    color: accentColor,
+    max: limitePracas,
+    tickAmount: 4,
+    reference: 57,
+    referenceTextColor: contrastColor,
+    axisTitle: 'Praças',
+    tooltipUnit: 'praças',
+    description: 'Quantidade diária de praças na semana demonstrativa.'
+  });
 
 
   /*
@@ -1250,29 +2106,25 @@
 
       chart: {
         type: 'donut',
-        height: 280,
-        fontFamily: 'inherit'
+        height: 300,
+        fontFamily: 'inherit',
+        accessibility: {
+          enabled: true,
+          description: 'Composição das ' + totalFrota + ' viaturas cadastradas por tipo de veículo.'
+        }
       },
 
-      series: [
-        45,
-        30,
-        15,
-        10
-      ],
+      series: dadosFrota.valores,
 
-      labels: [
-        'Carro',
-        'Moto',
-        'Bicicleta',
-        'Triciclo'
-      ],
+      labels: dadosFrota.categorias,
 
       colors: [
         accentColor,
         successColor,
         warningColor,
-        infoColor
+        infoColor,
+        '#8b5cf6',
+        dangerColor
       ],
 
       legend: {
@@ -1291,7 +2143,8 @@
       tooltip: {
         y: {
           formatter: function (valor) {
-            return valor + '%';
+            var percentage = ((valor / totalFrota) * 100).toFixed(1).replace('.', ',');
+            return valor + ' viaturas (' + percentage + '%)';
           }
         }
       },
@@ -1316,7 +2169,7 @@
                 color: accentColor,
 
                 formatter: function (valor) {
-                  return valor + '%';
+                  return valor + ' viaturas';
                 }
               },
 
@@ -1326,7 +2179,7 @@
                 color: mutedColor,
 
                 formatter: function () {
-                  return '100%';
+                  return String(totalFrota);
                 }
               }
             }
@@ -1348,8 +2201,274 @@
 
     });
 
-    trafficChart.render();
+    chartRenderPromises.push(Promise.resolve(trafficChart.render()));
   }
+
+
+  /*
+   * GRÁFICO DE ÁREA:
+   * EVOLUÇÃO DAS ORDENS DE SERVIÇO
+   */
+  if (serviceOrdersTarget) {
+    var serviceOrdersChart = new ApexCharts(serviceOrdersTarget, {
+      chart: {
+        type: 'area',
+        height: 310,
+        toolbar: {
+          show: false
+        },
+        zoom: {
+          enabled: false
+        },
+        fontFamily: 'inherit',
+        accessibility: {
+          enabled: true,
+          description: 'Evolução mensal das ordens de serviço emitidas e concluídas entre março e agosto de 2026.'
+        }
+      },
+      series: [
+        {
+          name: 'Emitidas',
+          data: dadosOrdens.emitidas
+        },
+        {
+          name: 'Concluídas',
+          data: dadosOrdens.concluidas
+        }
+      ],
+      colors: [accentColor, successColor],
+      stroke: {
+        width: 3,
+        curve: 'smooth'
+      },
+      fill: {
+        type: 'gradient',
+        gradient: {
+          shadeIntensity: 1,
+          opacityFrom: 0.28,
+          opacityTo: 0.03,
+          stops: [0, 92, 100]
+        }
+      },
+      dataLabels: {
+        enabled: false
+      },
+      markers: {
+        size: 0,
+        strokeWidth: 0,
+        hover: {
+          size: 5
+        }
+      },
+      xaxis: {
+        categories: dadosOrdens.categorias,
+        axisBorder: {
+          show: false
+        },
+        axisTicks: {
+          show: false
+        },
+        labels: {
+          style: {
+            colors: mutedColor,
+            fontSize: '12px'
+          }
+        }
+      },
+      yaxis: {
+        min: 0,
+        tickAmount: 5,
+        labels: {
+          formatter: function (valor) {
+            return Math.round(valor);
+          },
+          style: {
+            colors: mutedColor,
+            fontSize: '12px'
+          }
+        }
+      },
+      grid: {
+        borderColor: borderColor,
+        strokeDashArray: 4,
+        xaxis: {
+          lines: {
+            show: false
+          }
+        }
+      },
+      legend: {
+        position: 'top',
+        horizontalAlign: 'left',
+        labels: {
+          colors: mutedColor
+        }
+      },
+      tooltip: {
+        shared: true,
+        intersect: false,
+        y: {
+          formatter: function (valor) {
+            return valor + ' ordens';
+          }
+        }
+      },
+      responsive: [
+        {
+          breakpoint: 576,
+          options: {
+            chart: {
+              height: 280
+            }
+          }
+        }
+      ]
+    });
+
+    chartRenderPromises.push(Promise.resolve(serviceOrdersChart.render()));
+  }
+
+
+  /*
+   * GRÁFICO DE BARRAS HORIZONTAIS:
+   * VOLUME DOS MÓDULOS DE CADASTRO
+   */
+  if (registryTarget) {
+    var registryChart = new ApexCharts(registryTarget, {
+      chart: {
+        type: 'bar',
+        height: 330,
+        toolbar: {
+          show: false
+        },
+        zoom: {
+          enabled: false
+        },
+        fontFamily: 'inherit',
+        accessibility: {
+          enabled: true,
+          description: 'Quantidade de registros de viaturas, pontos de baseamento, locais de patrulhamento, tipos de serviço e operações especiais.'
+        }
+      },
+      series: [
+        {
+          name: 'Registros',
+          data: dadosCadastros.valores
+        }
+      ],
+      colors: [accentColor, infoColor, successColor, warningColor, '#8b5cf6'],
+      plotOptions: {
+        bar: {
+          horizontal: true,
+          distributed: true,
+          barHeight: '54%',
+          borderRadius: 4,
+          dataLabels: {
+            position: 'top'
+          }
+        }
+      },
+      dataLabels: {
+        enabled: true,
+        formatter: function (valor) {
+          return valor;
+        },
+        textAnchor: 'start',
+        offsetX: 8,
+        style: {
+          colors: [headingColor],
+          fontSize: '11px',
+          fontWeight: 700
+        },
+        dropShadow: {
+          enabled: false
+        }
+      },
+      xaxis: {
+        categories: dadosCadastros.categorias,
+        min: 0,
+        max: limiteCadastros,
+        tickAmount: 6,
+        axisBorder: {
+          show: false
+        },
+        axisTicks: {
+          show: false
+        },
+        labels: {
+          formatter: function (valor) {
+            return Math.round(valor);
+          },
+          style: {
+            colors: mutedColor,
+            fontSize: '11px'
+          }
+        },
+        title: {
+          text: 'Quantidade de registros',
+          style: {
+            color: mutedColor,
+            fontSize: '11px',
+            fontWeight: 400
+          }
+        }
+      },
+      yaxis: {
+        labels: {
+          maxWidth: 170,
+          style: {
+            colors: mutedColor,
+            fontSize: '11px'
+          }
+        }
+      },
+      grid: {
+        borderColor: borderColor,
+        strokeDashArray: 4,
+        yaxis: {
+          lines: {
+            show: false
+          }
+        }
+      },
+      legend: {
+        show: false
+      },
+      tooltip: {
+        y: {
+          formatter: function (valor) {
+            return valor + ' registros';
+          }
+        }
+      },
+      responsive: [
+        {
+          breakpoint: 576,
+          options: {
+            chart: {
+              height: 300
+            },
+            yaxis: {
+              labels: {
+                maxWidth: 125
+              }
+            }
+          }
+        }
+      ]
+    });
+
+    chartRenderPromises.push(Promise.resolve(registryChart.render()));
+  }
+
+  } catch (error) {
+    showDashboardError(error);
+    return;
+  }
+
+  Promise.all(chartRenderPromises)
+    .then(markDashboardReady)
+    .catch(showDashboardError);
 
 });
   </script>

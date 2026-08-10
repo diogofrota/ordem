@@ -167,7 +167,8 @@
 
     .os-workflow {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      /* Grade anterior preservada: grid-template-columns: repeat(3, minmax(0, 1fr)); */
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: var(--spacing-sm);
       margin-bottom: var(--spacing-lg);
     }
@@ -278,6 +279,25 @@
       justify-content: flex-end;
       gap: var(--spacing-sm);
       padding-top: var(--spacing-sm);
+    }
+
+    .os-prescriptions-input {
+      min-height: 140px;
+      resize: vertical;
+    }
+
+    .os-prescriptions-helper {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: var(--spacing-sm);
+    }
+
+    .os-prescriptions-count {
+      flex: 0 0 auto;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.75rem;
+      white-space: nowrap;
     }
 
     .os-code-field .input-group-text {
@@ -565,11 +585,156 @@
       color: var(--info-color);
     }
 
+    .os-confirm-review {
+      overflow: hidden;
+      border: 1px solid var(--border-color-light);
+      border-radius: var(--radius-md);
+      background: var(--background-color);
+    }
+
+    .os-confirm-review-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--spacing-md);
+      padding: var(--spacing-md);
+      border-bottom: 1px solid var(--border-color-light);
+      background: color-mix(in srgb, var(--success-color), transparent 94%);
+    }
+
+    .os-confirm-review-order {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+      min-width: 0;
+    }
+
+    .os-confirm-review-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      flex: 0 0 38px;
+      color: var(--success-color);
+      background: var(--success-color-light);
+      border-radius: var(--radius-md);
+      font-size: 1.125rem;
+    }
+
+    .os-confirm-review-order > div > span,
+    .os-confirm-review-order > div > strong {
+      display: block;
+    }
+
+    .os-confirm-review-order > div > span {
+      color: var(--muted-color);
+      font-size: 0.6875rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .os-confirm-review-order > div > strong {
+      margin-top: 2px;
+      color: var(--heading-color);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.9375rem;
+    }
+
+    #orderCreationConfirmNumber {
+      display: inline;
+    }
+
+    .os-confirm-review-summary {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin: 0;
+      padding: var(--spacing-xs) var(--spacing-md);
+    }
+
+    .os-confirm-review-summary > div {
+      min-width: 0;
+      padding: var(--spacing-sm) 0;
+    }
+
+    .os-confirm-review-summary > div:nth-child(2n + 3) {
+      padding-left: var(--spacing-md);
+      border-left: 1px solid var(--border-color-light);
+    }
+
+    .os-confirm-review-summary > div:nth-child(n + 2) {
+      border-top: 1px solid var(--border-color-light);
+    }
+
+    .os-confirm-review-summary > .os-confirm-review-wide {
+      grid-column: 1 / -1;
+      padding-left: 0;
+      border-left: 0;
+    }
+
+    .os-confirm-review-summary dt,
+    .os-confirm-review-summary dd {
+      margin: 0;
+    }
+
+    .os-confirm-review-summary dt {
+      color: var(--muted-color);
+      font-size: 0.6875rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    .os-confirm-review-summary dd {
+      overflow-wrap: anywhere;
+      margin-top: 2px;
+      color: var(--heading-color);
+      font-size: 0.8125rem;
+      font-weight: 600;
+    }
+
+    .os-confirm-prescriptions {
+      white-space: pre-wrap;
+    }
+
+    .os-confirm-final-note {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--spacing-sm);
+      margin-top: var(--spacing-md);
+      padding: var(--spacing-sm) var(--spacing-md);
+      color: var(--muted-color);
+      background: color-mix(in srgb, var(--accent-color), transparent 96%);
+      border: 1px solid color-mix(in srgb, var(--accent-color), transparent 82%);
+      border-radius: var(--radius-md);
+      font-size: 0.8125rem;
+    }
+
+    .os-confirm-final-note i {
+      margin-top: 2px;
+      color: var(--accent-color);
+    }
+
+    .os-order-creation-confirmation .modal-content {
+      border-top: 3px solid var(--success-color);
+    }
+
+    @media (min-width: 576px) {
+      .os-order-creation-confirmation .modal-dialog {
+        max-width: 680px;
+      }
+    }
+
     .os-print-sheet {
       display: none;
     }
 
     @media (max-width: 991px) {
+      .os-workflow {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
       .os-data-strip {
         grid-template-columns: 1fr;
       }
@@ -638,6 +803,39 @@
       }
     }
 
+    @media (max-width: 575px) {
+      .os-confirm-review-header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .os-confirm-review-summary {
+        grid-template-columns: 1fr;
+      }
+
+      .os-confirm-review-summary > div,
+      .os-confirm-review-summary > div:nth-child(2n + 3),
+      .os-confirm-review-summary > div:nth-child(n + 2) {
+        padding-left: 0;
+        border-top: 1px solid var(--border-color-light);
+        border-left: 0;
+      }
+
+      .os-confirm-review-summary > div:first-child {
+        border-top: 0;
+      }
+
+      .os-order-creation-confirmation .modal-footer {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .os-order-creation-confirmation .modal-footer .btn {
+        width: 100%;
+        margin: 0;
+      }
+    }
+
     @media print {
       @page {
         size: A4 portrait;
@@ -703,6 +901,26 @@
       .os-print-meta strong {
         margin-top: 3px;
         font-size: 11px;
+      }
+
+      .os-print-prescriptions {
+        margin-bottom: 16px;
+        padding: 10px;
+        border: 1px solid #d7deea;
+      }
+
+      .os-print-prescriptions h2 {
+        margin: 0 0 6px;
+        color: #1f3a78;
+        font-size: 11px;
+        text-transform: uppercase;
+      }
+
+      .os-print-prescriptions p {
+        margin: 0;
+        font-size: 10px;
+        line-height: 1.45;
+        white-space: pre-wrap;
       }
 
       .os-print-table {
@@ -1544,11 +1762,12 @@
             <a class="nav-link" href="#" aria-expanded="false">
               <span class="nav-icon"><i class="ph-light ph-shield-check"></i></span>
               <span class="nav-text">Operação</span>
-              <span class="nav-badge">2</span>
+              <span class="nav-badge">3</span>
               <span class="nav-arrow"><i class="bi bi-chevron-right"></i></span>
             </a>
             <ul class="nav-submenu">
-              <li><a class="nav-link" href="auth-login.html"><span class="nav-dot"></span>Ativação</a></li>
+              <li><a class="nav-link" href="ativacao.html"><span class="nav-dot"></span>Ativar Guarnição</a></li>
+              <li><a class="nav-link" href="painel-ativacoes.html"><span class="nav-dot"></span>Painel de Ativações</a></li>
               <li><a class="nav-link" href="auth-register.html"><span class="nav-dot"></span>Mapa Tático</a></li>
             </ul>
           </li>
@@ -1754,10 +1973,12 @@
           <p class="os-page-intro">Defina o turno e organize a missão em atividades usando os pontos de baseamento, locais de patrulhamento e operações especiais já cadastrados.</p>
         </div>
         <div class="os-heading-actions">
+          <!-- Botão "Consultar todas as OS" ocultado conforme solicitado.
           <a class="btn btn-outline-primary btn-sm" href="users.html">
             <i class="bi bi-card-list me-1" aria-hidden="true"></i>
             Consultar todas as OS
           </a>
+          -->
           <nav class="breadcrumb" aria-label="Navegação estrutural">
             <a href="index.html" class="breadcrumb-item">Painel Operacional</a>
             <span class="breadcrumb-item">Ordens de Serviço</span>
@@ -1808,8 +2029,15 @@
             <small>Atividades e locais</small>
           </span>
         </div>
-        <div class="os-workflow-step" id="orderStepFinish">
+        <div class="os-workflow-step" id="orderStepPrescriptions">
           <span class="os-workflow-number">03</span>
+          <span class="os-workflow-copy">
+            <strong>Prescrições diversas</strong>
+            <small>Especificações e orientações</small>
+          </span>
+        </div>
+        <div class="os-workflow-step" id="orderStepFinish">
+          <span class="os-workflow-number">04</span>
           <span class="os-workflow-copy">
             <strong>Conferência</strong>
             <small>Revisar e gravar a OS</small>
@@ -1858,10 +2086,13 @@
                   <label for="orderPatrolType" class="form-label">Tipo de patrulhamento <span class="text-danger">*</span></label>
                   <select class="form-select" id="orderPatrolType" name="patrolType" aria-describedby="orderPatrolTypeHelp orderPatrolTypeFeedback" required>
                     <option value="">Selecione...</option>
-                    <option value="Viatura">Viatura</option>
+                    <!-- Opção anterior preservada; a nomenclatura exibida passou a ser "Carro". -->
+                    <!-- <option value="Viatura">Viatura</option> -->
+                    <option value="Carro">Carro</option>
                     <option value="Moto">Moto</option>
                     <option value="Cabine">Cabine</option>
                     <option value="Setor">Setor a Pé</option>
+                    <option value="Outros">Outros</option>
                   </select>
                   <div class="invalid-feedback" id="orderPatrolTypeFeedback">Selecione o tipo de patrulhamento.</div>
                   <div class="form-text" id="orderPatrolTypeHelp">Selecione o recurso que será empregado durante o turno.</div>
@@ -2053,9 +2284,52 @@
                 <div class="os-summary-metric"><span>Tempo planejado</span><strong id="activityDurationMetric">0h 00min</strong></div>
                 <div class="os-summary-metric"><span>Cobertura do turno</span><strong id="activityCoverageMetric">0%</strong></div>
               </div>
+              <!-- Ação final anterior preservada; a gravação agora passa primeiro pelas prescrições diversas.
               <button type="button" class="btn btn-success" id="finishOrderButton" disabled>
                 <i class="bi bi-check2-circle me-1" aria-hidden="true"></i>
                 Finalizar e gravar nova OS
+              </button>
+              -->
+              <button type="button" class="btn btn-primary" id="continueToPrescriptionsButton" disabled>
+                <i class="bi bi-arrow-right-circle me-1" aria-hidden="true"></i>
+                Continuar para prescrições
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section d-none" id="prescriptionsSection" aria-labelledby="prescriptionsSectionTitle">
+        <div class="card">
+          <div class="card-header">
+            <div class="os-card-heading">
+              <span class="os-card-icon" aria-hidden="true"><i class="bi bi-journal-text"></i></span>
+              <div>
+                <h2 class="card-title" id="prescriptionsSectionTitle">Prescrições diversas</h2>
+                <p class="card-subtitle">Registre especificações e orientações gerais que deverão ser observadas durante o serviço.</p>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <form id="prescriptionsForm" autocomplete="off">
+              <label for="orderPrescriptions" class="form-label">
+                Especificações e orientações gerais
+                <span class="form-label-optional">(opcional)</span>
+              </label>
+              <textarea class="form-control os-prescriptions-input" id="orderPrescriptions" name="prescriptions" rows="5" maxlength="2000" placeholder="Ex.: procedimentos específicos, pontos de atenção, restrições e demais orientações para a equipe..." aria-describedby="orderPrescriptionsHelp orderPrescriptionsCount orderPrescriptionsFeedback"></textarea>
+              <div class="invalid-feedback" id="orderPrescriptionsFeedback">As prescrições devem ter no máximo 2.000 caracteres.</div>
+              <div class="form-text os-prescriptions-helper" id="orderPrescriptionsHelp">
+                <span>Estas informações serão vinculadas à Ordem de Serviço e apresentadas na conferência.</span>
+                <span class="os-prescriptions-count" id="orderPrescriptionsCount" aria-live="polite">0/2000 caracteres</span>
+              </div>
+            </form>
+          </div>
+          <div class="card-footer">
+            <div class="os-summary-bar">
+              <span class="small text-muted"><i class="bi bi-info-circle me-1" aria-hidden="true"></i>Se não houver orientações adicionais, o campo pode permanecer em branco.</span>
+              <button type="button" class="btn btn-success" id="finishOrderButton" disabled>
+                <i class="bi bi-check2-circle me-1" aria-hidden="true"></i>
+                Continuar para conferência
               </button>
             </div>
           </div>
@@ -2166,8 +2440,8 @@
         </div>
       </div>
 
-      <div class="modal fade" id="orderConfirmModal" tabindex="-1" aria-labelledby="orderConfirmModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
+      <div class="modal fade" id="orderConfirmModal" tabindex="-1" aria-labelledby="orderConfirmModalLabel" aria-describedby="orderConfirmModalMessage" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
           <div class="modal-content">
             <div class="modal-header">
               <h2 class="modal-title fs-5" id="orderConfirmModalLabel">Confirmar ação</h2>
@@ -2175,9 +2449,59 @@
             </div>
             <div class="modal-body">
               <p class="mb-0" id="orderConfirmModalMessage"></p>
+              <div class="os-confirm-review d-none" id="orderCreationConfirmReview" aria-hidden="true">
+                <div class="os-confirm-review-header">
+                  <div class="os-confirm-review-order">
+                    <span class="os-confirm-review-icon" aria-hidden="true"><i class="bi bi-file-earmark-check"></i></span>
+                    <div>
+                      <span>Próxima numeração prevista</span>
+                      <strong>OS nº <span id="orderCreationConfirmNumber">—</span></strong>
+                    </div>
+                  </div>
+                  <span class="os-status is-active"><i class="bi bi-check-circle-fill" aria-hidden="true"></i>Será criada ativa</span>
+                </div>
+                <dl class="os-confirm-review-summary">
+                  <div class="os-confirm-review-wide">
+                    <dt>Missão</dt>
+                    <dd id="orderCreationConfirmMission">Não informada</dd>
+                  </div>
+                  <div>
+                    <dt>Tipo de serviço</dt>
+                    <dd id="orderCreationConfirmService">Não informado</dd>
+                  </div>
+                  <div>
+                    <dt>Tipo de patrulhamento</dt>
+                    <dd id="orderCreationConfirmResource">Não informado</dd>
+                  </div>
+                  <div>
+                    <dt>Turno</dt>
+                    <dd id="orderCreationConfirmShift">Não informado</dd>
+                  </div>
+                  <div>
+                    <dt>Atividades</dt>
+                    <dd id="orderCreationConfirmActivities">0 atividades</dd>
+                  </div>
+                  <div>
+                    <dt>Tempo planejado</dt>
+                    <dd id="orderCreationConfirmDuration">0h 00min</dd>
+                  </div>
+                  <div>
+                    <dt>Cobertura do turno</dt>
+                    <dd id="orderCreationConfirmCoverage">0%</dd>
+                  </div>
+                  <div class="os-confirm-review-wide">
+                    <dt>Prescrições diversas</dt>
+                    <dd class="os-confirm-prescriptions" id="orderCreationConfirmPrescriptions">Não informadas</dd>
+                  </div>
+                </dl>
+              </div>
+              <div class="os-confirm-final-note d-none" id="orderCreationConfirmNote" aria-hidden="true">
+                <i class="bi bi-info-circle-fill" aria-hidden="true"></i>
+                <span>A numeração final será confirmada durante a gravação. Depois do sucesso, o formulário ficará pronto para uma nova OS.</span>
+              </div>
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+              <button type="button" class="btn btn-secondary" id="orderConfirmCancelButton" data-bs-dismiss="modal">Cancelar</button>
               <button type="button" class="btn btn-primary" id="orderConfirmButton">Confirmar</button>
             </div>
           </div>
@@ -2278,6 +2602,7 @@
         pageAlertMessage: document.getElementById('orderPageAlertMessage'),
         stepHeader: document.getElementById('orderStepHeader'),
         stepActivities: document.getElementById('orderStepActivities'),
+        stepPrescriptions: document.getElementById('orderStepPrescriptions'),
         stepFinish: document.getElementById('orderStepFinish'),
         headerCard: document.getElementById('orderHeaderCard'),
         headerForm: document.getElementById('orderHeaderForm'),
@@ -2316,6 +2641,11 @@
         activityCountMetric: document.getElementById('activityCountMetric'),
         activityDurationMetric: document.getElementById('activityDurationMetric'),
         activityCoverageMetric: document.getElementById('activityCoverageMetric'),
+        continueToPrescriptionsButton: document.getElementById('continueToPrescriptionsButton'),
+        prescriptionsSection: document.getElementById('prescriptionsSection'),
+        prescriptionsForm: document.getElementById('prescriptionsForm'),
+        prescriptions: document.getElementById('orderPrescriptions'),
+        prescriptionsCount: document.getElementById('orderPrescriptionsCount'),
         finishButton: document.getElementById('finishOrderButton'),
         savedOrderCount: document.getElementById('savedOrderCount'),
         activeOrderCount: document.getElementById('activeOrderCount'),
@@ -2337,11 +2667,23 @@
         confirmModal: document.getElementById('orderConfirmModal'),
         confirmTitle: document.getElementById('orderConfirmModalLabel'),
         confirmMessage: document.getElementById('orderConfirmModalMessage'),
+        confirmCancelButton: document.getElementById('orderConfirmCancelButton'),
         confirmButton: document.getElementById('orderConfirmButton'),
+        creationConfirmReview: document.getElementById('orderCreationConfirmReview'),
+        creationConfirmNote: document.getElementById('orderCreationConfirmNote'),
+        creationConfirmNumber: document.getElementById('orderCreationConfirmNumber'),
+        creationConfirmMission: document.getElementById('orderCreationConfirmMission'),
+        creationConfirmService: document.getElementById('orderCreationConfirmService'),
+        creationConfirmResource: document.getElementById('orderCreationConfirmResource'),
+        creationConfirmShift: document.getElementById('orderCreationConfirmShift'),
+        creationConfirmActivities: document.getElementById('orderCreationConfirmActivities'),
+        creationConfirmDuration: document.getElementById('orderCreationConfirmDuration'),
+        creationConfirmCoverage: document.getElementById('orderCreationConfirmCoverage'),
+        creationConfirmPrescriptions: document.getElementById('orderCreationConfirmPrescriptions'),
         printSheet: document.getElementById('orderPrintSheet')
       };
 
-      if (!elements.headerForm || !elements.activityForm || !elements.ordersTableBody || !elements.pageAlert || !elements.pageContent || !elements.pageLoading || !elements.operationStatus || !elements.orderCode || !elements.totalDuration) {
+      if (!elements.headerForm || !elements.activityForm || !elements.prescriptionsForm || !elements.prescriptions || !elements.prescriptionsSection || !elements.continueToPrescriptionsButton || !elements.finishButton || !elements.stepPrescriptions || !elements.ordersTableBody || !elements.pageAlert || !elements.pageContent || !elements.pageLoading || !elements.operationStatus || !elements.orderCode || !elements.totalDuration) {
         return;
       }
 
@@ -2354,6 +2696,8 @@
         orders: [],
         currentFilter: 'Ativa',
         headerLocked: false,
+        prescriptionsOpened: false,
+        conferenceReached: false,
         copySourceNumber: null
       };
 
@@ -2365,9 +2709,25 @@
       let dataLoadIssueCount = 0;
       const activeOperations = new Set();
       const processingButtons = new WeakMap();
+      // Sincronização automática antiga preservada, porém desativada.
+      // As atualizações futuras serão controladas pelas chamadas e respostas da API.
+      const AUTOMATIC_STORAGE_SYNC_ENABLED = false;
 
       function normalizeWhitespace(value) {
         return String(value || '').replace(/\s+/g, ' ').trim();
+      }
+
+      function normalizeMultiline(value) {
+        /* Normalização anterior preservada; ela removia indentação e espaçamento informado pelo usuário.
+        return String(value || '')
+          .replace(/\r\n?/g, '\n')
+          .split('\n')
+          .map(function(line) { return line.replace(/[\t ]+/g, ' ').trim(); })
+          .join('\n')
+          .replace(/\n{3,}/g, '\n\n')
+          .trim();
+        */
+        return String(value || '').replace(/\r\n?/g, '\n').trim();
       }
 
       function normalizeUppercase(value) {
@@ -2393,6 +2753,17 @@
 
       function showPageAlert(message, type, autoHide) {
         const alertType = type || 'success';
+
+        // A confirmação de carregamento inicial não representa uma ação do usuário
+        // e deve permanecer silenciosa. A proteção evita que a faixa seja reaberta
+        // caso alguma rotina antiga tente emitir novamente essa mensagem.
+        if (normalizeWhitespace(message) === 'Dados da página carregados com sucesso.') {
+          window.clearTimeout(pageAlertTimeout);
+          elements.pageAlert.classList.add('d-none');
+          elements.pageAlertMessage.textContent = '';
+          return;
+        }
+
         const iconByType = {
           success: 'bi-check-circle-fill',
           danger: 'bi-exclamation-triangle-fill',
@@ -3076,6 +3447,34 @@
         elements.totalDuration.value = formatDuration(shiftDurationMinutes());
       }
 
+      function updatePrescriptionsCount() {
+        const currentLength = elements.prescriptions.value.length;
+        const maximumLength = elements.prescriptions.maxLength > 0 ? elements.prescriptions.maxLength : 2000;
+        elements.prescriptionsCount.textContent = currentLength + '/' + maximumLength + ' caracteres';
+        elements.prescriptionsCount.classList.toggle('text-danger', currentLength > maximumLength);
+      }
+
+      function validatePrescriptions(showFeedback) {
+        const currentLength = elements.prescriptions.value.length;
+        const maximumLength = elements.prescriptions.maxLength > 0 ? elements.prescriptions.maxLength : 2000;
+        elements.prescriptions.setCustomValidity('');
+        elements.prescriptionsForm.classList.remove('was-validated');
+
+        if (currentLength <= maximumLength) {
+          return true;
+        }
+
+        elements.prescriptions.setCustomValidity('As prescrições excedem o limite permitido.');
+        elements.prescriptionsForm.classList.add('was-validated');
+        updatePrescriptionsCount();
+        if (showFeedback !== false) {
+          showPageAlert('Reduza as prescrições diversas para no máximo 2.000 caracteres antes de continuar.', 'warning');
+          elements.prescriptions.reportValidity();
+          elements.prescriptionsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        return false;
+      }
+
       function selectedServiceType() {
         return state.serviceTypes.find(function(item) {
           return item.id === elements.serviceType.value;
@@ -3091,6 +3490,7 @@
         });
       }
 
+      /* Fluxo anterior de três etapas preservado por segurança.
       function updateWorkflow() {
         const hasActivities = state.activities.length > 0;
         const steps = [elements.stepHeader, elements.stepActivities, elements.stepFinish];
@@ -3113,6 +3513,39 @@
         }
 
         elements.stepActivities.classList.add('is-complete');
+        elements.stepFinish.classList.add('is-active');
+        elements.stepFinish.setAttribute('aria-current', 'step');
+      }
+      */
+
+      function updateWorkflow() {
+        const steps = [elements.stepHeader, elements.stepActivities, elements.stepPrescriptions, elements.stepFinish];
+        steps.forEach(function(step) {
+          step.classList.remove('is-active', 'is-complete');
+          step.removeAttribute('aria-current');
+        });
+
+        if (!state.headerLocked) {
+          elements.stepHeader.classList.add('is-active');
+          elements.stepHeader.setAttribute('aria-current', 'step');
+          return;
+        }
+
+        elements.stepHeader.classList.add('is-complete');
+        if (!state.prescriptionsOpened) {
+          elements.stepActivities.classList.add('is-active');
+          elements.stepActivities.setAttribute('aria-current', 'step');
+          return;
+        }
+
+        elements.stepActivities.classList.add('is-complete');
+        if (!state.conferenceReached) {
+          elements.stepPrescriptions.classList.add('is-active');
+          elements.stepPrescriptions.setAttribute('aria-current', 'step');
+          return;
+        }
+
+        elements.stepPrescriptions.classList.add('is-complete');
         elements.stepFinish.classList.add('is-active');
         elements.stepFinish.setAttribute('aria-current', 'step');
       }
@@ -3170,6 +3603,8 @@
 
       function unlockHeader(clearActivities) {
         state.headerLocked = false;
+        state.prescriptionsOpened = false;
+        state.conferenceReached = false;
         state.copySourceNumber = null;
         if (clearActivities) {
           state.activities = [];
@@ -3184,11 +3619,54 @@
         elements.headerButtonLabel.textContent = 'Continuar para atividades';
         elements.lockSummary.classList.add('d-none');
         elements.activitySection.classList.add('d-none');
+        elements.prescriptionsSection.classList.add('d-none');
         elements.headerForm.classList.remove('was-validated');
         updateActivityLocationInterface();
         renderActivities();
         updateWorkflow();
         return true;
+      }
+
+      function orderCreationConfirmationSummary() {
+        const serviceType = selectedServiceType();
+        const patrolOption = elements.patrolType.options[elements.patrolType.selectedIndex];
+        const activityCount = state.activities.length;
+        return {
+          number: normalizeWhitespace(elements.orderCode.value) || '—',
+          mission: normalizeUppercase(elements.mission.value) || 'Não informada',
+          service: normalizeWhitespace(serviceType.name) || 'Não informado',
+          resource: normalizeWhitespace(patrolOption && patrolOption.textContent) || 'Não informado',
+          shift: (elements.orderStart.value || '—') + ' – ' + (elements.orderEnd.value || '—'),
+          activities: activityCount + (activityCount === 1 ? ' atividade' : ' atividades'),
+          duration: normalizeWhitespace(elements.activityDurationMetric.textContent) || '0h 00min',
+          coverage: normalizeWhitespace(elements.activityCoverageMetric.textContent) || '0%',
+          prescriptions: normalizeMultiline(elements.prescriptions.value) || 'Não informadas'
+        };
+      }
+
+      function configureOrderCreationConfirmation(summary) {
+        const hasSummary = Boolean(summary);
+        elements.confirmModal.classList.toggle('os-order-creation-confirmation', hasSummary);
+        elements.confirmMessage.classList.toggle('mb-0', !hasSummary);
+        elements.confirmMessage.classList.toggle('mb-3', hasSummary);
+        elements.creationConfirmReview.classList.toggle('d-none', !hasSummary);
+        elements.creationConfirmReview.setAttribute('aria-hidden', String(!hasSummary));
+        elements.creationConfirmNote.classList.toggle('d-none', !hasSummary);
+        elements.creationConfirmNote.setAttribute('aria-hidden', String(!hasSummary));
+
+        if (!hasSummary) {
+          return;
+        }
+
+        elements.creationConfirmNumber.textContent = summary.number;
+        elements.creationConfirmMission.textContent = summary.mission;
+        elements.creationConfirmService.textContent = summary.service;
+        elements.creationConfirmResource.textContent = summary.resource;
+        elements.creationConfirmShift.textContent = summary.shift;
+        elements.creationConfirmActivities.textContent = summary.activities;
+        elements.creationConfirmDuration.textContent = summary.duration;
+        elements.creationConfirmCoverage.textContent = summary.coverage;
+        elements.creationConfirmPrescriptions.textContent = summary.prescriptions;
       }
 
       function openConfirmation(options) {
@@ -3201,8 +3679,10 @@
         };
         elements.confirmTitle.textContent = options.title || 'Confirmar ação';
         elements.confirmMessage.textContent = options.message || 'Deseja continuar?';
+        elements.confirmCancelButton.textContent = options.cancelLabel || 'Cancelar';
         elements.confirmButton.textContent = options.confirmLabel || 'Confirmar';
         elements.confirmButton.className = 'btn btn-' + (options.variant || 'primary');
+        configureOrderCreationConfirmation(options.orderCreationSummary || null);
         window.bootstrap.Modal.getOrCreateInstance(elements.confirmModal).show();
       }
 
@@ -3242,11 +3722,14 @@
       function resetDraft() {
         state.activities = [];
         state.headerLocked = false;
+        state.prescriptionsOpened = false;
+        state.conferenceReached = false;
         state.copySourceNumber = null;
         elements.headerForm.reset();
         elements.headerForm.classList.remove('was-validated');
         elements.activityForm.reset();
         elements.activityForm.classList.remove('was-validated');
+        elements.prescriptionsForm.reset();
         elements.activityType.value = 'Preleção';
         setHeaderControlsDisabled(false);
         elements.headerCard.classList.remove('is-locked');
@@ -3256,9 +3739,11 @@
         elements.headerButtonLabel.textContent = 'Continuar para atividades';
         elements.lockSummary.classList.add('d-none');
         elements.activitySection.classList.add('d-none');
+        elements.prescriptionsSection.classList.add('d-none');
         populateServiceTypes();
         updateOrderCodePreview();
         updateShiftDuration();
+        updatePrescriptionsCount();
         populateOperations();
         updateActivityLocationInterface();
         renderActivities();
@@ -3267,7 +3752,7 @@
       }
 
       function hasDraftContent() {
-        return state.activities.length > 0 || state.headerLocked || normalizeWhitespace(elements.mission.value) || elements.patrolType.value || elements.orderStart.value || elements.orderEnd.value;
+        return state.activities.length > 0 || state.headerLocked || normalizeWhitespace(elements.mission.value) || elements.patrolType.value || elements.orderStart.value || elements.orderEnd.value || normalizeMultiline(elements.prescriptions.value);
       }
 
       function locationCandidatesForActivity() {
@@ -3563,7 +4048,15 @@
         elements.activityCountMetric.textContent = String(state.activities.length);
         elements.activityDurationMetric.textContent = formatDuration(totalMinutes);
         elements.activityCoverageMetric.textContent = coverage + '%';
-        elements.finishButton.disabled = !state.headerLocked || state.activities.length === 0;
+        // Estado anterior preservado: elements.finishButton.disabled = !state.headerLocked || state.activities.length === 0;
+        const canContinueToPrescriptions = state.headerLocked && state.activities.length > 0;
+        if (!canContinueToPrescriptions) {
+          state.prescriptionsOpened = false;
+          state.conferenceReached = false;
+        }
+        elements.continueToPrescriptionsButton.disabled = !canContinueToPrescriptions;
+        elements.prescriptionsSection.classList.toggle('d-none', !state.prescriptionsOpened);
+        elements.finishButton.disabled = !canContinueToPrescriptions || !state.prescriptionsOpened;
         updateWorkflow();
       }
 
@@ -3601,6 +4094,9 @@
         const statusValue = normalizeUppercase(item.status);
         const status = statusValue === 'INATIVA' || statusValue === 'INATIVO' ? 'Inativa' : 'Ativa';
         const activities = Array.isArray(item.atividades) ? item.atividades.map(normalizeActivity) : [];
+        const prescriptionsSource = Object.prototype.hasOwnProperty.call(item, 'prescricoesDiversas')
+          ? item.prescricoesDiversas
+          : (item.prescricoes ?? item.orientacoesGerais ?? item.observacoesGerais ?? '');
         return Object.assign({}, item, {
           id: String(item.id || ('order-' + (Number.isFinite(number) ? number : index))),
           numero: Number.isFinite(number) ? number : 0,
@@ -3612,6 +4108,7 @@
           tipoRecurso: normalizeWhitespace(item.tipoRecurso || item.recurso),
           inicioGeral: String(item.inicioGeral || item.inicio || ''),
           terminoGeral: String(item.terminoGeral || item.termino || ''),
+          prescricoesDiversas: normalizeMultiline(prescriptionsSource),
           atividades: activities,
           ocultaNaTelaOS: item.ocultaNaTelaOS === true || item.ocultaNaTelaOS === 'true'
         });
@@ -3773,6 +4270,10 @@
           showPageAlert('Confirme o cabeçalho e adicione pelo menos uma atividade antes de finalizar.', 'warning');
           return false;
         }
+        if (!validatePrescriptions(false)) {
+          showPageAlert('Não foi possível gravar a OS porque as prescrições diversas excedem 2.000 caracteres.', 'danger', false);
+          return false;
+        }
 
         const issueCountBeforeRead = dataLoadIssueCount;
         const latestOrders = loadOrders();
@@ -3795,6 +4296,7 @@
           tipoRecurso: elements.patrolType.value,
           inicioGeral: elements.orderStart.value,
           terminoGeral: elements.orderEnd.value,
+          prescricoesDiversas: normalizeMultiline(elements.prescriptions.value),
           atividades: state.activities.map(function(activity) {
             return JSON.parse(JSON.stringify(activity));
           }),
@@ -3866,6 +4368,8 @@
         elements.mission.value = order.nomeOS;
         elements.orderStart.value = order.inicioGeral;
         elements.orderEnd.value = order.terminoGeral;
+        elements.prescriptions.value = order.prescricoesDiversas || '';
+        updatePrescriptionsCount();
         updateShiftDuration();
         state.activities = order.atividades.filter(function(activity) {
           return Number.isFinite(timeToMinutes(activity.inicio)) && Number.isFinite(timeToMinutes(activity.fim));
@@ -3948,6 +4452,9 @@
         const headerMeta = document.createElement('div');
         const title = document.createElement('h1');
         const meta = document.createElement('div');
+        const printPrescriptions = document.createElement('section');
+        const printPrescriptionsTitle = document.createElement('h2');
+        const printPrescriptionsText = document.createElement('p');
         const table = document.createElement('table');
         const tableHead = document.createElement('thead');
         const headRow = document.createElement('tr');
@@ -3970,6 +4477,11 @@
           createPrintMeta('Início', order.inicioGeral),
           createPrintMeta('Término', order.terminoGeral)
         );
+
+        printPrescriptions.className = 'os-print-prescriptions';
+        printPrescriptionsTitle.textContent = 'Prescrições diversas';
+        printPrescriptionsText.textContent = order.prescricoesDiversas || 'Nenhuma prescrição informada.';
+        printPrescriptions.append(printPrescriptionsTitle, printPrescriptionsText);
 
         table.className = 'os-print-table';
         ['Atividade', 'Horário', 'Local / Operação', 'Detalhes'].forEach(function(label) {
@@ -3999,7 +4511,8 @@
 
         footer.className = 'os-print-footer';
         footer.textContent = 'Documento gerado pelo Ordena em ' + new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' }).format(new Date());
-        elements.printSheet.append(header, title, meta, table, footer);
+        // Composição anterior preservada: elements.printSheet.append(header, title, meta, table, footer);
+        elements.printSheet.append(header, title, meta, printPrescriptions, table, footer);
         elements.printSheet.setAttribute('aria-hidden', 'false');
 
         const printPayload = {
@@ -4008,6 +4521,7 @@
           tipoRecurso: order.tipoRecurso,
           inicioGeral: order.inicioGeral,
           terminoGeral: order.terminoGeral,
+          prescricoesDiversas: order.prescricoesDiversas || '',
           status: order.status,
           atividades: order.atividades
         };
@@ -4229,6 +4743,13 @@
 
       elements.orderStart.addEventListener('input', updateShiftDuration);
       elements.orderEnd.addEventListener('input', updateShiftDuration);
+      elements.prescriptions.addEventListener('input', function() {
+        state.conferenceReached = false;
+        elements.prescriptions.setCustomValidity('');
+        elements.prescriptionsForm.classList.remove('was-validated');
+        updatePrescriptionsCount();
+        updateWorkflow();
+      });
 
       elements.resetButton.addEventListener('click', function() {
         if (!hasDraftContent()) {
@@ -4243,7 +4764,8 @@
         }
         openConfirmation({
           title: 'Limpar rascunho',
-          message: 'Os dados gerais e todas as atividades ainda não gravadas serão limpos.',
+          // Mensagem anterior preservada: 'Os dados gerais e todas as atividades ainda não gravadas serão limpos.'
+          message: 'Os dados gerais, as atividades e as prescrições ainda não gravadas serão limpos.',
           confirmLabel: 'Limpar rascunho',
           variant: 'danger',
           processingLabel: 'Limpando rascunho...',
@@ -4277,10 +4799,15 @@
         }
 
         const activityToAdd = buildActivityFromForm(range);
-        const activityControls = Array.from(elements.activitySection.querySelectorAll('button, input, select, textarea'));
+        // Controles anteriores preservados: Array.from(elements.activitySection.querySelectorAll('button, input, select, textarea'));
+        const activityControls = Array.from(elements.activitySection.querySelectorAll('button, input, select, textarea')).concat(
+          Array.from(elements.prescriptionsSection.querySelectorAll('button, input, select, textarea'))
+        );
         activityControls.push(elements.headerButton, elements.resetButton);
         runButtonOperation(elements.activityAddButton, 'Adicionando...', function() {
           state.activities.push(activityToAdd);
+          state.prescriptionsOpened = false;
+          state.conferenceReached = false;
           elements.activityForm.classList.remove('was-validated');
           const nextStart = elements.activityEnd.value;
           elements.activityStart.value = nextStart;
@@ -4297,8 +4824,11 @@
           errorMessage: 'Não foi possível adicionar a atividade. Revise os dados e tente novamente.',
           controls: activityControls,
           controlDisabledAfter: function(control, previousDisabled, succeeded) {
-            if (control === elements.finishButton && succeeded) {
+            if (control === elements.continueToPrescriptionsButton && succeeded) {
               return !state.headerLocked || state.activities.length === 0;
+            }
+            if (control === elements.finishButton && succeeded) {
+              return !state.headerLocked || state.activities.length === 0 || !state.prescriptionsOpened;
             }
             return previousDisabled;
           },
@@ -4311,7 +4841,10 @@
         if (!button) {
           return;
         }
-        const activityControls = Array.from(elements.activitySection.querySelectorAll('button, input, select, textarea'));
+        // Controles anteriores preservados: Array.from(elements.activitySection.querySelectorAll('button, input, select, textarea'));
+        const activityControls = Array.from(elements.activitySection.querySelectorAll('button, input, select, textarea')).concat(
+          Array.from(elements.prescriptionsSection.querySelectorAll('button, input, select, textarea'))
+        );
         activityControls.push(elements.headerButton, elements.resetButton);
         runButtonOperation(button, 'Removendo atividade...', function() {
           const activityIndex = state.activities.findIndex(function(activity) {
@@ -4322,6 +4855,8 @@
             return false;
           }
           const removedActivity = state.activities.splice(activityIndex, 1)[0];
+          state.prescriptionsOpened = false;
+          state.conferenceReached = false;
           renderActivities();
           showPageAlert(activityDisplayName(removedActivity.tipo) + ' removida do fracionamento com sucesso.', 'success');
           return true;
@@ -4331,8 +4866,11 @@
           errorMessage: 'Não foi possível remover a atividade.',
           controls: activityControls,
           controlDisabledAfter: function(control, previousDisabled, succeeded) {
-            if (control === elements.finishButton && succeeded) {
+            if (control === elements.continueToPrescriptionsButton && succeeded) {
               return !state.headerLocked || state.activities.length === 0;
+            }
+            if (control === elements.finishButton && succeeded) {
+              return !state.headerLocked || state.activities.length === 0 || !state.prescriptionsOpened;
             }
             return previousDisabled;
           },
@@ -4340,21 +4878,63 @@
         });
       });
 
+      elements.continueToPrescriptionsButton.addEventListener('click', function() {
+        if (!state.headerLocked || state.activities.length === 0) {
+          showPageAlert('Confirme os dados gerais e adicione pelo menos uma atividade antes de continuar.', 'warning');
+          return;
+        }
+
+        state.prescriptionsOpened = true;
+        state.conferenceReached = false;
+        elements.prescriptionsSection.classList.remove('d-none');
+        elements.finishButton.disabled = false;
+        updateWorkflow();
+        elements.prescriptionsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+
       elements.finishButton.addEventListener('click', function() {
-        const orderControls = Array.from(elements.headerForm.elements).concat(
-          Array.from(elements.activitySection.querySelectorAll('button, input, select, textarea'))
-        );
-        runButtonOperation(elements.finishButton, 'Gravando OS...', function() {
-          return withStorageLock('ordena-service-orders-write', saveNewOrder);
-        }, {
-          key: 'order-create',
+        // Fluxo anterior preservado: a gravação era iniciada diretamente pelo botão da página.
+        // const orderControls = Array.from(elements.headerForm.elements).concat(
+        //   Array.from(elements.activitySection.querySelectorAll('button, input, select, textarea'))
+        // );
+        // runButtonOperation(elements.finishButton, 'Gravando OS...', function() {
+        //   return withStorageLock('ordena-service-orders-write', saveNewOrder);
+        // }, {
+        //   key: 'order-create',
+        //   errorMessage: 'Não foi possível gravar a Ordem de Serviço. Seus dados foram preservados para uma nova tentativa.',
+        //   controls: orderControls,
+        //   controlDisabledAfter: function(control, previousDisabled, succeeded) {
+        //     return succeeded ? false : previousDisabled;
+        //   },
+        //   disabledAfter: function() {
+        //     return !state.headerLocked || state.activities.length === 0;
+        //   }
+        // });
+
+        if (!state.headerLocked || state.activities.length === 0) {
+          showPageAlert('Confirme os dados gerais e adicione pelo menos uma atividade antes de finalizar.', 'warning');
+          return;
+        }
+        if (!validatePrescriptions(true)) {
+          return;
+        }
+
+        state.prescriptionsOpened = true;
+        state.conferenceReached = true;
+        updateWorkflow();
+
+        openConfirmation({
+          title: 'Confirmar criação da Ordem de Serviço',
+          message: 'Confira o resumo abaixo. A nova OS só será gravada depois da sua confirmação.',
+          cancelLabel: 'Voltar e revisar',
+          confirmLabel: 'Confirmar e gravar OS',
+          variant: 'success',
+          processingLabel: 'Gravando OS...',
+          operationKey: 'order-create',
           errorMessage: 'Não foi possível gravar a Ordem de Serviço. Seus dados foram preservados para uma nova tentativa.',
-          controls: orderControls,
-          controlDisabledAfter: function(control, previousDisabled, succeeded) {
-            return succeeded ? false : previousDisabled;
-          },
-          disabledAfter: function() {
-            return !state.headerLocked || state.activities.length === 0;
+          orderCreationSummary: orderCreationConfirmationSummary(),
+          onConfirm: function() {
+            return withStorageLock('ordena-service-orders-write', saveNewOrder);
           }
         });
       });
@@ -4412,6 +4992,10 @@
       elements.confirmModal.addEventListener('hidden.bs.modal', function() {
         pendingConfirmation = null;
         pendingConfirmationFeedback = null;
+        if (state.headerLocked && state.activities.length > 0 && state.conferenceReached) {
+          state.conferenceReached = false;
+          updateWorkflow();
+        }
         if (elements.pageAlert.classList.contains('alert-danger') && !elements.pageAlert.classList.contains('d-none')) {
           window.requestAnimationFrame(function() {
             elements.pageAlert.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -4505,6 +5089,10 @@
       });
 
       window.addEventListener('storage', async function(event) {
+        if (!AUTOMATIC_STORAGE_SYNC_ENABLED) {
+          return;
+        }
+
         const sourceKeys = [
           STORAGE_KEYS.serviceTypes,
           STORAGE_KEYS.basePoints,
@@ -4561,8 +5149,10 @@
           resetDraft();
 
           if (!dataLoadHasIssue) {
-            showPageAlert('Dados da página carregados com sucesso.', 'success');
-            announceOperationStatus('Dados da página carregados com sucesso.');
+            // Confirmação automática anterior preservada, mas desativada: abrir a página
+            // não é uma ação do usuário que precise gerar um alerta de sucesso.
+            // showPageAlert('Dados da página carregados com sucesso.', 'success');
+            // announceOperationStatus('Dados da página carregados com sucesso.');
           } else {
             showPageAlert('Erro ao carregar todos os dados da página. Alguns registros não puderam ser exibidos.', 'danger', false);
             announceOperationStatus('Erro ao carregar todos os dados da página.');

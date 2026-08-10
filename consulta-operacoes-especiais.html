@@ -77,6 +77,14 @@
       min-width: 22px;
     }
 
+    .operation-code {
+      color: var(--heading-color);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
     .operation-name {
       color: var(--heading-color);
       font-weight: 600;
@@ -107,6 +115,11 @@
       padding: 2.75rem 1rem !important;
       text-align: center;
       color: var(--muted-color);
+    }
+
+    .operation-list-card .table td.operation-empty-state,
+    .operation-list-card .table td.operation-loading-state {
+      text-align: center;
     }
 
     .operation-empty-state > i {
@@ -224,7 +237,7 @@
             <a class="nav-link" href="#" aria-expanded="true">
               <span class="nav-icon"><i class="ph-light ph-magnifying-glass" aria-hidden="true"></i></span>
               <span class="nav-text">Consultas</span>
-              <span class="nav-badge">5</span>
+              <span class="nav-badge">6</span>
               <span class="nav-arrow"><i class="bi bi-chevron-right" aria-hidden="true"></i></span>
             </a>
             <ul class="nav-submenu show">
@@ -233,6 +246,7 @@
               <li><a class="nav-link" href="consulta-locais-patrulhamento.html"><span class="nav-dot"></span>Locais de Patrulhamento</a></li>
               <li><a class="nav-link" href="consulta-tipos-servico.html"><span class="nav-dot"></span>Tipos de Serviço</a></li>
               <li><a class="nav-link active" href="consulta-operacoes-especiais.html" aria-current="page"><span class="nav-dot"></span>Operações Especiais</a></li>
+              <li><a class="nav-link" href="users.html"><span class="nav-dot"></span>Ordens de Serviço</a></li>
             </ul>
           </li>
 
@@ -240,11 +254,13 @@
             <a class="nav-link" href="#" aria-expanded="false">
               <span class="nav-icon"><i class="ph-light ph-users-three" aria-hidden="true"></i></span>
               <span class="nav-text">Ordens de Serviço</span>
-              <span class="nav-badge">2</span>
+              <span class="nav-badge">1</span>
               <span class="nav-arrow"><i class="bi bi-chevron-right" aria-hidden="true"></i></span>
             </a>
             <ul class="nav-submenu">
+              <!-- Link anterior preservado; a consulta agora pertence ao grupo Consultas.
               <li><a class="nav-link" href="users.html"><span class="nav-dot"></span>Consultar Ordens de Serviço</a></li>
+              -->
               <li><a class="nav-link" href="users-view.html"><span class="nav-dot"></span>Criar Ordem de Serviço</a></li>
             </ul>
           </li>
@@ -253,11 +269,12 @@
             <a class="nav-link" href="#" aria-expanded="false">
               <span class="nav-icon"><i class="ph-light ph-shield-check" aria-hidden="true"></i></span>
               <span class="nav-text">Operação</span>
-              <span class="nav-badge">2</span>
+              <span class="nav-badge">3</span>
               <span class="nav-arrow"><i class="bi bi-chevron-right" aria-hidden="true"></i></span>
             </a>
             <ul class="nav-submenu">
-              <li><a class="nav-link" href="auth-login.html"><span class="nav-dot"></span>Ativação</a></li>
+              <li><a class="nav-link" href="ativacao.html"><span class="nav-dot"></span>Ativar Guarnição</a></li>
+              <li><a class="nav-link" href="painel-ativacoes.html"><span class="nav-dot"></span>Painel de Ativações</a></li>
               <li><a class="nav-link" href="auth-register.html"><span class="nav-dot"></span>Mapa Tático</a></li>
             </ul>
           </li>
@@ -328,6 +345,7 @@
                 <caption class="visually-hidden">Relação de operações especiais cadastradas</caption>
                 <thead>
                   <tr>
+                    <th scope="col" class="d-none d-md-table-cell">Código</th>
                     <th scope="col">Operação</th>
                     <th scope="col" class="d-none d-md-table-cell">Descrição</th>
                     <!-- Cabeçalhos anteriores preservados: “Início previsto” e “Término previsto”. -->
@@ -339,7 +357,7 @@
                 </thead>
                 <tbody id="operationTableBody">
                   <tr>
-                    <td colspan="6" class="operation-loading-state">
+                    <td colspan="7" class="operation-loading-state">
                       <span class="operation-loading-content">
                         <span class="spinner-border spinner-border-sm text-primary" role="status" aria-hidden="true"></span>
                         <span>Carregando operações especiais...</span>
@@ -466,6 +484,8 @@
           return null;
         }
 
+        const storedCode = Number(operation.code);
+        const code = Number.isInteger(storedCode) && storedCode > 0 ? storedCode : index + 1;
         const id = String(operation.id || ('special-operation-stored-' + index)).trim();
         const name = normalizeWhitespace(operation.name);
         const description = normalizeWhitespace(operation.description);
@@ -496,6 +516,7 @@
         */
         return Object.assign({}, operation, {
           id: id,
+          code: code,
           name: name,
           description: description,
           startsAt: formatStoredDate(startsAt),
@@ -669,7 +690,7 @@
         filterButtons.forEach(function(button) {
           button.disabled = true;
         });
-        loadingCell.colSpan = 6;
+        loadingCell.colSpan = 7;
         loadingCell.className = 'operation-loading-state';
         loadingContent.className = 'operation-loading-content';
         spinner.className = 'spinner-border spinner-border-sm text-primary';
@@ -709,7 +730,7 @@
           const emptyIcon = document.createElement('i');
           const emptyText = document.createElement('span');
 
-          emptyCell.colSpan = 6;
+          emptyCell.colSpan = 7;
           emptyCell.className = 'operation-empty-state';
           emptyIcon.className = currentFilter === 'active' ? 'bi bi-calendar2-event' : 'bi bi-slash-circle';
           emptyIcon.setAttribute('aria-hidden', 'true');
@@ -730,6 +751,7 @@
           const actionsCell = document.createElement('td');
           const actions = document.createElement('div');
 
+          createTextCell(row, String(operation.code), 'operation-code d-none d-md-table-cell');
           createTextCell(row, operation.name, 'operation-name');
           createTextCell(row, operation.description, 'operation-description d-none d-md-table-cell');
           // Células anteriores preservadas: formatDateTime(operation.startsAt/endsAt).

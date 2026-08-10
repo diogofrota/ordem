@@ -1,131 +1,4202 @@
 <!DOCTYPE html>
-<html lang="en">
+<!-- Elemento original preservado: <html lang="en"> -->
+<html lang="pt-BR">
 
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!--
+  Metadados originais preservados:
   <title>Create Account - NiceAdmin</title>
   <meta name="description" content="NiceAdmin - Bootstrap Admin Template">
   <meta name="keywords" content="admin, dashboard, bootstrap">
+  -->
+  <title>Mapa Tático - Ordena</title>
+  <meta name="description" content="Visão tática das equipes ativadas e das posições programadas nas Ordens de Serviço do Ordena">
+  <meta name="keywords" content="ordena, mapa tático, policiamento, viaturas, ordens de serviço">
 
-  <!-- Favicons -->
   <link href="assets/img/favicon.png" rel="icon">
   <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
 
-  <!-- Google Fonts - Nunito Sans + Poppins + JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Nunito+Sans:wght@400;500;600;700;800&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&amp;family=Nunito+Sans:wght@400;500;600;700;800&amp;family=Poppins:wght@500;600;700&amp;display=swap" rel="stylesheet">
 
-  <!-- Vendor CSS Files -->
   <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
   <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
-  <link href="assets/vendor/remixicon/remixicon.css" rel="stylesheet">
-  <link href="assets/vendor/fontawesome-free/css/all.min.css" rel="stylesheet">
   <link href="assets/vendor/phosphor-icons/phosphor-icons.css" rel="stylesheet">
-  <link href="assets/vendor/lucide-icons/lucide.css" rel="stylesheet">
-  <link href="assets/vendor/simple-datatables/style.css" rel="stylesheet">
-  <link href="assets/vendor/quill/quill.snow.css" rel="stylesheet">
-  <link href="assets/vendor/quill/quill.bubble.css" rel="stylesheet">
-  <link href="assets/vendor/choices.js/choices.min.css" rel="stylesheet">
-  <link href="assets/vendor/flatpickr/flatpickr.min.css" rel="stylesheet">
-
-  <!-- Template Main CSS File -->
   <link href="assets/css/main.css" rel="stylesheet">
 
-  <!-- =======================================================
-    * Template Name: NiceAdmin - Bootstrap Admin Template
-    * Template URL: https://bootstrapmade.com/flex-admin-bootstrap-template/
-    * Updated: Jun 09 2026 with Bootstrap v5.3.8
-    * Author: BootstrapMade.com
-    * License: https://bootstrapmade.com/license/
-    ======================================================== -->
+  <!-- Leaflet 1.9.4 é a mesma biblioteca cartográfica já utilizada pelo projeto. -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+
+  <!-- Estilos localizados do Mapa Tático. -->
+  <style>
+    .tactical-page-intro {
+      max-width: 760px;
+      margin: 0;
+      color: var(--muted-color);
+      font-size: 0.9375rem;
+    }
+
+    .tactical-heading-actions {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: var(--spacing-sm);
+    }
+
+    .tactical-heading-button-row {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: var(--spacing-sm);
+    }
+
+    .tactical-refresh-group {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+    }
+
+    .tactical-updated-at {
+      color: var(--muted-color);
+      font-size: 0.75rem;
+      white-space: nowrap;
+    }
+
+    .tactical-page-alert {
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .tactical-growing-dots {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      color: var(--accent-color);
+    }
+
+    .tactical-growing-dots .spinner-grow {
+      width: 0.625rem;
+      height: 0.625rem;
+      color: currentColor;
+    }
+
+    .tactical-page-loading {
+      min-height: 260px;
+      margin-bottom: var(--spacing-xl);
+      border-color: var(--border-color-light);
+    }
+
+    .tactical-page-loading .card-body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: var(--spacing-xs);
+      text-align: center;
+    }
+
+    .tactical-page-loading strong {
+      color: var(--heading-color);
+      font-size: 0.9375rem;
+    }
+
+    .tactical-page-loading small {
+      max-width: 420px;
+      color: var(--muted-color);
+    }
+
+    .tactical-notice {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--spacing-sm);
+      margin-bottom: var(--spacing-lg);
+      padding: 10px 12px;
+      border: 1px solid color-mix(in srgb, var(--info-color), transparent 68%);
+      border-radius: var(--radius-md);
+      color: color-mix(in srgb, var(--info-color), #000 34%);
+      background: var(--info-color-light);
+      font-size: 0.8125rem;
+      line-height: 1.45;
+    }
+
+    [data-theme=dark] .tactical-notice {
+      color: var(--info-color);
+    }
+
+    .tactical-command-strip {
+      position: relative;
+      overflow: hidden;
+      margin-bottom: var(--spacing-lg);
+      border: 0;
+      color: #fff;
+      background:
+        radial-gradient(circle at 88% -40%, rgba(93, 163, 255, 0.42), transparent 35%),
+        linear-gradient(112deg, #071b3e 0%, #0d3269 52%, #174f8f 100%);
+      box-shadow: 0 18px 36px -28px rgba(4, 24, 61, 0.72);
+    }
+
+    .tactical-command-strip::after {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+      background-size: 24px 24px;
+      content: "";
+      pointer-events: none;
+      -webkit-mask-image: linear-gradient(90deg, transparent, #000 35%, #000);
+      mask-image: linear-gradient(90deg, transparent, #000 35%, #000);
+    }
+
+    .tactical-command-head {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--spacing-md);
+      padding: 13px 16px 8px;
+    }
+
+    .tactical-command-title {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin: 0;
+      color: #fff;
+      font-size: 0.8125rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .tactical-live-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 8px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: var(--radius-full);
+      color: rgba(255, 255, 255, 0.86);
+      background: rgba(255, 255, 255, 0.08);
+      font-size: 0.6875rem;
+      font-weight: 700;
+    }
+
+    .tactical-live-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #45e3a3;
+      box-shadow: 0 0 0 4px rgba(69, 227, 163, 0.14);
+    }
+
+    .tactical-demo-badge {
+      display: none;
+      padding: 4px 8px;
+      border: 1px solid rgba(255, 210, 119, 0.38);
+      border-radius: var(--radius-full);
+      color: #ffe0a0;
+      background: rgba(236, 159, 5, 0.14);
+      font-size: 0.6875rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .tactical-demo-badge.is-visible {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .tactical-metrics-scroll {
+      position: relative;
+      z-index: 1;
+      overflow-x: auto;
+      padding: 0 8px 10px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.28) transparent;
+    }
+
+    .tactical-metrics-grid {
+      display: grid;
+      min-width: 1040px;
+      grid-template-columns: repeat(10, minmax(96px, 1fr));
+      gap: 1px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .tactical-metric {
+      position: relative;
+      min-height: 72px;
+      padding: 12px 11px;
+      background: rgba(5, 27, 61, 0.68);
+    }
+
+    .tactical-metric::after {
+      position: absolute;
+      right: 9px;
+      bottom: 9px;
+      color: rgba(255, 255, 255, 0.2);
+      font-family: bootstrap-icons;
+      font-size: 1.25rem;
+      content: attr(data-icon);
+    }
+
+    .tactical-metric-label {
+      display: block;
+      color: rgba(255, 255, 255, 0.62);
+      font-size: 0.625rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .tactical-metric-value {
+      display: block;
+      margin-top: 3px;
+      color: #fff;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 1.25rem;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .tactical-map-card {
+      overflow: hidden;
+      margin-bottom: var(--spacing-xl);
+      border-color: color-mix(in srgb, var(--accent-color), transparent 76%);
+      box-shadow: 0 20px 44px -28px rgba(1, 41, 112, 0.34);
+    }
+
+    .tactical-map-card > .card-header {
+      align-items: flex-start;
+      gap: var(--spacing-md);
+      padding: 14px 16px;
+      border-bottom-color: var(--border-color);
+    }
+
+    .tactical-card-heading {
+      display: flex;
+      min-width: 0;
+      align-items: flex-start;
+      gap: var(--spacing-sm);
+    }
+
+    .tactical-card-icon {
+      display: inline-flex;
+      width: 40px;
+      height: 40px;
+      flex: 0 0 40px;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-md);
+      color: var(--accent-color);
+      background: color-mix(in srgb, var(--accent-color), transparent 90%);
+      font-size: 1.15rem;
+    }
+
+    .tactical-map-card .card-title {
+      margin-bottom: 2px;
+    }
+
+    .tactical-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: flex-end;
+      gap: var(--spacing-sm);
+    }
+
+    .tactical-toolbar .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .tactical-position-state {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 31px;
+      padding: 5px 9px;
+      border: 1px solid color-mix(in srgb, var(--success-color), transparent 68%);
+      border-radius: var(--radius-full);
+      color: color-mix(in srgb, var(--success-color), #000 30%);
+      background: var(--success-color-light);
+      font-size: 0.6875rem;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    [data-theme=dark] .tactical-position-state {
+      color: var(--success-color);
+    }
+
+    .tactical-position-state .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--success-color);
+    }
+
+    .tactical-workspace {
+      position: relative;
+      display: grid;
+      min-height: clamp(590px, calc(100dvh - 318px), 780px);
+      grid-template-columns: 370px minmax(0, 1fr);
+      overflow: hidden;
+      background: #dce7f1;
+      transition: grid-template-columns var(--transition-base);
+    }
+
+    .tactical-workspace.is-roster-collapsed {
+      grid-template-columns: 0 minmax(0, 1fr);
+    }
+
+    .tactical-roster {
+      position: relative;
+      z-index: 510;
+      display: flex;
+      min-width: 0;
+      min-height: 0;
+      flex-direction: column;
+      overflow: hidden;
+      border-right: 1px solid var(--border-color);
+      background: var(--surface-color);
+      box-shadow: 8px 0 24px -20px rgba(1, 41, 112, 0.48);
+      transition: transform var(--transition-base), opacity var(--transition-base);
+    }
+
+    .tactical-workspace.is-roster-collapsed .tactical-roster {
+      opacity: 0;
+      transform: translateX(-100%);
+      pointer-events: none;
+    }
+
+    .tactical-roster-head {
+      flex: 0 0 auto;
+      padding: 15px 14px 12px;
+      border-bottom: 1px solid var(--border-color-light);
+    }
+
+    .tactical-roster-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--spacing-sm);
+      margin-bottom: 10px;
+    }
+
+    .tactical-roster-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0;
+      color: var(--heading-color);
+      font-size: 0.9375rem;
+      font-weight: 800;
+    }
+
+    .tactical-roster-count {
+      display: inline-flex;
+      min-width: 24px;
+      height: 22px;
+      align-items: center;
+      justify-content: center;
+      padding: 0 7px;
+      border-radius: var(--radius-full);
+      color: var(--accent-color);
+      background: color-mix(in srgb, var(--accent-color), transparent 90%);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.6875rem;
+      font-weight: 700;
+    }
+
+    .tactical-roster-subtitle {
+      margin: -4px 0 10px;
+      color: var(--muted-color);
+      font-size: 0.75rem;
+    }
+
+    .tactical-roster-filters {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 122px;
+      gap: 7px;
+    }
+
+    .tactical-roster-filters .form-control,
+    .tactical-roster-filters .form-select,
+    .tactical-roster-filters .input-group-text {
+      min-height: 36px;
+      font-size: 0.75rem;
+    }
+
+    .tactical-team-list {
+      min-height: 0;
+      flex: 1 1 auto;
+      overflow-y: auto;
+      padding: 10px;
+      background: color-mix(in srgb, var(--background-color), transparent 22%);
+      scrollbar-width: thin;
+      scrollbar-color: var(--border-color-dark) transparent;
+    }
+
+    .tactical-team-card {
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 8px;
+      border: 1px solid var(--border-color);
+      border-left: 3px solid var(--border-color-dark);
+      border-radius: var(--radius-md);
+      background: var(--surface-color);
+      box-shadow: var(--shadow-sm);
+      transition: border-color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
+    }
+
+    .tactical-team-card:hover {
+      border-color: color-mix(in srgb, var(--accent-color), transparent 54%);
+      transform: translateY(-1px);
+    }
+
+    .tactical-team-card.is-selected {
+      border-color: color-mix(in srgb, var(--accent-color), transparent 30%);
+      border-left-color: var(--accent-color);
+      box-shadow: 0 10px 22px -17px color-mix(in srgb, var(--accent-color), transparent 22%);
+    }
+
+    .tactical-team-summary {
+      display: block;
+      width: 100%;
+      padding: 11px 11px 10px;
+      border: 0;
+      color: inherit;
+      background: transparent;
+      text-align: left;
+    }
+
+    .tactical-team-summary:focus-visible {
+      outline: 2px solid var(--accent-color);
+      outline-offset: -2px;
+    }
+
+    .tactical-team-topline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .tactical-team-identity {
+      display: flex;
+      min-width: 0;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .tactical-team-identity > .min-w-0 {
+      min-width: 0;
+    }
+
+    .tactical-team-resource-icon {
+      display: inline-flex;
+      width: 30px;
+      height: 30px;
+      flex: 0 0 30px;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      color: var(--accent-color);
+      background: color-mix(in srgb, var(--accent-color), transparent 90%);
+      font-size: 0.875rem;
+    }
+
+    .tactical-team-call-sign {
+      display: block;
+      overflow: hidden;
+      color: var(--heading-color);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.8125rem;
+      font-weight: 800;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .tactical-team-prefix {
+      display: block;
+      margin-top: 1px;
+      overflow: hidden;
+      color: var(--muted-color);
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .tactical-team-chevron {
+      display: inline-flex;
+      width: 26px;
+      height: 26px;
+      flex: 0 0 26px;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      color: var(--accent-color);
+      background: var(--background-color);
+      transition: transform var(--transition-fast);
+    }
+
+    .tactical-team-card.is-selected .tactical-team-chevron {
+      transform: rotate(180deg);
+    }
+
+    .tactical-team-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-top: 9px;
+    }
+
+    .tactical-team-order {
+      min-width: 0;
+      overflow: hidden;
+      color: var(--muted-color);
+      font-size: 0.6875rem;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .tactical-stage-badge {
+      display: inline-flex;
+      flex: 0 0 auto;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 7px;
+      border-radius: var(--radius-full);
+      color: var(--muted-color);
+      background: var(--border-color-light);
+      font-size: 0.625rem;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .tactical-stage-badge.is-baseamento {
+      color: color-mix(in srgb, var(--success-color), #000 34%);
+      background: var(--success-color-light);
+    }
+
+    .tactical-stage-badge.is-patrulhamento {
+      color: color-mix(in srgb, var(--accent-color), #000 18%);
+      background: color-mix(in srgb, var(--accent-color), transparent 90%);
+    }
+
+    .tactical-stage-badge.is-deslocamento {
+      color: color-mix(in srgb, var(--info-color), #000 24%);
+      background: var(--info-color-light);
+    }
+
+    .tactical-stage-badge.is-intervalo {
+      color: color-mix(in srgb, var(--warning-color), #000 38%);
+      background: var(--warning-color-light);
+    }
+
+    [data-theme=dark] .tactical-stage-badge.is-baseamento {
+      color: var(--success-color);
+    }
+
+    [data-theme=dark] .tactical-stage-badge.is-patrulhamento {
+      color: var(--accent-color);
+    }
+
+    [data-theme=dark] .tactical-stage-badge.is-deslocamento {
+      color: var(--info-color);
+    }
+
+    [data-theme=dark] .tactical-stage-badge.is-intervalo {
+      color: var(--warning-color);
+    }
+
+    .tactical-team-detail {
+      display: none;
+      padding: 0 11px 11px;
+    }
+
+    .tactical-team-card.is-selected .tactical-team-detail {
+      display: block;
+    }
+
+    .tactical-detail-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border-color-light);
+    }
+
+    .tactical-detail-item {
+      min-width: 0;
+      padding: 7px 8px;
+      border: 1px solid var(--border-color-light);
+      border-radius: var(--radius-md);
+      background: var(--background-color);
+    }
+
+    .tactical-detail-label {
+      display: block;
+      margin-bottom: 2px;
+      color: var(--muted-color);
+      font-size: 0.5625rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .tactical-detail-value {
+      display: block;
+      overflow: hidden;
+      color: var(--heading-color);
+      font-size: 0.6875rem;
+      font-weight: 700;
+      line-height: 1.35;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .tactical-location-box {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      margin-top: 7px;
+      padding: 9px;
+      border: 1px solid color-mix(in srgb, var(--success-color), transparent 64%);
+      border-radius: var(--radius-md);
+      color: color-mix(in srgb, var(--success-color), #000 40%);
+      background: var(--success-color-light);
+    }
+
+    .tactical-location-box.is-unavailable {
+      border-color: color-mix(in srgb, var(--warning-color), transparent 58%);
+      color: color-mix(in srgb, var(--warning-color), #000 42%);
+      background: var(--warning-color-light);
+    }
+
+    [data-theme=dark] .tactical-location-box {
+      color: var(--success-color);
+    }
+
+    [data-theme=dark] .tactical-location-box.is-unavailable {
+      color: var(--warning-color);
+    }
+
+    .tactical-location-box i {
+      flex: 0 0 auto;
+      margin-top: 1px;
+    }
+
+    .tactical-location-label {
+      display: block;
+      font-size: 0.5625rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .tactical-location-name {
+      display: block;
+      margin-top: 1px;
+      color: var(--heading-color);
+      font-size: 0.75rem;
+      font-weight: 800;
+      line-height: 1.35;
+    }
+
+    .tactical-location-note {
+      display: block;
+      margin-top: 2px;
+      font-size: 0.625rem;
+      line-height: 1.35;
+    }
+
+    .tactical-empty-state {
+      display: flex;
+      min-height: 220px;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 18px;
+      color: var(--muted-color);
+      text-align: center;
+    }
+
+    .tactical-empty-state i {
+      display: inline-flex;
+      width: 48px;
+      height: 48px;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 10px;
+      border-radius: 50%;
+      color: var(--accent-color);
+      background: color-mix(in srgb, var(--accent-color), transparent 91%);
+      font-size: 1.25rem;
+    }
+
+    .tactical-empty-state strong {
+      color: var(--heading-color);
+      font-size: 0.8125rem;
+    }
+
+    .tactical-empty-state span {
+      max-width: 250px;
+      margin-top: 4px;
+      font-size: 0.75rem;
+      line-height: 1.45;
+    }
+
+    .tactical-roster-foot {
+      display: flex;
+      flex: 0 0 auto;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 12px;
+      border-top: 1px solid var(--border-color-light);
+      color: var(--muted-color);
+      background: var(--surface-color);
+      font-size: 0.625rem;
+      line-height: 1.35;
+    }
+
+    .tactical-map-stage {
+      position: relative;
+      z-index: 1;
+      min-width: 0;
+      min-height: 590px;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at center, rgba(65, 84, 241, 0.08), transparent 45%),
+        linear-gradient(135deg, #e6eef5, #ccdce8);
+    }
+
+    .tactical-map-stage:fullscreen {
+      width: 100vw;
+      height: 100vh;
+      min-height: 100vh;
+      background: #dce7f1;
+    }
+
+    #tacticalMap {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      width: 100%;
+      height: 100%;
+      background: transparent;
+    }
+
+    .tactical-map-loading,
+    .tactical-map-fallback {
+      position: absolute;
+      z-index: 520;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+
+    .tactical-map-loading {
+      inset: 0;
+      flex-direction: column;
+      gap: 7px;
+      color: #27476a;
+      background: rgba(236, 243, 249, 0.76);
+      -webkit-backdrop-filter: blur(3px);
+      backdrop-filter: blur(3px);
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .tactical-map-loading.is-hidden {
+      display: none;
+    }
+
+    .tactical-map-fallback {
+      inset: 20px;
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+      padding: 24px;
+      border: 1px dashed rgba(39, 71, 106, 0.35);
+      color: #27476a;
+      background:
+        linear-gradient(rgba(39, 71, 106, 0.055) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(39, 71, 106, 0.055) 1px, transparent 1px),
+        rgba(236, 243, 249, 0.94);
+      background-size: 32px 32px;
+      text-align: center;
+      pointer-events: auto;
+    }
+
+    .tactical-map-fallback.is-visible {
+      display: flex;
+    }
+
+    .tactical-map-fallback i {
+      font-size: 2rem;
+    }
+
+    .tactical-map-fallback strong {
+      font-size: 0.9375rem;
+    }
+
+    .tactical-map-fallback span {
+      max-width: 420px;
+      font-size: 0.75rem;
+      line-height: 1.5;
+    }
+
+    .tactical-map-mode {
+      position: absolute;
+      top: 12px;
+      left: 50%;
+      z-index: 530;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      max-width: calc(100% - 150px);
+      padding: 6px 10px;
+      border: 1px solid rgba(255, 255, 255, 0.55);
+      border-radius: var(--radius-full);
+      color: #fff;
+      background: rgba(5, 31, 70, 0.84);
+      box-shadow: 0 8px 20px -12px rgba(3, 20, 50, 0.72);
+      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px);
+      font-size: 0.625rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      transform: translateX(-50%);
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    .tactical-map-mode i {
+      color: #65e6b1;
+    }
+
+    .tactical-roster-map-toggle {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      z-index: 540;
+      display: none;
+      align-items: center;
+      gap: 7px;
+      min-height: 38px;
+      border-color: rgba(255, 255, 255, 0.7);
+      color: #fff;
+      background: rgba(5, 31, 70, 0.88);
+      box-shadow: 0 8px 20px -12px rgba(3, 20, 50, 0.8);
+      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px);
+    }
+
+    .tactical-workspace.is-roster-collapsed .tactical-roster-map-toggle {
+      display: inline-flex;
+    }
+
+    .tactical-fullscreen-exit {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      z-index: 545;
+      display: none;
+      align-items: center;
+      gap: 6px;
+      min-height: 38px;
+      border-color: rgba(255, 255, 255, 0.7);
+      color: #fff;
+      background: rgba(5, 31, 70, 0.88);
+      box-shadow: 0 8px 20px -12px rgba(3, 20, 50, 0.8);
+      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px);
+    }
+
+    .tactical-map-stage:fullscreen .tactical-fullscreen-exit {
+      display: inline-flex;
+    }
+
+    .tactical-map-legend {
+      position: absolute;
+      right: 12px;
+      bottom: 24px;
+      z-index: 530;
+      width: 178px;
+      padding: 9px 10px;
+      border: 1px solid rgba(255, 255, 255, 0.64);
+      border-radius: var(--radius-md);
+      color: #243a55;
+      background: rgba(255, 255, 255, 0.92);
+      box-shadow: 0 10px 24px -18px rgba(4, 24, 61, 0.78);
+      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px);
+      font-size: 0.625rem;
+      pointer-events: none;
+    }
+
+    .tactical-map-legend strong {
+      display: block;
+      margin-bottom: 5px;
+      color: #102f58;
+      font-size: 0.6875rem;
+      text-transform: uppercase;
+    }
+
+    .tactical-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 2px 0;
+    }
+
+    .tactical-legend-swatch {
+      width: 9px;
+      height: 9px;
+      flex: 0 0 9px;
+      border: 2px solid #fff;
+      border-radius: 50%;
+      box-shadow: 0 0 0 1px rgba(4, 24, 61, 0.2);
+    }
+
+    .tactical-legend-swatch.is-base {
+      background: #21a66c;
+    }
+
+    .tactical-legend-swatch.is-patrol {
+      background: #4154f1;
+    }
+
+    .tactical-legend-swatch.is-selected {
+      background: #f1a72f;
+    }
+
+    .tactical-roster-backdrop {
+      position: absolute;
+      inset: 0;
+      z-index: 505;
+      display: none;
+      border: 0;
+      background: rgba(4, 18, 42, 0.48);
+      opacity: 0;
+      transition: opacity var(--transition-base);
+    }
+
+    .tactical-unit-marker {
+      position: relative;
+      width: 42px;
+      height: 42px;
+    }
+
+    .tactical-unit-marker-core {
+      position: absolute;
+      top: 0;
+      left: 0;
+      display: flex;
+      width: 40px;
+      height: 40px;
+      align-items: center;
+      justify-content: center;
+      border: 4px solid #fff;
+      border-radius: 50%;
+      color: #fff;
+      background: #4154f1;
+      box-shadow: 0 6px 14px rgba(5, 31, 70, 0.38);
+      font-size: 0.875rem;
+    }
+
+    .tactical-unit-marker.is-baseamento .tactical-unit-marker-core {
+      background: #16855a;
+    }
+
+    .tactical-unit-marker.is-selected .tactical-unit-marker-core {
+      background: #ef9f1b;
+    }
+
+    .tactical-unit-marker.is-selected::before,
+    .tactical-unit-marker.is-selected::after {
+      position: absolute;
+      inset: -8px;
+      border: 2px solid rgba(239, 159, 27, 0.66);
+      border-radius: 50%;
+      content: "";
+      animation: tacticalPulse 1.8s ease-out infinite;
+    }
+
+    .tactical-unit-marker.is-selected::after {
+      animation-delay: 0.6s;
+    }
+
+    .tactical-unit-marker-label {
+      position: absolute;
+      top: 8px;
+      left: 34px;
+      z-index: -1;
+      max-width: 112px;
+      overflow: hidden;
+      padding: 4px 8px 4px 11px;
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      border-radius: 0 var(--radius-md) var(--radius-md) 0;
+      color: #fff;
+      background: rgba(5, 31, 70, 0.9);
+      box-shadow: 0 5px 12px -8px rgba(3, 20, 50, 0.72);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.625rem;
+      font-weight: 700;
+      line-height: 1.2;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .tactical-leaflet-icon {
+      overflow: visible !important;
+      border: 0 !important;
+      background: transparent !important;
+    }
+
+    .tactical-map-card .leaflet-container {
+      font-family: "Nunito Sans", sans-serif;
+    }
+
+    .tactical-map-card .leaflet-control-zoom a {
+      color: #163a67;
+    }
+
+    .tactical-map-card .leaflet-control-attribution {
+      color: #536b84;
+      background: rgba(255, 255, 255, 0.88);
+      font-size: 9px;
+    }
+
+    .tactical-map-card .leaflet-popup-content-wrapper,
+    .tactical-map-card .leaflet-popup-tip {
+      color: var(--default-color);
+      background: var(--surface-color);
+    }
+
+    .tactical-map-card .leaflet-popup-content-wrapper {
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .tactical-popup {
+      min-width: 220px;
+    }
+
+    .tactical-popup-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 8px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border-color-light);
+    }
+
+    .tactical-popup-head strong {
+      color: var(--heading-color);
+      font-size: 0.8125rem;
+    }
+
+    .tactical-popup-head span {
+      padding: 3px 6px;
+      border-radius: var(--radius-full);
+      color: var(--accent-color);
+      background: color-mix(in srgb, var(--accent-color), transparent 90%);
+      font-size: 0.625rem;
+      font-weight: 800;
+    }
+
+    .tactical-popup-row {
+      display: grid;
+      grid-template-columns: 72px 1fr;
+      gap: 8px;
+      padding: 3px 0;
+      font-size: 0.6875rem;
+      line-height: 1.35;
+    }
+
+    .tactical-popup-row span {
+      color: var(--muted-color);
+    }
+
+    .tactical-popup-row strong {
+      color: var(--default-color);
+      font-weight: 700;
+    }
+
+    @keyframes tacticalPulse {
+      0% {
+        opacity: 0.85;
+        transform: scale(0.7);
+      }
+      100% {
+        opacity: 0;
+        transform: scale(1.35);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .tactical-growing-dots .spinner-grow,
+      .tactical-unit-marker.is-selected::before,
+      .tactical-unit-marker.is-selected::after {
+        opacity: 1;
+        animation: none !important;
+      }
+    }
+
+    @media (max-width: 1199px) {
+      .tactical-workspace {
+        grid-template-columns: 330px minmax(0, 1fr);
+      }
+    }
+
+    @media (max-width: 991px) {
+      .tactical-workspace,
+      .tactical-workspace.is-roster-collapsed {
+        display: block;
+        min-height: 640px;
+      }
+
+      .tactical-roster {
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: min(370px, calc(100% - 36px));
+        opacity: 0;
+        transform: translateX(-105%);
+        pointer-events: none;
+      }
+
+      .tactical-workspace.is-roster-open .tactical-roster {
+        opacity: 1;
+        transform: translateX(0);
+        pointer-events: auto;
+      }
+
+      .tactical-roster-map-toggle,
+      .tactical-workspace.is-roster-collapsed .tactical-roster-map-toggle {
+        display: inline-flex;
+      }
+
+      .tactical-workspace.is-roster-open .tactical-roster-map-toggle {
+        display: none;
+      }
+
+      .tactical-roster-backdrop {
+        display: block;
+        pointer-events: none;
+      }
+
+      .tactical-workspace.is-roster-open .tactical-roster-backdrop {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .tactical-map-stage {
+        min-height: 640px;
+      }
+    }
+
+    @media (max-width: 767px) {
+      .tactical-page-intro {
+        font-size: 0.875rem;
+      }
+
+      .tactical-heading-actions,
+      .tactical-heading-button-row,
+      .tactical-refresh-group,
+      .tactical-heading-button-row .btn {
+        width: 100%;
+      }
+
+      .tactical-heading-actions,
+      .tactical-refresh-group {
+        align-items: flex-start;
+      }
+
+      .tactical-heading-button-row {
+        align-items: stretch;
+      }
+
+      .tactical-command-head {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .tactical-map-card > .card-header {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .tactical-toolbar {
+        justify-content: stretch;
+      }
+
+      .tactical-toolbar .btn {
+        flex: 1 1 auto;
+      }
+
+      .tactical-position-state {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .tactical-map-mode {
+        top: 58px;
+        max-width: calc(100% - 24px);
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .tactical-map-legend {
+        right: 8px;
+        bottom: 22px;
+        width: 154px;
+      }
+
+      .tactical-workspace,
+      .tactical-workspace.is-roster-collapsed,
+      .tactical-map-stage {
+        min-height: 570px;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .tactical-heading-button-row {
+        flex-direction: column;
+      }
+
+      .tactical-roster {
+        width: calc(100% - 20px);
+      }
+
+      .tactical-roster-filters {
+        grid-template-columns: 1fr;
+      }
+
+      .tactical-map-legend {
+        display: none;
+      }
+    }
+
+    /*
+      Integração visual com os dashboards do Ordena.
+      As regras originais acima permanecem preservadas; estes ajustes aproximam
+      o resumo, o card e os controles do padrão utilizado no Painel de Ativações.
+    */
+    .tactical-command-strip.card {
+      overflow: visible;
+      margin-bottom: var(--spacing-xl);
+      border: 0;
+      color: var(--default-color);
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .tactical-command-strip::after {
+      display: none;
+    }
+
+    .tactical-command-head {
+      padding: 0;
+    }
+
+    .tactical-metrics-scroll {
+      overflow: visible;
+      padding: 0;
+      scrollbar-color: var(--border-color-dark) transparent;
+    }
+
+    .tactical-metrics-grid {
+      display: grid;
+      min-width: 0;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: var(--spacing-lg);
+      margin-bottom: 0;
+      overflow: visible;
+      border: 0;
+      background: transparent;
+    }
+
+    .tactical-resource-metric {
+      position: relative;
+      min-height: 108px;
+      margin-bottom: 0;
+      padding: var(--spacing-lg);
+      overflow: hidden;
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      color: var(--default-color);
+      background: var(--card-bg);
+      box-shadow: var(--card-shadow);
+    }
+
+    .tactical-resource-metric::after {
+      position: absolute;
+      right: -24px;
+      bottom: -32px;
+      display: block;
+      width: 92px;
+      height: 92px;
+      border-radius: 50%;
+      background: color-mix(in srgb, var(--accent-color), transparent 96%);
+      content: "";
+      pointer-events: none;
+    }
+
+    .tactical-resource-metric .widget-stat-header {
+      position: relative;
+      z-index: 1;
+      margin-bottom: 0;
+    }
+
+    .tactical-resource-metric .tactical-metric-value {
+      display: block;
+      margin: 0;
+      color: var(--heading-color);
+      font-family: "Nunito Sans", sans-serif;
+      font-size: 1.75rem;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .tactical-resource-metric .tactical-metric-label {
+      display: block;
+      margin-top: 2px;
+      color: var(--muted-color);
+      font-size: 0.8125rem;
+      font-weight: 600;
+      letter-spacing: 0;
+      text-transform: none;
+      white-space: normal;
+    }
+
+    .tactical-metric-note {
+      position: relative;
+      z-index: 1;
+      display: block;
+      margin-top: var(--spacing-sm);
+      color: var(--muted-color);
+      font-size: 0.75rem;
+      line-height: 1.35;
+    }
+
+    .tactical-stage-summary {
+      display: grid;
+      min-width: 0;
+      grid-column: 1 / -1;
+      grid-template-columns: 190px minmax(0, 1fr);
+      margin-bottom: 0;
+      overflow: hidden;
+      border-color: var(--card-border);
+      box-shadow: var(--card-shadow);
+    }
+
+    .tactical-stage-summary-heading {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+      padding: var(--spacing-md) var(--spacing-lg);
+      border-right: 1px solid var(--border-color-light);
+      background: color-mix(in srgb, var(--background-color), transparent 32%);
+    }
+
+    .tactical-stage-summary-heading > span {
+      display: inline-flex;
+      width: 36px;
+      height: 36px;
+      flex: 0 0 36px;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-md);
+      color: var(--accent-color);
+      background: color-mix(in srgb, var(--accent-color), transparent 90%);
+      font-size: 1rem;
+    }
+
+    .tactical-stage-summary-heading strong,
+    .tactical-stage-summary-heading small {
+      display: block;
+    }
+
+    .tactical-stage-summary-heading strong {
+      color: var(--heading-color);
+      font-size: 0.8125rem;
+      font-weight: 700;
+    }
+
+    .tactical-stage-summary-heading small {
+      margin-top: 1px;
+      color: var(--muted-color);
+      font-size: 0.6875rem;
+      line-height: 1.3;
+    }
+
+    .tactical-stage-summary-scroll {
+      min-width: 0;
+      overflow-x: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border-color-dark) transparent;
+    }
+
+    .tactical-stage-summary-grid {
+      display: grid;
+      min-width: 660px;
+      height: 100%;
+      grid-template-columns: repeat(6, minmax(100px, 1fr));
+    }
+
+    .tactical-stage-metric {
+      position: relative;
+      display: grid;
+      min-height: 76px;
+      grid-template-columns: 30px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      border: 0;
+      border-right: 1px solid var(--border-color-light);
+      color: var(--default-color);
+      background: var(--card-bg);
+    }
+
+    .tactical-stage-metric:last-child {
+      border-right: 0;
+    }
+
+    .tactical-stage-metric::after {
+      display: none;
+    }
+
+    .tactical-stage-metric-icon {
+      display: inline-flex;
+      width: 30px;
+      height: 30px;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-sm);
+      color: var(--muted-color);
+      background: var(--border-color-light);
+      font-size: 0.8125rem;
+    }
+
+    .tactical-stage-metric[data-stage="prelecao"] .tactical-stage-metric-icon,
+    .tactical-stage-metric[data-stage="deslocamento"] .tactical-stage-metric-icon {
+      color: var(--info-color);
+      background: var(--info-color-light);
+    }
+
+    .tactical-stage-metric[data-stage="baseamento"] .tactical-stage-metric-icon {
+      color: var(--success-color);
+      background: var(--success-color-light);
+    }
+
+    .tactical-stage-metric[data-stage="patrulhamento"] .tactical-stage-metric-icon {
+      color: var(--accent-color);
+      background: color-mix(in srgb, var(--accent-color), transparent 90%);
+    }
+
+    .tactical-stage-metric[data-stage="intervalo"] .tactical-stage-metric-icon {
+      color: var(--warning-color);
+      background: var(--warning-color-light);
+    }
+
+    .tactical-stage-metric .tactical-metric-label {
+      min-width: 0;
+      overflow: hidden;
+      color: var(--muted-color);
+      font-size: 0.6875rem;
+      font-weight: 600;
+      letter-spacing: 0;
+      text-overflow: ellipsis;
+      text-transform: none;
+      white-space: nowrap;
+    }
+
+    .tactical-stage-metric .tactical-metric-value {
+      margin: 0;
+      color: var(--heading-color);
+      font-family: "Nunito Sans", sans-serif;
+      font-size: 1.125rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .tactical-demo-badge {
+      display: none;
+      gap: 5px;
+      padding: 0.4rem 0.55rem;
+      border: 0;
+      border-radius: var(--radius-sm);
+      color: var(--warning-color);
+      background: var(--warning-color-light);
+      font-size: 0.6875rem;
+      font-weight: 700;
+      letter-spacing: 0;
+      text-transform: none;
+    }
+
+    .tactical-live-indicator {
+      border: 0;
+      border-radius: var(--radius-sm);
+      color: var(--info-color);
+      background: var(--info-color-light);
+      letter-spacing: 0;
+      text-transform: none;
+    }
+
+    .tactical-live-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--info-color);
+      box-shadow: none;
+    }
+
+    .tactical-map-card {
+      margin-bottom: 0;
+      border-color: var(--card-border);
+      box-shadow: var(--card-shadow);
+    }
+
+    .tactical-map-card > .card-header {
+      padding: var(--spacing-md) var(--spacing-lg);
+    }
+
+    .tactical-card-icon {
+      width: 38px;
+      height: 38px;
+      flex-basis: 38px;
+      font-size: 1.125rem;
+    }
+
+    .tactical-card-refresh-group {
+      min-width: 164px;
+    }
+
+    .tactical-map-footer {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--spacing-sm);
+      padding: 10px var(--spacing-lg);
+      border-top-color: var(--border-color-light);
+      color: var(--muted-color);
+      background: var(--background-color);
+      font-size: 0.75rem;
+    }
+
+    .tactical-map-footer > i {
+      flex: 0 0 auto;
+      margin-top: 2px;
+      color: var(--info-color);
+    }
+
+    .tactical-notice {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--spacing-sm);
+      margin: 0;
+      padding: 0;
+      border: 0;
+      color: inherit;
+      background: transparent;
+      font-size: inherit;
+      line-height: 1.45;
+    }
+
+    .tactical-notice > i {
+      flex: 0 0 auto;
+      margin-top: 2px;
+      color: var(--info-color);
+    }
+
+    [data-theme=dark] .tactical-notice {
+      color: inherit;
+    }
+
+    .tactical-workspace {
+      grid-template-columns: clamp(300px, 23vw, 360px) minmax(0, 1fr);
+    }
+
+    .tactical-team-list {
+      background: var(--surface-color);
+    }
+
+    .tactical-team-card {
+      box-shadow: none;
+    }
+
+    .tactical-team-card:hover {
+      background: color-mix(in srgb, var(--accent-color), transparent 96%);
+      transform: none;
+    }
+
+    .tactical-position-state {
+      min-height: auto;
+      padding: 0.4rem 0.55rem;
+      border: 0;
+      border-radius: var(--radius-sm);
+      color: var(--success-color);
+      background: var(--success-color-light);
+      font-weight: 700;
+    }
+
+    .tactical-roster-foot {
+      background: var(--background-color);
+    }
+
+    .tactical-map-mode {
+      display: none;
+      border-color: var(--border-color);
+      border-radius: var(--radius-md);
+      color: var(--accent-color);
+      background: color-mix(in srgb, var(--surface-color), transparent 6%);
+      box-shadow: var(--shadow-sm);
+      letter-spacing: 0;
+      text-transform: none;
+    }
+
+    .tactical-map-mode i {
+      color: var(--accent-color);
+    }
+
+    .tactical-map-stage:fullscreen .tactical-map-mode {
+      display: inline-flex;
+    }
+
+    .tactical-roster-map-toggle,
+    .tactical-fullscreen-exit {
+      border-color: var(--border-color);
+      border-radius: var(--radius-md);
+      color: var(--accent-color);
+      background: color-mix(in srgb, var(--surface-color), transparent 6%);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .tactical-roster-map-toggle {
+      right: 12px;
+      left: auto;
+    }
+
+    .tactical-map-stage:fullscreen .tactical-roster-map-toggle {
+      display: none !important;
+    }
+
+    .tactical-unit-marker-core {
+      background: var(--accent-color);
+      box-shadow: 0 6px 14px color-mix(in srgb, var(--heading-color), transparent 68%);
+    }
+
+    .tactical-unit-marker.is-baseamento .tactical-unit-marker-core {
+      background: var(--success-color);
+    }
+
+    .tactical-unit-marker.is-selected .tactical-unit-marker-core {
+      background: var(--warning-color);
+    }
+
+    .tactical-unit-marker-label {
+      border-color: var(--border-color);
+      color: var(--heading-color);
+      background: var(--surface-color);
+      box-shadow: var(--shadow-sm);
+    }
+
+    [data-theme=dark] .tactical-workspace,
+    [data-theme=dark] .tactical-map-stage,
+    [data-theme=dark] .tactical-map-stage:fullscreen {
+      background: var(--background-color);
+    }
+
+    [data-theme=dark] .tactical-map-loading {
+      color: var(--default-color);
+      background: color-mix(in srgb, var(--surface-color), transparent 12%);
+    }
+
+    [data-theme=dark] .tactical-map-fallback {
+      border-color: var(--border-color-dark);
+      color: var(--default-color);
+      background:
+        linear-gradient(color-mix(in srgb, var(--accent-color), transparent 94%) 1px, transparent 1px),
+        linear-gradient(90deg, color-mix(in srgb, var(--accent-color), transparent 94%) 1px, transparent 1px),
+        color-mix(in srgb, var(--surface-color), transparent 4%);
+      background-size: 32px 32px;
+    }
+
+    [data-theme=dark] .tactical-map-legend {
+      border-color: var(--border-color);
+      color: var(--default-color);
+      background: color-mix(in srgb, var(--surface-color), transparent 6%);
+    }
+
+    [data-theme=dark] .tactical-map-legend strong {
+      color: var(--heading-color);
+    }
+
+    @media (max-width: 1199px) {
+      .tactical-metrics-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 991px) {
+      .tactical-stage-summary {
+        grid-template-columns: 1fr;
+      }
+
+      .tactical-stage-summary-heading {
+        border-right: 0;
+        border-bottom: 1px solid var(--border-color-light);
+      }
+
+      .tactical-map-card > .card-header {
+        align-items: stretch;
+        flex-direction: column;
+        gap: var(--spacing-md);
+      }
+
+      .tactical-toolbar {
+        justify-content: flex-start;
+      }
+    }
+
+    @media (max-width: 767px) {
+      .tactical-metrics-grid {
+        gap: var(--spacing-md);
+      }
+
+      .tactical-stage-summary {
+        grid-template-columns: 1fr;
+      }
+
+      .tactical-stage-summary-heading {
+        border-right: 0;
+        border-bottom: 1px solid var(--border-color-light);
+      }
+
+      .tactical-card-refresh-group {
+        width: 100%;
+        align-items: stretch;
+      }
+
+      .tactical-card-refresh-group .btn {
+        width: 100%;
+      }
+
+      .tactical-card-refresh-group .tactical-updated-at {
+        text-align: center;
+      }
+    }
+
+    @media (max-width: 575px) {
+      .tactical-metrics-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .tactical-resource-metric {
+        min-height: 102px;
+      }
+    }
+
+    /*
+      Layout anterior com a relação lateral de equipes preservado acima.
+      A visão atual prioriza o mapa em largura total e reaproveita o padrão
+      responsivo de pesquisa e filtros utilizado nas páginas de consulta.
+    */
+    .tactical-workspace,
+    .tactical-workspace.is-roster-collapsed {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .tactical-roster[hidden],
+    .tactical-roster-map-toggle[hidden],
+    .tactical-roster-backdrop[hidden] {
+      display: none !important;
+    }
+
+    .tactical-mobile-filter-button {
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .tactical-map-filter-panel {
+      background: var(--card-bg);
+    }
+
+    .tactical-map-filter-panel .offcanvas-body,
+    .tactical-map-filter-form {
+      width: 100%;
+    }
+
+    .tactical-map-filter-grid {
+      display: grid;
+      grid-template-columns: minmax(240px, 1fr) minmax(190px, 0.45fr) auto;
+      align-items: end;
+      gap: var(--spacing-sm);
+    }
+
+    .tactical-map-filter-field {
+      min-width: 0;
+    }
+
+    .tactical-map-filter-field .form-label {
+      margin-bottom: 6px;
+      color: var(--heading-color);
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .tactical-map-filter-field .input-group-text {
+      color: var(--muted-color);
+      background: var(--background-color);
+    }
+
+    .tactical-map-filter-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: var(--spacing-xs);
+      white-space: nowrap;
+    }
+
+    .tactical-map-filter-actions .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+    }
+
+    .tactical-map-filter-feedback {
+      display: flex;
+      min-height: 20px;
+      grid-column: 1 / -1;
+      align-items: center;
+      gap: 6px;
+      margin: 0;
+      color: var(--muted-color);
+      font-size: 0.75rem;
+      line-height: 1.4;
+    }
+
+    .tactical-map-filter-feedback i {
+      flex: 0 0 auto;
+      color: var(--accent-color);
+    }
+
+    .tactical-filter-pending {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      margin-left: auto;
+      color: color-mix(in srgb, var(--warning-color), #000 22%);
+      font-weight: 700;
+    }
+
+    .tactical-filter-pending i {
+      color: var(--warning-color);
+    }
+
+    [data-theme=dark] .tactical-filter-pending {
+      color: var(--warning-color);
+    }
+
+    .tactical-mobile-filter-button.is-pending {
+      border-color: var(--warning-color);
+      color: color-mix(in srgb, var(--warning-color), #000 25%);
+      background: var(--warning-color-light);
+    }
+
+    .tactical-fullscreen-filter {
+      position: absolute;
+      top: 82px;
+      left: 12px;
+      z-index: 545;
+      display: none;
+      align-items: center;
+      gap: 6px;
+      min-height: 38px;
+      border-color: var(--border-color);
+      border-radius: var(--radius-md);
+      color: var(--accent-color);
+      background: color-mix(in srgb, var(--surface-color), transparent 6%);
+      box-shadow: var(--shadow-sm);
+      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px);
+    }
+
+    .tactical-map-stage:fullscreen .tactical-fullscreen-filter {
+      display: inline-flex;
+    }
+
+    .tactical-map-filter-empty {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      z-index: 515;
+      display: none;
+      width: min(370px, calc(100% - 32px));
+      flex-direction: column;
+      align-items: center;
+      gap: 7px;
+      padding: 18px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      color: var(--default-color);
+      background: color-mix(in srgb, var(--surface-color), transparent 4%);
+      box-shadow: var(--shadow-md);
+      text-align: center;
+      transform: translate(-50%, -50%);
+      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px);
+    }
+
+    .tactical-map-filter-empty.is-visible {
+      display: flex;
+    }
+
+    .tactical-map-filter-empty > i {
+      display: inline-flex;
+      width: 42px;
+      height: 42px;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      color: var(--accent-color);
+      background: color-mix(in srgb, var(--accent-color), transparent 90%);
+      font-size: 1.125rem;
+    }
+
+    .tactical-map-filter-empty strong {
+      color: var(--heading-color);
+      font-size: 0.875rem;
+    }
+
+    .tactical-map-filter-empty span {
+      color: var(--muted-color);
+      font-size: 0.75rem;
+      line-height: 1.45;
+    }
+
+    @media (min-width: 768px) {
+      .tactical-map-filter-panel {
+        width: 100%;
+        border-bottom: 1px solid var(--border-color-light);
+      }
+
+      .tactical-map-filter-panel .offcanvas-body {
+        padding: var(--spacing-md) var(--spacing-lg);
+      }
+    }
+
+    @media (max-width: 767.98px) {
+      .tactical-mobile-filter-button {
+        display: flex;
+        width: 100%;
+      }
+
+      .tactical-map-filter-panel {
+        --bs-offcanvas-width: min(400px, 100vw);
+        background: var(--card-bg) !important;
+      }
+
+      .tactical-map-filter-panel .offcanvas-header {
+        align-items: flex-start;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .tactical-map-filter-panel .offcanvas-body {
+        display: block;
+        padding: var(--spacing-lg);
+      }
+
+      .tactical-map-filter-grid {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--spacing-md);
+      }
+
+      .tactical-map-filter-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        margin-top: var(--spacing-xs);
+      }
+
+      .tactical-map-filter-feedback {
+        order: -1;
+      }
+
+      .tactical-filter-pending {
+        margin-left: 0;
+      }
+    }
+
+    /*
+      Refinamento visual da barra de filtros do mapa. O layout anterior foi
+      preservado no HTML em um comentário inativo, conforme a regra do projeto.
+    */
+    .tactical-map-filter-panel .offcanvas-body {
+      background: color-mix(in srgb, var(--background-color), var(--surface-color) 72%);
+    }
+
+    .tactical-map-filter-grid.tactical-map-filter-grid-refined {
+      grid-template-columns: minmax(215px, 1fr) max-content clamp(230px, 20vw, 310px) max-content;
+      align-items: end;
+      column-gap: var(--spacing-lg);
+      row-gap: var(--spacing-sm);
+    }
+
+    .tactical-filter-context {
+      display: flex;
+      min-width: 0;
+      align-self: center;
+      align-items: center;
+      gap: 10px;
+      padding-right: var(--spacing-lg);
+      border-right: 1px solid var(--border-color);
+    }
+
+    .tactical-filter-context-icon {
+      display: inline-flex;
+      width: 36px;
+      height: 36px;
+      flex: 0 0 36px;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid color-mix(in srgb, var(--accent-color), transparent 78%);
+      border-radius: var(--radius-md);
+      color: var(--accent-color);
+      background: color-mix(in srgb, var(--accent-color), transparent 90%);
+      font-size: 1rem;
+    }
+
+    .tactical-filter-context-copy {
+      min-width: 0;
+    }
+
+    .tactical-filter-context-title {
+      display: block;
+      margin-bottom: 2px;
+      color: var(--heading-color);
+      font-size: 0.75rem;
+      font-weight: 700;
+      line-height: 1.25;
+    }
+
+    .tactical-map-filter-grid-refined .tactical-map-filter-feedback {
+      min-height: 0;
+      grid-column: auto;
+      flex-wrap: wrap;
+      gap: 4px 8px;
+      line-height: 1.3;
+    }
+
+    .tactical-filter-result-line {
+      display: inline-flex;
+      min-width: 0;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .tactical-filter-result-line span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .tactical-map-filter-grid-refined .tactical-filter-pending {
+      margin-left: 0;
+      padding-left: 8px;
+      border-left: 1px solid color-mix(in srgb, var(--warning-color), transparent 60%);
+      font-size: 0.6875rem;
+    }
+
+    .tactical-resource-options {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 3px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      background: var(--surface-color);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .tactical-resource-option.btn {
+      display: inline-flex;
+      min-width: 88px;
+      min-height: 32px;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 5px 10px;
+      border-color: transparent;
+      color: var(--muted-color);
+      background: transparent;
+      box-shadow: none;
+      white-space: nowrap;
+    }
+
+    .tactical-resource-option.btn:hover {
+      border-color: transparent;
+      color: var(--accent-color);
+      background: color-mix(in srgb, var(--accent-color), transparent 92%);
+    }
+
+    .tactical-resource-filter:checked + .tactical-resource-option.btn {
+      border-color: color-mix(in srgb, var(--accent-color), transparent 76%);
+      color: var(--accent-color);
+      background: color-mix(in srgb, var(--accent-color), transparent 88%);
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent-color), transparent 88%);
+      font-weight: 700;
+    }
+
+    .tactical-resource-filter:focus-visible + .tactical-resource-option.btn {
+      outline: 0;
+      box-shadow: 0 0 0 3px var(--input-focus-ring);
+    }
+
+    .tactical-stage-filter-control .input-group-text {
+      border-right: 0;
+      color: var(--accent-color);
+      background: var(--surface-color);
+    }
+
+    .tactical-stage-filter-control .form-select {
+      border-left: 0;
+      padding-left: 2px;
+      background-color: var(--surface-color);
+    }
+
+    .tactical-stage-filter-control:focus-within .input-group-text {
+      border-color: var(--input-focus-border);
+    }
+
+    .tactical-map-filter-grid-refined .tactical-map-filter-actions .btn {
+      min-height: 32px;
+    }
+
+    .tactical-apply-filter-button {
+      min-width: 114px;
+    }
+
+    @media (min-width: 768px) {
+      .tactical-map-filter-panel .offcanvas-body {
+        padding: 12px var(--spacing-lg);
+      }
+    }
+
+    @media (min-width: 768px) and (max-width: 1499.98px) {
+      .tactical-map-filter-grid.tactical-map-filter-grid-refined {
+        grid-template-columns: minmax(250px, 1.15fr) minmax(210px, 0.85fr) max-content;
+        column-gap: var(--spacing-sm);
+        row-gap: 10px;
+      }
+
+      .tactical-filter-context {
+        grid-column: 1 / -1;
+        padding-right: 0;
+        padding-bottom: 10px;
+        border-right: 0;
+        border-bottom: 1px solid var(--border-color-light);
+      }
+
+      .tactical-resource-options {
+        display: flex;
+      }
+
+      .tactical-resource-option.btn {
+        min-width: 0;
+        flex: 1 1 auto;
+      }
+    }
+
+    @media (min-width: 768px) and (max-width: 991.98px) {
+      .tactical-map-filter-grid.tactical-map-filter-grid-refined {
+        grid-template-columns: minmax(0, 1.15fr) minmax(210px, 0.85fr);
+      }
+
+      .tactical-map-filter-grid-refined .tactical-map-filter-actions {
+        grid-column: 1 / -1;
+        justify-self: end;
+      }
+    }
+
+    @media (max-width: 767.98px) {
+      .tactical-map-filter-panel .offcanvas-body {
+        background: var(--card-bg) !important;
+      }
+
+      .tactical-map-filter-grid.tactical-map-filter-grid-refined {
+        display: flex;
+      }
+
+      .tactical-filter-context {
+        width: 100%;
+        align-self: stretch;
+        order: -1;
+        padding: 11px 12px;
+        border: 1px solid color-mix(in srgb, var(--accent-color), transparent 78%);
+        border-radius: var(--radius-md);
+        background: color-mix(in srgb, var(--accent-color), transparent 94%);
+      }
+
+      .tactical-map-filter-grid-refined .tactical-map-filter-feedback {
+        order: initial;
+      }
+
+      .tactical-filter-result-line span {
+        white-space: normal;
+      }
+
+      .tactical-resource-options {
+        display: flex;
+        width: 100%;
+      }
+
+      .tactical-resource-option.btn {
+        min-width: 0;
+        flex: 1 1 0;
+        padding-inline: 6px;
+      }
+
+      .tactical-stage-filter-control {
+        width: 100%;
+      }
+
+      .tactical-apply-filter-button {
+        min-width: 0;
+      }
+    }
+  </style>
 </head>
 
-<body>
-  <div class="fauth">
-    <main class="fauth-main">
-      <div class="fauth-main-inner">
-        <a href="index.html" class="fauth-logo fauth-logo-center">
-          <img src="assets/img/logo.webp" alt="NiceAdmin">
-          <span>NiceAdmin</span>
-        </a>
+<body class="page-tactical-map-body">
+  <header class="header">
+    <div class="header-left">
+      <button class="sidebar-toggle" type="button" title="Alternar menu lateral" aria-label="Alternar menu lateral">
+        <span class="menu-lines" aria-hidden="true"><span></span><span></span><span></span></span>
+      </button>
 
-        <div class="fauth-card">
-          <div class="fauth-card-head">
-            <span class="fauth-kicker"><i class="bi bi-stars"></i> Get Started</span>
-            <h1 class="fauth-title">Create account</h1>
-            <p class="fauth-subtitle">Set up your workspace and invite your team in minutes.</p>
+      <a href="index.html" class="header-brand" aria-label="Página inicial do Ordena">
+        <span class="header-logo"><img src="assets/img/logo.webp" alt="Ordena"></span>
+        <span class="header-context"><strong class="header-context-title">Ordena</strong></span>
+      </a>
+    </div>
+  </header>
+
+  <aside class="sidebar">
+    <div class="sidebar-shell">
+      <button class="sidebar-close" type="button" aria-label="Fechar menu lateral">
+        <i class="bi bi-x-lg" aria-hidden="true"></i>
+      </button>
+
+      <nav class="sidebar-nav" aria-label="Navegação principal">
+        <ul class="nav-menu">
+          <li class="nav-item">
+            <a class="nav-link" href="index.html">
+              <span class="nav-icon"><i class="ph-light ph-squares-four" aria-hidden="true"></i></span>
+              <span class="nav-text">Painel Operacional</span>
+              <span class="nav-meta">Home</span>
+            </a>
+          </li>
+
+          <li class="nav-item has-submenu">
+            <a class="nav-link" href="#" aria-expanded="false">
+              <span class="nav-icon"><i class="ph-light ph-gauge" aria-hidden="true"></i></span>
+              <span class="nav-text">Cadastro</span>
+              <span class="nav-badge">5</span>
+              <span class="nav-arrow"><i class="bi bi-chevron-right" aria-hidden="true"></i></span>
+            </a>
+            <ul class="nav-submenu">
+              <li><a class="nav-link" href="dashboard-sales.html"><span class="nav-dot"></span>Viaturas</a></li>
+              <li><a class="nav-link" href="dashboard-analytics.html"><span class="nav-dot"></span>Pontos de Baseamento</a></li>
+              <li><a class="nav-link" href="dashboard-crm.html"><span class="nav-dot"></span>Locais de Patrulhamento</a></li>
+              <li><a class="nav-link" href="dashboard-marketing.html"><span class="nav-dot"></span>Tipos de Serviço</a></li>
+              <li><a class="nav-link" href="dashboard-projects.html"><span class="nav-dot"></span>Operações Especiais</a></li>
+            </ul>
+          </li>
+
+          <li class="nav-item has-submenu">
+            <a class="nav-link" href="#" aria-expanded="false">
+              <span class="nav-icon"><i class="ph-light ph-magnifying-glass" aria-hidden="true"></i></span>
+              <span class="nav-text">Consultas</span>
+              <span class="nav-badge">5</span>
+              <span class="nav-arrow"><i class="bi bi-chevron-right" aria-hidden="true"></i></span>
+            </a>
+            <ul class="nav-submenu">
+              <li><a class="nav-link" href="consulta-viaturas.html"><span class="nav-dot"></span>Viaturas</a></li>
+              <li><a class="nav-link" href="consulta-pontos-baseamento.html"><span class="nav-dot"></span>Pontos de Baseamento</a></li>
+              <li><a class="nav-link" href="consulta-locais-patrulhamento.html"><span class="nav-dot"></span>Locais de Patrulhamento</a></li>
+              <li><a class="nav-link" href="consulta-tipos-servico.html"><span class="nav-dot"></span>Tipos de Serviço</a></li>
+              <li><a class="nav-link" href="consulta-operacoes-especiais.html"><span class="nav-dot"></span>Operações Especiais</a></li>
+            </ul>
+          </li>
+
+          <li class="nav-item has-submenu">
+            <a class="nav-link" href="#" aria-expanded="false">
+              <span class="nav-icon"><i class="ph-light ph-users-three" aria-hidden="true"></i></span>
+              <span class="nav-text">Ordens de Serviço</span>
+              <span class="nav-badge">2</span>
+              <span class="nav-arrow"><i class="bi bi-chevron-right" aria-hidden="true"></i></span>
+            </a>
+            <ul class="nav-submenu">
+              <li><a class="nav-link" href="users.html"><span class="nav-dot"></span>Consultar Ordens de Serviço</a></li>
+              <li><a class="nav-link" href="users-view.html"><span class="nav-dot"></span>Criar Ordem de Serviço</a></li>
+            </ul>
+          </li>
+
+          <li class="nav-item has-submenu open">
+            <a class="nav-link" href="#" aria-expanded="true">
+              <span class="nav-icon"><i class="ph-light ph-shield-check" aria-hidden="true"></i></span>
+              <span class="nav-text">Operação</span>
+              <span class="nav-badge">3</span>
+              <span class="nav-arrow"><i class="bi bi-chevron-right" aria-hidden="true"></i></span>
+            </a>
+            <ul class="nav-submenu show">
+              <li><a class="nav-link" href="ativacao.html"><span class="nav-dot"></span>Ativar Guarnição</a></li>
+              <li><a class="nav-link" href="painel-ativacoes.html"><span class="nav-dot"></span>Painel de Ativações</a></li>
+              <li><a class="nav-link active" href="auth-register.html" aria-current="page"><span class="nav-dot"></span>Mapa Tático</a></li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </aside>
+
+  <div class="sidebar-overlay"></div>
+
+  <main class="main">
+    <div class="main-content page-tactical-map">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Mapa Tático</h1>
+          <p class="tactical-page-intro">Visão integrada das equipes ativadas e de suas posições programadas nas Ordens de Serviço.</p>
+        </div>
+        <div class="tactical-heading-actions">
+          <!-- Botão "Painel de ativações" ocultado conforme solicitado.
+          <div class="tactical-heading-button-row">
+            <a href="painel-ativacoes.html" class="btn btn-outline-primary">
+              <i class="bi bi-people me-1" aria-hidden="true"></i>
+              Painel de ativações
+            </a>
+          </div>
+          -->
+          <nav class="breadcrumb" aria-label="Navegação estrutural">
+            <a href="index.html" class="breadcrumb-item">Painel Operacional</a>
+            <span class="breadcrumb-item">Operação</span>
+            <span class="breadcrumb-item active" aria-current="page">Mapa Tático</span>
+          </nav>
+        </div>
+      </div>
+
+      <div id="tacticalPageAlert" class="alert tactical-page-alert d-none" role="status" aria-live="polite" aria-atomic="true">
+        <div class="d-flex align-items-start gap-2">
+          <i id="tacticalPageAlertIcon" class="bi mt-1" aria-hidden="true"></i>
+          <span id="tacticalPageAlertMessage"></span>
+        </div>
+      </div>
+
+      <div class="card tactical-page-loading" id="tacticalPageLoading" role="status" aria-live="polite" aria-atomic="true">
+        <div class="card-body">
+          <div class="tactical-growing-dots mb-2" aria-hidden="true">
+            <span class="spinner-grow spinner-grow-sm"></span>
+            <span class="spinner-grow spinner-grow-sm" style="animation-delay: 0.15s;"></span>
+            <span class="spinner-grow spinner-grow-sm" style="animation-delay: 0.3s;"></span>
+          </div>
+          <strong>Preparando visão tática...</strong>
+          <small>Cruzando ativações, equipes, atividades e coordenadas programadas nas Ordens de Serviço.</small>
+        </div>
+      </div>
+
+      <noscript>
+        <style>#tacticalPageLoading { display: none !important; }</style>
+        <div class="alert alert-danger" role="alert">
+          <i class="bi bi-exclamation-triangle-fill me-1" aria-hidden="true"></i>
+          Não foi possível carregar o mapa. Ative o JavaScript e tente novamente.
+        </div>
+      </noscript>
+
+      <div id="tacticalDashboardContent" hidden>
+        <section class="card tactical-command-strip" aria-labelledby="tacticalSummaryTitle">
+          <div class="tactical-command-head visually-hidden">
+            <h2 class="tactical-command-title" id="tacticalSummaryTitle">
+              <i class="bi bi-broadcast-pin" aria-hidden="true"></i>
+              Resumo operacional
+            </h2>
+            <span class="tactical-live-indicator"><span class="tactical-live-dot" aria-hidden="true"></span>Atualização manual ativa</span>
+          </div>
+          <div class="tactical-metrics-scroll" role="group" aria-label="Resumo operacional">
+            <div class="dashboard-grid dashboard-grid-4 tactical-metrics-grid">
+              <article class="card widget-stat tactical-metric tactical-resource-metric" data-icon="&#xF4CF;" aria-label="Efetivo total">
+                <div class="widget-stat-header">
+                  <div>
+                    <strong class="tactical-metric-value widget-stat-value" id="tacticalPersonnelMetric">0</strong>
+                    <span class="tactical-metric-label widget-stat-label">Efetivo total</span>
+                  </div>
+                  <span class="widget-stat-icon info" aria-hidden="true"><i class="bi bi-people-fill"></i></span>
+                </div>
+                <span class="tactical-metric-note">Integrantes das equipes ativas</span>
+              </article>
+              <article class="card widget-stat tactical-metric tactical-resource-metric" data-icon="&#xF7EA;" aria-label="Carros">
+                <div class="widget-stat-header">
+                  <div>
+                    <strong class="tactical-metric-value widget-stat-value" id="tacticalVehicleMetric">0</strong>
+                    <span class="tactical-metric-label widget-stat-label">Carros</span>
+                  </div>
+                  <span class="widget-stat-icon primary" aria-hidden="true"><i class="bi bi-car-front-fill"></i></span>
+                </div>
+                <span class="tactical-metric-note">Recursos vinculados às guarnições</span>
+              </article>
+              <article class="card widget-stat tactical-metric tactical-resource-metric" data-icon="&#xF118;" aria-label="Motocicletas">
+                <div class="widget-stat-header">
+                  <div>
+                    <strong class="tactical-metric-value widget-stat-value" id="tacticalMotorcycleMetric">0</strong>
+                    <span class="tactical-metric-label widget-stat-label">Motos</span>
+                  </div>
+                  <span class="widget-stat-icon warning" aria-hidden="true"><i class="bi bi-scooter"></i></span>
+                </div>
+                <span class="tactical-metric-note">Motopatrulhamento em serviço</span>
+              </article>
+              <article class="card widget-stat tactical-metric tactical-resource-metric" data-icon="&#xF4E1;" aria-label="Equipes a pé">
+                <div class="widget-stat-header">
+                  <div>
+                    <strong class="tactical-metric-value widget-stat-value" id="tacticalFootMetric">0</strong>
+                    <span class="tactical-metric-label widget-stat-label">A pé</span>
+                  </div>
+                  <span class="widget-stat-icon success" aria-hidden="true"><i class="bi bi-person-walking"></i></span>
+                </div>
+                <span class="tactical-metric-note">Policiamento sem carro associado</span>
+              </article>
+
+              <div class="card tactical-stage-summary" role="group" aria-label="Distribuição das equipes por atividade atual">
+                <div class="tactical-stage-summary-heading">
+                  <span aria-hidden="true"><i class="bi bi-diagram-3"></i></span>
+                  <div>
+                    <strong>Atividade atual</strong>
+                    <small>Etapa prevista na OS</small>
+                  </div>
+                </div>
+                <div class="tactical-stage-summary-scroll" role="region" aria-label="Etapas operacionais; deslize horizontalmente para ver todas" tabindex="0">
+                  <div class="tactical-stage-summary-grid">
+                    <article class="tactical-metric tactical-stage-metric" data-stage="prelecao" data-icon="&#xF484;" aria-label="Equipes em preleção">
+                      <span class="tactical-stage-metric-icon" aria-hidden="true"><i class="bi bi-megaphone"></i></span>
+                      <span class="tactical-metric-label">Preleção</span>
+                      <strong class="tactical-metric-value" id="tacticalBriefingMetric">0</strong>
+                    </article>
+                    <article class="tactical-metric tactical-stage-metric" data-stage="deslocamento" data-icon="&#xF138;" aria-label="Equipes em deslocamento">
+                      <span class="tactical-stage-metric-icon" aria-hidden="true"><i class="bi bi-arrow-right"></i></span>
+                      <span class="tactical-metric-label">Deslocamento</span>
+                      <strong class="tactical-metric-value" id="tacticalMovingMetric">0</strong>
+                    </article>
+                    <article class="tactical-metric tactical-stage-metric" data-stage="baseamento" data-icon="&#xF3E8;" aria-label="Equipes em baseamento">
+                      <span class="tactical-stage-metric-icon" aria-hidden="true"><i class="bi bi-geo-alt"></i></span>
+                      <span class="tactical-metric-label">Baseamento</span>
+                      <strong class="tactical-metric-value" id="tacticalBaseMetric">0</strong>
+                    </article>
+                    <article class="tactical-metric tactical-stage-metric" data-stage="patrulhamento" data-icon="&#xF4C9;" aria-label="Equipes em patrulhamento">
+                      <span class="tactical-stage-metric-icon" aria-hidden="true"><i class="bi bi-shield-check"></i></span>
+                      <span class="tactical-metric-label">Patrulhamento</span>
+                      <strong class="tactical-metric-value" id="tacticalPatrolMetric">0</strong>
+                    </article>
+                    <article class="tactical-metric tactical-stage-metric" data-stage="intervalo" data-icon="&#xF293;" aria-label="Equipes em intervalo">
+                      <span class="tactical-stage-metric-icon" aria-hidden="true"><i class="bi bi-clock"></i></span>
+                      <span class="tactical-metric-label">Intervalo</span>
+                      <strong class="tactical-metric-value" id="tacticalBreakMetric">0</strong>
+                    </article>
+                    <article class="tactical-metric tactical-stage-metric" data-stage="retorno" data-icon="&#xF148;" aria-label="Equipes em retorno à base">
+                      <span class="tactical-stage-metric-icon" aria-hidden="true"><i class="bi bi-arrow-up"></i></span>
+                      <span class="tactical-metric-label">Retorno base</span>
+                      <strong class="tactical-metric-value" id="tacticalReturnMetric">0</strong>
+                    </article>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" aria-labelledby="tacticalMapTitle">
+          <div class="card tactical-map-card">
+            <div class="card-header">
+              <div class="tactical-card-heading">
+                <span class="tactical-card-icon" aria-hidden="true"><i class="bi bi-radar"></i></span>
+                <div>
+                  <h2 class="card-title" id="tacticalMapTitle">Visão geral do policiamento</h2>
+                  <p class="card-subtitle" id="tacticalMapSubtitle" aria-live="polite">Consolidando equipes e áreas programadas...</p>
+                </div>
+              </div>
+              <div class="tactical-toolbar">
+                <span class="tactical-demo-badge badge badge-soft-warning" id="tacticalDemoBadge"><i class="bi bi-stars" aria-hidden="true"></i>Dados demonstrativos</span>
+                <span class="tactical-position-state badge badge-soft-success"><span class="status-dot" aria-hidden="true"></span><span id="tacticalPositionedCount">0 equipes posicionadas</span></span>
+                <button type="button" class="btn btn-sm btn-outline-primary d-md-none tactical-mobile-filter-button" id="tacticalMobileFilterButton" data-bs-toggle="offcanvas" data-bs-target="#tacticalMapFilterPanel" aria-controls="tacticalMapFilterPanel" aria-label="Abrir filtros do mapa">
+                  <i class="bi bi-funnel" aria-hidden="true"></i>
+                  Filtrar equipes
+                  <span class="badge bg-light text-primary d-none" id="tacticalAppliedFilterCount">0</span>
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-primary" id="fitTacticalMapButton">
+                  <i class="bi bi-bounding-box-circles" aria-hidden="true"></i>
+                  Enquadrar todas
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-primary" id="fullscreenTacticalMapButton">
+                  <i class="bi bi-arrows-fullscreen" aria-hidden="true"></i>
+                  Tela cheia
+                </button>
+                <div class="tactical-refresh-group tactical-card-refresh-group">
+                  <button type="button" class="btn btn-sm btn-outline-primary" id="refreshTacticalMapButton">
+                    <span class="tactical-refresh-idle"><i class="bi bi-arrow-clockwise me-1" aria-hidden="true"></i>Atualizar posições</span>
+                    <span class="tactical-refresh-processing d-none">
+                      <span class="tactical-growing-dots" aria-hidden="true">
+                        <span class="spinner-grow spinner-grow-sm"></span>
+                        <span class="spinner-grow spinner-grow-sm" style="animation-delay: 0.15s;"></span>
+                        <span class="spinner-grow spinner-grow-sm" style="animation-delay: 0.3s;"></span>
+                      </span>
+                      Atualizando...
+                    </span>
+                  </button>
+                  <span class="tactical-updated-at" id="tacticalUpdatedAt" role="status" aria-live="polite">Última atualização: aguardando</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Um único formulário: barra horizontal no desktop e painel lateral no mobile. -->
+            <div class="offcanvas-md offcanvas-end tactical-map-filter-panel" tabindex="-1" id="tacticalMapFilterPanel" aria-labelledby="tacticalMapFilterTitle" aria-describedby="tacticalMapFilterDescription">
+              <div class="offcanvas-header">
+                <div>
+                  <h2 class="offcanvas-title fs-5" id="tacticalMapFilterTitle"><i class="bi bi-funnel me-2" aria-hidden="true"></i>Filtrar equipes</h2>
+                  <!-- Texto anterior preservado: Selecione os tipos e a atividade, depois use “Filtrar” para atualizar as equipes no mapa. -->
+                  <p class="small text-muted mb-0 mt-1" id="tacticalMapFilterDescription">Selecione os tipos e a atividade, depois aplique os filtros para atualizar as equipes no mapa.</p>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tacticalMapFilterPanel" aria-label="Fechar filtros"></button>
+              </div>
+              <div class="offcanvas-body">
+                <form class="tactical-map-filter-form" id="tacticalMapFilterForm" autocomplete="off">
+                  <!--
+                    Layout anterior preservado de forma inativa para manter o histórico da implementação.
+                    <div class="tactical-map-filter-grid">
+                      Campo de pesquisa textual anterior preservado conforme padrão de segurança do projeto.
+                      <div class="tactical-map-filter-field">
+                        <label class="form-label" for="tacticalTeamSearch">Pesquisar equipe</label>
+                        <div class="input-group input-group-sm">
+                          <span class="input-group-text" id="tacticalSearchIcon"><i class="bi bi-search" aria-hidden="true"></i></span>
+                          <input type="search" class="form-control" id="tacticalTeamSearch" aria-describedby="tacticalSearchIcon tacticalFilterResult" placeholder="Equipe, prefixo, placa ou OS">
+                        </div>
+                      </div>
+
+                      <fieldset class="tactical-map-filter-field" aria-describedby="tacticalFilterResult">
+                        <legend class="form-label">Tipo de recurso</legend>
+                        <div class="d-flex flex-wrap align-items-center gap-3 py-1">
+                          <div class="form-check form-check-inline mb-0 me-0">
+                            <input class="form-check-input tactical-resource-filter" type="checkbox" name="tacticalResourceType" id="tacticalResourceCar" value="viatura" checked>
+                            <label class="form-check-label" for="tacticalResourceCar">Carros</label>
+                          </div>
+                          <div class="form-check form-check-inline mb-0 me-0">
+                            <input class="form-check-input tactical-resource-filter" type="checkbox" name="tacticalResourceType" id="tacticalResourceMotorcycle" value="moto" checked>
+                            <label class="form-check-label" for="tacticalResourceMotorcycle">Motos</label>
+                          </div>
+                          <div class="form-check form-check-inline mb-0 me-0">
+                            <input class="form-check-input tactical-resource-filter" type="checkbox" name="tacticalResourceType" id="tacticalResourceFoot" value="pe" checked>
+                            <label class="form-check-label" for="tacticalResourceFoot">A pé</label>
+                          </div>
+                        </div>
+                      </fieldset>
+
+                      <div class="tactical-map-filter-field">
+                        <label class="form-label" for="tacticalStageFilter">Atividade atual</label>
+                        <select class="form-select form-select-sm" id="tacticalStageFilter" aria-describedby="tacticalFilterResult">
+                          <option value="all">Todas as atividades</option>
+                          <option value="baseamento">Baseamento</option>
+                          <option value="patrulhamento">Patrulhamento</option>
+                          <option value="deslocamento">Deslocamento</option>
+                          <option value="intervalo">Intervalo</option>
+                          <option value="sem-posicao">Sem posição</option>
+                        </select>
+                      </div>
+
+                      <div class="tactical-map-filter-actions">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="clearTacticalMapFiltersButton">
+                          <i class="bi bi-x-circle" aria-hidden="true"></i>
+                          Limpar
+                        </button>
+                        <button type="submit" class="btn btn-sm btn-primary">
+                          <i class="bi bi-funnel" aria-hidden="true"></i>
+                          Filtrar
+                        </button>
+                      </div>
+
+                      <p class="tactical-map-filter-feedback" role="status" aria-live="polite" aria-atomic="true">
+                        <i class="bi bi-geo-alt" aria-hidden="true"></i>
+                        <span id="tacticalFilterResult">Carregando equipes disponíveis...</span>
+                        <span class="tactical-filter-pending d-none" id="tacticalFilterPending"><i class="bi bi-clock" aria-hidden="true"></i>Alterações ainda não aplicadas.</span>
+                      </p>
+                    </div>
+                  -->
+
+                  <div class="tactical-map-filter-grid tactical-map-filter-grid-refined">
+                    <div class="tactical-filter-context">
+                      <span class="tactical-filter-context-icon" aria-hidden="true"><i class="bi bi-sliders2"></i></span>
+                      <div class="tactical-filter-context-copy">
+                        <strong class="tactical-filter-context-title">Exibição no mapa</strong>
+                        <p class="tactical-map-filter-feedback" role="status" aria-live="polite" aria-atomic="true">
+                          <span class="tactical-filter-result-line">
+                            <i class="bi bi-geo-alt" aria-hidden="true"></i>
+                            <span id="tacticalFilterResult">Carregando equipes disponíveis...</span>
+                          </span>
+                          <span class="tactical-filter-pending d-none" id="tacticalFilterPending"><i class="bi bi-clock" aria-hidden="true"></i>Alterações ainda não aplicadas.</span>
+                        </p>
+                      </div>
+                    </div>
+
+                    <fieldset class="tactical-map-filter-field" aria-describedby="tacticalFilterResult">
+                      <legend class="form-label">Tipo de recurso</legend>
+                      <div class="tactical-resource-options" role="group" aria-label="Tipos de recurso exibidos no mapa">
+                        <input class="btn-check tactical-resource-filter" type="checkbox" name="tacticalResourceType" id="tacticalResourceCar" value="viatura" autocomplete="off" checked>
+                        <label class="btn btn-sm btn-outline-primary tactical-resource-option" for="tacticalResourceCar"><i class="bi bi-car-front-fill" aria-hidden="true"></i>Carros</label>
+
+                        <input class="btn-check tactical-resource-filter" type="checkbox" name="tacticalResourceType" id="tacticalResourceMotorcycle" value="moto" autocomplete="off" checked>
+                        <label class="btn btn-sm btn-outline-primary tactical-resource-option" for="tacticalResourceMotorcycle"><i class="bi bi-scooter" aria-hidden="true"></i>Motos</label>
+
+                        <input class="btn-check tactical-resource-filter" type="checkbox" name="tacticalResourceType" id="tacticalResourceFoot" value="pe" autocomplete="off" checked>
+                        <label class="btn btn-sm btn-outline-primary tactical-resource-option" for="tacticalResourceFoot"><i class="bi bi-person-walking" aria-hidden="true"></i>A pé</label>
+                      </div>
+                    </fieldset>
+
+                    <div class="tactical-map-filter-field">
+                      <label class="form-label" for="tacticalStageFilter">Atividade atual</label>
+                      <div class="input-group input-group-sm tactical-stage-filter-control">
+                        <span class="input-group-text" aria-hidden="true"><i class="bi bi-activity"></i></span>
+                        <select class="form-select form-select-sm" id="tacticalStageFilter" aria-describedby="tacticalFilterResult">
+                          <option value="all">Todas as atividades</option>
+                          <option value="baseamento">Baseamento</option>
+                          <option value="patrulhamento">Patrulhamento</option>
+                          <option value="deslocamento">Deslocamento</option>
+                          <option value="intervalo">Intervalo</option>
+                          <option value="sem-posicao">Sem posição</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div class="tactical-map-filter-actions">
+                      <button type="button" class="btn btn-sm btn-outline-secondary" id="clearTacticalMapFiltersButton" title="Restaurar todos os filtros">
+                        <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
+                        Limpar
+                      </button>
+                      <button type="submit" class="btn btn-sm btn-primary tactical-apply-filter-button">
+                        <i class="bi bi-funnel-fill" aria-hidden="true"></i>
+                        Aplicar filtros
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+
+            <div class="card-body p-0">
+              <div class="tactical-workspace is-roster-collapsed" id="tacticalWorkspace">
+                <!-- Painel lateral anterior preservado para uma futura necessidade operacional. -->
+                <aside class="tactical-roster" id="tacticalRoster" aria-labelledby="tacticalRosterTitle" hidden>
+                  <div class="tactical-roster-head">
+                    <div class="tactical-roster-title-row">
+                      <h3 class="tactical-roster-title" id="tacticalRosterTitle">
+                        <i class="bi bi-shield-check" aria-hidden="true"></i>
+                        Equipes ativas
+                        <span class="tactical-roster-count" id="tacticalRosterCount">0</span>
+                      </h3>
+                      <button type="button" class="btn btn-sm btn-light" id="closeTacticalRosterButton" aria-label="Recolher painel de equipes" title="Recolher equipes">
+                        <i class="bi bi-layout-sidebar-inset" aria-hidden="true"></i>
+                      </button>
+                    </div>
+                    <p class="tactical-roster-subtitle" id="tacticalRosterSubtitle">Busque e selecione uma equipe para centralizar o mapa.</p>
+                    <div class="tactical-roster-filters">
+                      <div class="input-group input-group-sm">
+                        <span class="input-group-text" id="legacyTacticalSearchIcon"><i class="bi bi-search" aria-hidden="true"></i></span>
+                        <input type="search" class="form-control" id="legacyTacticalTeamSearch" aria-label="Buscar equipe" aria-describedby="legacyTacticalSearchIcon" placeholder="Equipe, placa ou OS" autocomplete="off">
+                      </div>
+                      <select class="form-select form-select-sm" id="legacyTacticalStageFilter" aria-label="Filtrar equipes por atividade">
+                        <option value="all">Todas</option>
+                        <option value="baseamento">Baseamento</option>
+                        <option value="patrulhamento">Patrulhamento</option>
+                        <option value="deslocamento">Deslocamento</option>
+                        <option value="intervalo">Intervalo</option>
+                        <option value="sem-posicao">Sem posição</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="tactical-team-list" id="tacticalTeamList" role="list" aria-live="polite"></div>
+                  <div class="tactical-roster-foot">
+                    <i class="bi bi-database" aria-hidden="true"></i>
+                    <span>Dados sincronizados com as ativações e Ordens de Serviço deste navegador.</span>
+                  </div>
+                </aside>
+
+                <div class="tactical-map-stage" id="tacticalMapStage">
+                  <div id="tacticalMap" role="region" aria-label="Mapa das posições programadas das equipes ativadas" tabindex="0"></div>
+                  <div class="tactical-map-loading" id="tacticalMapLoading" role="status" aria-live="polite">
+                    <div class="tactical-growing-dots" aria-hidden="true">
+                      <span class="spinner-grow spinner-grow-sm"></span>
+                      <span class="spinner-grow spinner-grow-sm" style="animation-delay: 0.15s;"></span>
+                      <span class="spinner-grow spinner-grow-sm" style="animation-delay: 0.3s;"></span>
+                    </div>
+                    Carregando cartografia operacional...
+                  </div>
+                  <div class="tactical-map-fallback" id="tacticalMapFallback" role="alert">
+                    <i class="bi bi-map" aria-hidden="true"></i>
+                    <strong>Cartografia temporariamente indisponível</strong>
+                    <!-- Texto anterior preservado: A relação de equipes permanece disponível. -->
+                    <span>Os filtros e dados operacionais permanecem disponíveis. Verifique a conexão e use “Atualizar posições” para tentar carregar o mapa novamente.</span>
+                  </div>
+                  <div class="tactical-map-filter-empty" id="tacticalMapFilterEmpty">
+                    <i class="bi bi-geo-alt" aria-hidden="true"></i>
+                    <strong id="tacticalMapFilterEmptyTitle">Nenhuma posição para exibir</strong>
+                    <span id="tacticalMapFilterEmptyMessage">Ajuste os filtros para visualizar as equipes posicionadas.</span>
+                    <button type="button" class="btn btn-sm btn-primary" id="clearTacticalMapEmptyFiltersButton">
+                      <i class="bi bi-x-circle me-1" aria-hidden="true"></i>
+                      Limpar filtros
+                    </button>
+                  </div>
+                  <span class="tactical-map-mode"><i class="bi bi-crosshair" aria-hidden="true"></i>Posições programadas pela OS</span>
+                  <button type="button" class="btn btn-sm tactical-roster-map-toggle" id="openTacticalRosterButton" aria-controls="tacticalRoster" aria-expanded="false" hidden>
+                    <i class="bi bi-people-fill" aria-hidden="true"></i>
+                    Equipes <span class="badge bg-light text-primary" id="tacticalRosterToggleCount">0</span>
+                  </button>
+                  <button type="button" class="btn btn-sm tactical-fullscreen-exit" id="exitTacticalFullscreenButton" aria-label="Sair da tela cheia">
+                    <i class="bi bi-fullscreen-exit" aria-hidden="true"></i>
+                    Sair da tela cheia
+                  </button>
+                  <button type="button" class="btn btn-sm tactical-fullscreen-filter" id="openTacticalFullscreenFiltersButton" aria-label="Sair da tela cheia e abrir os filtros">
+                    <i class="bi bi-funnel" aria-hidden="true"></i>
+                    Filtrar
+                  </button>
+                  <div class="tactical-map-legend" aria-hidden="true">
+                    <strong>Legenda</strong>
+                    <span class="tactical-legend-item"><span class="tactical-legend-swatch is-base"></span>Baseamento programado</span>
+                    <span class="tactical-legend-item"><span class="tactical-legend-swatch is-patrol"></span>Área de patrulhamento</span>
+                    <span class="tactical-legend-item"><span class="tactical-legend-swatch is-selected"></span>Equipe selecionada</span>
+                  </div>
+                  <button type="button" class="tactical-roster-backdrop" id="tacticalRosterBackdrop" aria-label="Fechar painel de equipes" hidden></button>
+                </div>
+              </div>
+            </div>
+
+            <div class="card-footer tactical-map-footer">
+              <div class="tactical-notice" role="note">
+                <i class="bi bi-info-circle-fill" aria-hidden="true"></i>
+                <span><strong>Posições programadas conforme a Ordem de Serviço.</strong> Este painel representa a atividade prevista para o horário atual e não corresponde a rastreamento GPS em tempo real.</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <footer class="footer">
+      <div class="footer-content">
+        <div class="footer-links">
+          <a href="#">Docs</a>
+          <a href="#">Privacidade</a>
+          <a href="#">Segurança</a>
+          <a href="#">Suporte</a>
+        </div>
+        <div class="footer-credits">
+          <div class="footer-copyright">&copy; 2026 <a href="index.html">Ordena</a></div>
+        </div>
+      </div>
+    </footer>
+  </main>
+
+  <!--
+    A tela de cadastro de conta que ocupava este arquivo foi preservada no
+    template abaixo. Ela permanece inativa porque este endereço passou a ser
+    utilizado pelo item operacional “Mapa Tático”.
+  -->
+  <template id="legacyAuthRegisterTemplate">
+    <div class="fauth">
+      <main class="fauth-main">
+        <div class="fauth-main-inner">
+          <a href="index.html" class="fauth-logo fauth-logo-center">
+            <img src="assets/img/logo.webp" alt="NiceAdmin">
+            <span>NiceAdmin</span>
+          </a>
+
+          <div class="fauth-card">
+            <div class="fauth-card-head">
+              <span class="fauth-kicker"><i class="bi bi-stars"></i> Get Started</span>
+              <h1 class="fauth-title">Create account</h1>
+              <p class="fauth-subtitle">Set up your workspace and invite your team in minutes.</p>
+            </div>
+
+            <form class="fauth-form" novalidate>
+              <div class="row g-3">
+                <div class="col-sm-6">
+                  <div class="fauth-field">
+                    <label for="firstName" class="form-label">First name</label>
+                    <input type="text" class="form-control" id="firstName" name="firstName" placeholder="John" required>
+                  </div>
+                </div>
+                <div class="col-sm-6">
+                  <div class="fauth-field">
+                    <label for="lastName" class="form-label">Last name</label>
+                    <input type="text" class="form-control" id="lastName" name="lastName" placeholder="Doe" required>
+                  </div>
+                </div>
+              </div>
+
+              <div class="fauth-field">
+                <label for="email" class="form-label">Email address</label>
+                <input type="email" class="form-control" id="email" name="email" placeholder="name@example.com" required>
+              </div>
+
+              <div class="fauth-field">
+                <label for="password" class="form-label">Password</label>
+                <div class="input-group">
+                  <input type="password" class="form-control" id="password" name="password" placeholder="Create a password" required>
+                  <button class="btn btn-outline-secondary" type="button" data-toggle-password><i class="bi bi-eye"></i></button>
+                </div>
+                <div class="form-text">Use at least 8 characters with letters and numbers.</div>
+              </div>
+
+              <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" id="terms" name="terms" required>
+                <label class="form-check-label" for="terms">I agree to the <a href="#" class="fauth-link">Terms</a> and <a href="#" class="fauth-link">Privacy Policy</a>.</label>
+              </div>
+
+              <button type="submit" class="btn btn-primary w-100">Create Account</button>
+            </form>
+
+            <p class="fauth-foot-text">Already have an account? <a href="auth-login.html" class="fauth-link">Sign in</a></p>
           </div>
 
-          <form class="fauth-form" novalidate>
-            <div class="row g-3">
-              <div class="col-sm-6">
-                <div class="fauth-field">
-                  <label for="firstName" class="form-label">First name</label>
-                  <input type="text" class="form-control" id="firstName" name="firstName" placeholder="John" required>
-                </div>
-              </div>
-              <div class="col-sm-6">
-                <div class="fauth-field">
-                  <label for="lastName" class="form-label">Last name</label>
-                  <input type="text" class="form-control" id="lastName" name="lastName" placeholder="Doe" required>
-                </div>
-              </div>
-            </div>
-
-            <div class="fauth-field">
-              <label for="email" class="form-label">Email address</label>
-              <input type="email" class="form-control" id="email" name="email" placeholder="name@example.com" required>
-            </div>
-
-            <div class="fauth-field">
-              <label for="password" class="form-label">Password</label>
-              <div class="input-group">
-                <input type="password" class="form-control" id="password" name="password" placeholder="Create a password" required>
-                <button class="btn btn-outline-secondary" type="button" data-toggle-password><i class="bi bi-eye"></i></button>
-              </div>
-              <div class="form-text">Use at least 8 characters with letters and numbers.</div>
-            </div>
-
-            <div class="form-check mb-3">
-              <input class="form-check-input" type="checkbox" id="terms" name="terms" required>
-              <label class="form-check-label" for="terms">I agree to the <a href="#" class="fauth-link">Terms</a> and <a href="#" class="fauth-link">Privacy Policy</a>.</label>
-            </div>
-
-            <button type="submit" class="btn btn-primary w-100">Create Account</button>
-          </form>
-
-          <p class="fauth-foot-text">Already have an account? <a href="auth-login.html" class="fauth-link">Sign in</a></p>
+          <footer class="footer-centered">
+            <div class="footer-copyright">&copy; 2026 <a href="#">NiceAdmin</a>. All Rights Reserved.</div>
+            <div class="footer-links"><a href="#">Privacy</a><a href="#">Terms</a><a href="#">Help</a></div>
+          </footer>
         </div>
+      </main>
+    </div>
 
-        <footer class="footer-centered">
-          <div class="footer-copyright">&copy; 2026 <a href="#">NiceAdmin</a>. All Rights Reserved.</div>
-          <div class="footer-links"><a href="#">Privacy</a><a href="#">Terms</a><a href="#">Help</a></div>
-        </footer>
-      </div>
-    </main>
-  </div>
+    <!-- Dependências originais mantidas inativas junto da implementação anterior. -->
+    <link href="assets/vendor/remixicon/remixicon.css" rel="stylesheet">
+    <link href="assets/vendor/fontawesome-free/css/all.min.css" rel="stylesheet">
+    <link href="assets/vendor/lucide-icons/lucide.css" rel="stylesheet">
+    <link href="assets/vendor/simple-datatables/style.css" rel="stylesheet">
+    <link href="assets/vendor/quill/quill.snow.css" rel="stylesheet">
+    <link href="assets/vendor/quill/quill.bubble.css" rel="stylesheet">
+    <link href="assets/vendor/choices.js/choices.min.css" rel="stylesheet">
+    <link href="assets/vendor/flatpickr/flatpickr.min.css" rel="stylesheet">
+    <script src="assets/vendor/apexcharts/apexcharts.min.js"></script>
+    <script src="assets/vendor/chart.js/chart.umd.js"></script>
+    <script src="assets/vendor/echarts/echarts.min.js"></script>
+    <script src="assets/vendor/simple-datatables/simple-datatables.js"></script>
+    <script src="assets/vendor/quill/quill.js"></script>
+    <script src="assets/vendor/tinymce/tinymce.min.js"></script>
+    <script src="assets/vendor/choices.js/choices.min.js"></script>
+    <script src="assets/vendor/flatpickr/flatpickr.min.js"></script>
+    <script src="assets/vendor/php-email-form/validate.js"></script>
+  </template>
 
-  <!-- Vendor JS Files -->
+  <a href="#" class="back-to-top" aria-label="Voltar ao topo"><i class="bi bi-arrow-up" aria-hidden="true"></i></a>
+
   <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-  <script src="assets/vendor/apexcharts/apexcharts.min.js"></script>
-  <script src="assets/vendor/chart.js/chart.umd.js"></script>
-  <script src="assets/vendor/echarts/echarts.min.js"></script>
-  <script src="assets/vendor/simple-datatables/simple-datatables.js"></script>
-  <script src="assets/vendor/quill/quill.js"></script>
-  <script src="assets/vendor/tinymce/tinymce.min.js"></script>
-  <script src="assets/vendor/choices.js/choices.min.js"></script>
-  <script src="assets/vendor/flatpickr/flatpickr.min.js"></script>
-  <script src="assets/vendor/php-email-form/validate.js"></script>
-
-  <!-- Template Main JS Files -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <script src="assets/js/theme.js"></script>
   <script src="assets/js/main.js"></script>
-
-  <!-- App Sidebar Toggle (for app pages with sidebars) -->
   <script src="assets/js/apps-sidebar-toggle.js"></script>
 
+  <!-- Comportamento localizado do Mapa Tático. -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      'use strict';
+
+      const STORAGE_KEYS = {
+        activations: 'ordena.ativacoes.v1',
+        orders: 'ordena.ordens-servico.v1',
+        legacyOrders: 'ordensServico'
+      };
+      const DEFAULT_CENTER = [-22.9068, -43.1729];
+      const DEFAULT_ZOOM = 12;
+      const mapConfiguration = window.ORDENA_MAP_CONFIG || {};
+      const TILE_URL = String(mapConfiguration.tileUrl || 'https://tile.openstreetmap.org/{z}/{x}/{y}.png');
+      const TILE_ATTRIBUTION = String(mapConfiguration.tileAttribution || '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors');
+      // Atualização automática antiga preservada para a futura integração com a API.
+      // const POSITION_UPDATE_INTERVAL = 30000;
+      const AUTOMATIC_POSITION_UPDATE_ENABLED = false;
+      const TACTICAL_RESOURCE_FILTER_VALUES = ['viatura', 'moto', 'pe'];
+
+      const elements = {
+        alert: document.getElementById('tacticalPageAlert'),
+        alertIcon: document.getElementById('tacticalPageAlertIcon'),
+        alertMessage: document.getElementById('tacticalPageAlertMessage'),
+        pageLoading: document.getElementById('tacticalPageLoading'),
+        dashboard: document.getElementById('tacticalDashboardContent'),
+        refreshButton: document.getElementById('refreshTacticalMapButton'),
+        refreshIdle: document.querySelector('.tactical-refresh-idle'),
+        refreshProcessing: document.querySelector('.tactical-refresh-processing'),
+        updatedAt: document.getElementById('tacticalUpdatedAt'),
+        demoBadge: document.getElementById('tacticalDemoBadge'),
+        mapSubtitle: document.getElementById('tacticalMapSubtitle'),
+        positionedCount: document.getElementById('tacticalPositionedCount'),
+        filterPanel: document.getElementById('tacticalMapFilterPanel'),
+        filterForm: document.getElementById('tacticalMapFilterForm'),
+        mobileFilterButton: document.getElementById('tacticalMobileFilterButton'),
+        appliedFilterCount: document.getElementById('tacticalAppliedFilterCount'),
+        clearFiltersButton: document.getElementById('clearTacticalMapFiltersButton'),
+        filterResult: document.getElementById('tacticalFilterResult'),
+        filterPending: document.getElementById('tacticalFilterPending'),
+        filterEmpty: document.getElementById('tacticalMapFilterEmpty'),
+        filterEmptyTitle: document.getElementById('tacticalMapFilterEmptyTitle'),
+        filterEmptyMessage: document.getElementById('tacticalMapFilterEmptyMessage'),
+        emptyClearFiltersButton: document.getElementById('clearTacticalMapEmptyFiltersButton'),
+        rosterCount: document.getElementById('tacticalRosterCount'),
+        rosterToggleCount: document.getElementById('tacticalRosterToggleCount'),
+        rosterSubtitle: document.getElementById('tacticalRosterSubtitle'),
+        teamList: document.getElementById('tacticalTeamList'),
+        // Campo textual anterior preservado no HTML comentado.
+        // teamSearch: document.getElementById('tacticalTeamSearch'),
+        resourceFilters: Array.from(document.querySelectorAll('.tactical-resource-filter')),
+        stageFilter: document.getElementById('tacticalStageFilter'),
+        workspace: document.getElementById('tacticalWorkspace'),
+        roster: document.getElementById('tacticalRoster'),
+        openRosterButton: document.getElementById('openTacticalRosterButton'),
+        closeRosterButton: document.getElementById('closeTacticalRosterButton'),
+        rosterBackdrop: document.getElementById('tacticalRosterBackdrop'),
+        mapElement: document.getElementById('tacticalMap'),
+        mapStage: document.getElementById('tacticalMapStage'),
+        mapLoading: document.getElementById('tacticalMapLoading'),
+        mapFallback: document.getElementById('tacticalMapFallback'),
+        fitMapButton: document.getElementById('fitTacticalMapButton'),
+        fullscreenButton: document.getElementById('fullscreenTacticalMapButton'),
+        fullscreenExitButton: document.getElementById('exitTacticalFullscreenButton'),
+        fullscreenFilterButton: document.getElementById('openTacticalFullscreenFiltersButton'),
+        personnelMetric: document.getElementById('tacticalPersonnelMetric'),
+        vehicleMetric: document.getElementById('tacticalVehicleMetric'),
+        motorcycleMetric: document.getElementById('tacticalMotorcycleMetric'),
+        footMetric: document.getElementById('tacticalFootMetric'),
+        briefingMetric: document.getElementById('tacticalBriefingMetric'),
+        movingMetric: document.getElementById('tacticalMovingMetric'),
+        baseMetric: document.getElementById('tacticalBaseMetric'),
+        patrolMetric: document.getElementById('tacticalPatrolMetric'),
+        breakMetric: document.getElementById('tacticalBreakMetric'),
+        returnMetric: document.getElementById('tacticalReturnMetric')
+      };
+
+      if (Object.keys(elements).some(function(key) { return !elements[key]; })) {
+        return;
+      }
+      if (!elements.resourceFilters.length) {
+        return;
+      }
+
+      const state = {
+        teams: [],
+        visibleTeams: [],
+        selectedTeamId: '',
+        map: null,
+        tileLayer: null,
+        operationalLayer: null,
+        markerByTeamId: new Map(),
+        isDemo: false,
+        isRefreshing: false,
+        alertTimeout: null,
+        tileFailureReported: false,
+        resizeObserver: null,
+        appliedFilters: {
+          query: '',
+          resources: TACTICAL_RESOURCE_FILTER_VALUES.slice(),
+          stage: 'all'
+        }
+      };
+
+      function normalizeWhitespace(value) {
+        return String(value === undefined || value === null ? '' : value).replace(/\s+/g, ' ').trim();
+      }
+
+      function normalizeComparable(value) {
+        return normalizeWhitespace(value)
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .toLocaleLowerCase('pt-BR');
+      }
+
+      function selectedTacticalResources() {
+        return elements.resourceFilters.filter(function(input) {
+          return input.checked;
+        }).map(function(input) {
+          return input.value;
+        });
+      }
+
+      function resourceSelectionsMatch(firstSelection, secondSelection) {
+        return firstSelection.length === secondSelection.length && firstSelection.every(function(resource) {
+          return secondSelection.indexOf(resource) >= 0;
+        });
+      }
+
+      function escapeHtml(value) {
+        return normalizeWhitespace(value)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+
+      function firstDefined() {
+        for (let index = 0; index < arguments.length; index += 1) {
+          const value = arguments[index];
+          if (value !== undefined && value !== null && value !== '') {
+            return value;
+          }
+        }
+        return '';
+      }
+
+      function pickText(value, keys) {
+        const directValue = normalizeWhitespace(value);
+        if (directValue && (typeof value === 'string' || typeof value === 'number')) {
+          return directValue;
+        }
+        if (!value || typeof value !== 'object' || Array.isArray(value)) {
+          return '';
+        }
+        for (let index = 0; index < keys.length; index += 1) {
+          const selected = normalizeWhitespace(value[keys[index]]);
+          if (selected) {
+            return selected;
+          }
+        }
+        return '';
+      }
+
+      function waitForVisualFeedback(milliseconds) {
+        return new Promise(function(resolve) {
+          window.setTimeout(resolve, milliseconds || 250);
+        });
+      }
+
+      function showAlert(message, type, autoHide) {
+        const safeType = ['success', 'danger', 'warning', 'info'].indexOf(type) >= 0 ? type : 'info';
+        const icons = {
+          success: 'bi-check-circle-fill',
+          danger: 'bi-exclamation-octagon-fill',
+          warning: 'bi-exclamation-triangle-fill',
+          info: 'bi-info-circle-fill'
+        };
+
+        window.clearTimeout(state.alertTimeout);
+        elements.alert.className = 'alert tactical-page-alert alert-' + safeType;
+        elements.alert.setAttribute('role', safeType === 'danger' ? 'alert' : 'status');
+        elements.alert.setAttribute('aria-live', safeType === 'danger' ? 'assertive' : 'polite');
+        elements.alertIcon.className = 'bi mt-1 ' + icons[safeType];
+        elements.alertMessage.textContent = message;
+
+        if (autoHide !== false && (safeType === 'success' || safeType === 'info')) {
+          state.alertTimeout = window.setTimeout(function() {
+            elements.alert.classList.add('d-none');
+          }, 6500);
+        }
+      }
+
+      function setRefreshing(isRefreshing) {
+        state.isRefreshing = isRefreshing;
+        elements.refreshButton.disabled = isRefreshing;
+        elements.refreshButton.setAttribute('aria-busy', String(isRefreshing));
+        elements.refreshIdle.classList.toggle('d-none', isRefreshing);
+        elements.refreshProcessing.classList.toggle('d-none', !isRefreshing);
+      }
+
+      function formatUpdateTime(date) {
+        return new Intl.DateTimeFormat('pt-BR', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit'
+        }).format(date);
+      }
+
+      function formatShortTime(value) {
+        if (!value) return 'Não informado';
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) {
+          const text = normalizeWhitespace(value).slice(0, 5);
+          return /^\d{2}:\d{2}$/.test(text) ? text : 'Não informado';
+        }
+        return new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit' }).format(date);
+      }
+
+      function readStoredArray(key) {
+        let storedValue;
+        try {
+          storedValue = window.localStorage.getItem(key);
+        } catch (error) {
+          throw new Error('Não foi possível acessar o armazenamento operacional.');
+        }
+        if (storedValue === null || storedValue === '') {
+          return [];
+        }
+        let parsedValue;
+        try {
+          parsedValue = JSON.parse(storedValue);
+        } catch (error) {
+          throw new Error('Os dados armazenados em “' + key + '” não puderam ser interpretados.');
+        }
+        if (!Array.isArray(parsedValue)) {
+          throw new Error('Os dados armazenados em “' + key + '” possuem formato inválido.');
+        }
+        return parsedValue;
+      }
+
+      function normalizeStatus(value) {
+        const comparable = normalizeComparable(value);
+        if (!comparable) return 'ativa';
+        if (comparable.indexOf('encerr') === 0 || comparable.indexOf('finaliz') === 0 || comparable.indexOf('inativ') === 0) {
+          return 'encerrada';
+        }
+        return 'ativa';
+      }
+
+      function serviceOrderNumber(value) {
+        const selected = pickText(value, ['numero', 'number', 'codigo', 'code']);
+        return selected ? selected.replace(/^os\s*(?:n[º°o]\.?\s*)?/i, '') : '';
+      }
+
+      function parseTimeToMinutes(value) {
+        const match = normalizeWhitespace(value).match(/^(\d{1,2}):(\d{2})/);
+        if (!match) return null;
+        const hours = Number(match[1]);
+        const minutes = Number(match[2]);
+        if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return null;
+        return hours * 60 + minutes;
+      }
+
+      function minuteIsWithinRange(currentMinute, startMinute, endMinute) {
+        if (startMinute === null || endMinute === null) return false;
+        if (startMinute === endMinute) return true;
+        if (endMinute > startMinute) {
+          return currentMinute >= startMinute && currentMinute < endMinute;
+        }
+        return currentMinute >= startMinute || currentMinute < endMinute;
+      }
+
+      function findCurrentActivity(order) {
+        const activities = Array.isArray(order && order.atividades)
+          ? order.atividades
+          : (Array.isArray(order && order.activities) ? order.activities : []);
+        const now = new Date();
+        const currentMinute = now.getHours() * 60 + now.getMinutes();
+        const current = activities.find(function(activity) {
+          return minuteIsWithinRange(
+            currentMinute,
+            parseTimeToMinutes(firstDefined(activity && activity.inicio, activity && activity.start)),
+            parseTimeToMinutes(firstDefined(activity && activity.fim, activity && activity.end))
+          );
+        });
+        return current || null;
+      }
+
+      function normalizeCoordinate(coordinate, usesGeoJsonOrder) {
+        let latitude;
+        let longitude;
+        let rawLatitude;
+        let rawLongitude;
+        if (Array.isArray(coordinate)) {
+          rawLatitude = coordinate[usesGeoJsonOrder ? 1 : 0];
+          rawLongitude = coordinate[usesGeoJsonOrder ? 0 : 1];
+        } else if (coordinate && typeof coordinate === 'object') {
+          rawLatitude = firstDefined(coordinate.latitude, coordinate.lat);
+          rawLongitude = firstDefined(coordinate.longitude, coordinate.lng, coordinate.lon);
+        }
+        if (normalizeWhitespace(rawLatitude) === '' || normalizeWhitespace(rawLongitude) === '') {
+          return null;
+        }
+        latitude = Number(rawLatitude);
+        longitude = Number(rawLongitude);
+        if (!Number.isFinite(latitude) || !Number.isFinite(longitude) || latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
+          return null;
+        }
+        return [latitude, longitude];
+      }
+
+      function positionFromActivity(activity) {
+        const gps = activity && activity.gps;
+        if (!gps || typeof gps !== 'object') {
+          return null;
+        }
+
+        const directPoint = normalizeCoordinate(gps, false);
+        if (directPoint) {
+          return { type: 'point', point: directPoint, coordinates: [directPoint] };
+        }
+
+        const geoJsonCoordinates = gps.geometry && Array.isArray(gps.geometry.coordinates)
+          ? gps.geometry.coordinates[0]
+          : null;
+        const sourceCoordinates = geoJsonCoordinates || firstDefined(gps.coordenadas, gps.coordinates, gps.vertices);
+        if (!Array.isArray(sourceCoordinates)) {
+          return null;
+        }
+        const coordinates = sourceCoordinates.map(function(coordinate) {
+          return normalizeCoordinate(coordinate, sourceCoordinates === geoJsonCoordinates);
+        }).filter(Boolean);
+        if (!coordinates.length) {
+          return null;
+        }
+        if (coordinates.length === 1) {
+          return { type: 'point', point: coordinates[0], coordinates: coordinates };
+        }
+        return { type: 'polygon', point: polygonCenter(coordinates), coordinates: coordinates };
+      }
+
+      function polygonCenter(coordinates) {
+        const total = coordinates.reduce(function(accumulator, coordinate) {
+          accumulator.latitude += coordinate[0];
+          accumulator.longitude += coordinate[1];
+          return accumulator;
+        }, { latitude: 0, longitude: 0 });
+        return [total.latitude / coordinates.length, total.longitude / coordinates.length];
+      }
+
+      function stageKey(value) {
+        const comparable = normalizeComparable(value);
+        if (comparable.indexOf('base') >= 0 && comparable.indexOf('retorno') < 0) return 'baseamento';
+        if (comparable.indexOf('patrul') >= 0 || comparable.indexOf('ronda') >= 0) return 'patrulhamento';
+        if (comparable.indexOf('desloc') >= 0) return 'deslocamento';
+        if (comparable.indexOf('interval') >= 0 || comparable.indexOf('refeic') >= 0) return 'intervalo';
+        if (comparable.indexOf('retorno') >= 0) return 'retorno';
+        if (comparable.indexOf('prelec') >= 0 || comparable.indexOf('brief') >= 0) return 'prelecao';
+        return 'sem-atividade';
+      }
+
+      function resourceKey(value) {
+        const comparable = normalizeComparable(value);
+        if (comparable.indexOf('moto') >= 0 || comparable.indexOf('motocic') >= 0) return 'moto';
+        if (comparable.indexOf('pe') === 0 || comparable.indexOf('a pe') >= 0 || comparable.indexOf('ape') === 0) return 'pe';
+        return 'viatura';
+      }
+
+      function resourceIcon(value) {
+        const key = resourceKey(value);
+        if (key === 'moto') return 'bi-scooter';
+        if (key === 'pe') return 'bi-person-walking';
+        return 'bi-car-front-fill';
+      }
+
+      function commanderName(value) {
+        if (typeof value === 'string') return normalizeWhitespace(value);
+        const rank = pickText(value, ['rank', 'postoGraduacao', 'posto', 'graduacao']);
+        const name = pickText(value, ['warName', 'nomeGuerra', 'name', 'nome']);
+        return [rank, name].filter(Boolean).join(' ') || 'Não informado';
+      }
+
+      function memberCount(value) {
+        if (Array.isArray(value)) return value.filter(Boolean).length;
+        const numericValue = Number(firstDefined(value && value.count, value && value.total, value));
+        return Number.isFinite(numericValue) ? Math.max(0, Math.floor(numericValue)) : 0;
+      }
+
+      function normalizeTeam(activation, order, index) {
+        const vehicle = firstDefined(activation.vehicle, activation.viatura) || {};
+        const serviceOrder = firstDefined(activation.serviceOrder, activation.ordemServico) || {};
+        const activity = findCurrentActivity(order);
+        const activityType = pickText(activity, ['tipo', 'type', 'name', 'nome']) || 'Sem atividade vigente';
+        const position = positionFromActivity(activity);
+        const prefix = pickText(vehicle, ['prefix', 'prefixo', 'code', 'codigo']) || pickText(vehicle, ['plate', 'placa']) || 'RECURSO ' + String(index + 1);
+        const radio = pickText(vehicle, ['radio', 'callSign', 'indicativo', 'identificadorRadio']);
+        const callSign = radio && !/^\d+$/.test(radio) ? radio : prefix;
+        const plate = pickText(vehicle, ['plate', 'placa']);
+        const resourceType = pickText(vehicle, ['type', 'tipo', 'category', 'categoria']) || pickText(activation.policingType, ['name', 'nome']) || 'Viatura';
+        const orderNumber = serviceOrderNumber(serviceOrder) || serviceOrderNumber(order) || '—';
+        const mission = pickText(serviceOrder, ['nomeOS', 'name', 'nome', 'missao']) || pickText(order, ['nomeOS', 'name', 'nome', 'missao']) || pickText(activation.mission, ['name', 'nome', 'description', 'descricao']) || 'Missão não informada';
+        const commander = firstDefined(activation.commander, activation.comandante);
+        const phone = pickText(commander, ['phone', 'telefone', 'celular']) || 'Não informado';
+        const personnel = memberCount(firstDefined(activation.members, activation.integrantes)) + (commanderName(commander) !== 'Não informado' ? 1 : 0);
+        const stage = stageKey(activityType);
+        const location = pickText(activity, ['local', 'location', 'nomeLocal']) || (position ? 'Área programada' : 'Posição não definida');
+        const start = firstDefined(activity && activity.inicio, activity && activity.start);
+        const end = firstDefined(activity && activity.fim, activity && activity.end);
+
+        return {
+          id: normalizeWhitespace(activation.id) || 'activation-' + String(index),
+          callSign: callSign,
+          prefix: prefix,
+          plate: plate || 'Placa não informada',
+          radio: radio || 'Não informado',
+          resourceType: resourceType,
+          resourceKey: resourceKey(resourceType),
+          resourceIcon: resourceIcon(resourceType),
+          orderNumber: orderNumber,
+          mission: mission,
+          commander: commanderName(commander),
+          phone: phone,
+          personnel: Math.max(1, personnel),
+          activatedAt: firstDefined(activation.activatedAt, activation.dataAtivacao, activation.startedAt),
+          stage: stage,
+          stageLabel: activityType,
+          activityWindow: start && end ? formatShortTime(start) + ' às ' + formatShortTime(end) : 'Horário não informado',
+          location: location,
+          position: position,
+          positionNote: position
+            ? (position.type === 'polygon' ? 'Centro representativo da área programada' : 'Coordenada programada na atividade atual')
+            : 'A atividade atual não possui coordenadas cadastradas'
+        };
+      }
+
+      function orderMatchesActivation(order, activation) {
+        const snapshot = firstDefined(activation.serviceOrder, activation.ordemServico) || {};
+        const snapshotId = normalizeWhitespace(firstDefined(snapshot.id, activation.serviceOrderId, activation.ordemServicoId));
+        const orderId = normalizeWhitespace(order && order.id);
+        if (snapshotId && orderId && snapshotId === orderId) return true;
+        const snapshotNumber = serviceOrderNumber(snapshot);
+        const orderNumber = serviceOrderNumber(order);
+        return Boolean(snapshotNumber && orderNumber && snapshotNumber === orderNumber);
+      }
+
+      function buildTeamsFromStorage() {
+        const activations = readStoredArray(STORAGE_KEYS.activations).filter(function(activation) {
+          return activation && typeof activation === 'object' &&
+            normalizeStatus(activation.status) === 'ativa' &&
+            !firstDefined(activation.endedAt, activation.horaFim, activation.dataEncerramento);
+        });
+        const orders = readStoredArray(STORAGE_KEYS.orders).concat(readStoredArray(STORAGE_KEYS.legacyOrders));
+
+        if (!activations.length) {
+          return { teams: buildDemoTeams(), isDemo: true };
+        }
+
+        return {
+          teams: activations.map(function(activation, index) {
+            const order = orders.find(function(candidate) {
+              return orderMatchesActivation(candidate, activation);
+            }) || null;
+            return normalizeTeam(activation, order, index);
+          }),
+          isDemo: false
+        };
+      }
+
+      function timeOffset(minutes) {
+        const date = new Date(Date.now() + minutes * 60000);
+        return String(date.getHours()).padStart(2, '0') + ':' + String(date.getMinutes()).padStart(2, '0');
+      }
+
+      function buildDemoTeams() {
+        const demoRecords = [
+          {
+            activation: {
+              id: 'demo-aprev-1', status: 'Ativa', activatedAt: new Date(Date.now() - 82 * 60000).toISOString(),
+              vehicle: { prefix: '80-9901', plate: 'RJQ9A11', type: 'Viatura', radio: 'APREV-1' },
+              serviceOrder: { id: 'demo-os-1001', numero: 1001, nomeOS: 'PATRULHAMENTO OSTENSIVO — ZONA SUL' },
+              commander: { rank: 'SGT', name: 'SILVA', phone: '(21) 99901-0001' }, members: [{}, {}]
+            },
+            order: {
+              id: 'demo-os-1001', numero: 1001, nomeOS: 'PATRULHAMENTO OSTENSIVO — ZONA SUL',
+              atividades: [{ tipo: 'Baseamento', inicio: timeOffset(-40), fim: timeOffset(50), local: 'Base Flamengo', gps: { lat: -22.93254, lng: -43.17482 } }]
+            }
+          },
+          {
+            activation: {
+              id: 'demo-aprev-4', status: 'Ativa', activatedAt: new Date(Date.now() - 77 * 60000).toISOString(),
+              vehicle: { prefix: '81-1201', plate: 'RJO9B21', type: 'Motocicleta', radio: 'APREV-4' },
+              serviceOrder: { id: 'demo-os-1004', numero: 1004, nomeOS: 'MOTO PATRULHA ORLA' },
+              commander: { rank: 'CB', name: 'COSTA', phone: '(21) 99902-0002' }, members: [{}]
+            },
+            order: {
+              id: 'demo-os-1004', numero: 1004, nomeOS: 'MOTO PATRULHA ORLA',
+              atividades: [{ tipo: 'Patrulhamento', inicio: timeOffset(-35), fim: timeOffset(70), local: 'Orla de Copacabana', gps: { tipo: 'poligono', coordenadas: [
+                { latitude: -22.9661, longitude: -43.1812 }, { latitude: -22.9696, longitude: -43.1785 },
+                { latitude: -22.9748, longitude: -43.1858 }, { latitude: -22.9704, longitude: -43.1902 }
+              ] } }]
+            }
+          },
+          {
+            activation: {
+              id: 'demo-aprev-7', status: 'Ativa', activatedAt: new Date(Date.now() - 58 * 60000).toISOString(),
+              vehicle: { prefix: '80-9902', plate: 'RJQ9A12', type: 'Viatura', radio: 'APREV-7' },
+              serviceOrder: { id: 'demo-os-1007', numero: 1007, nomeOS: 'REFORÇO OPERACIONAL — CENTRO' },
+              commander: { rank: 'SGT', name: 'ALMEIDA', phone: '(21) 99903-0003' }, members: [{}, {}, {}]
+            },
+            order: {
+              id: 'demo-os-1007', numero: 1007, nomeOS: 'REFORÇO OPERACIONAL — CENTRO',
+              atividades: [{ tipo: 'Patrulhamento', inicio: timeOffset(-28), fim: timeOffset(85), local: 'Corredor Central', gps: { tipo: 'poligono', coordenadas: [
+                { latitude: -22.9004, longitude: -43.1848 }, { latitude: -22.9052, longitude: -43.1798 },
+                { latitude: -22.9106, longitude: -43.1851 }, { latitude: -22.9066, longitude: -43.1918 }
+              ] } }]
+            }
+          },
+          {
+            activation: {
+              id: 'demo-aprev-12', status: 'Ativa', activatedAt: new Date(Date.now() - 48 * 60000).toISOString(),
+              vehicle: { prefix: '80-9912', plate: 'RJP1C12', type: 'Viatura', radio: 'APREV-12' },
+              serviceOrder: { id: 'demo-os-1012', numero: 1012, nomeOS: 'PONTO BASE — GRANDE TIJUCA' },
+              commander: { rank: '2º SGT', name: 'MOURA', phone: '(21) 99904-0004' }, members: [{}, {}]
+            },
+            order: {
+              id: 'demo-os-1012', numero: 1012, nomeOS: 'PONTO BASE — GRANDE TIJUCA',
+              atividades: [{ tipo: 'Baseamento', inicio: timeOffset(-22), fim: timeOffset(62), local: 'Praça Saens Peña', gps: { lat: -22.92348, lng: -43.23293 } }]
+            }
+          },
+          {
+            activation: {
+              id: 'demo-gam-3', status: 'Ativa', activatedAt: new Date(Date.now() - 31 * 60000).toISOString(),
+              vehicle: { prefix: '81-1203', plate: 'RJO9B23', type: 'Motocicleta', radio: 'GAM-3' },
+              serviceOrder: { id: 'demo-os-1015', numero: 1015, nomeOS: 'APOIO MÓVEL — EIXO NORTE' },
+              commander: { rank: 'CB', name: 'NASCIMENTO', phone: '(21) 99905-0005' }, members: [{}]
+            },
+            order: {
+              id: 'demo-os-1015', numero: 1015, nomeOS: 'APOIO MÓVEL — EIXO NORTE',
+              atividades: [{ tipo: 'Deslocamento', inicio: timeOffset(-15), fim: timeOffset(30), local: 'Deslocamento para Vila Isabel', gps: null }]
+            }
+          },
+          {
+            activation: {
+              id: 'demo-dpoe-2', status: 'Ativa', activatedAt: new Date(Date.now() - 94 * 60000).toISOString(),
+              vehicle: { prefix: 'PAT-02', plate: '', type: 'Policiamento a pé', radio: 'DPOE-2' },
+              serviceOrder: { id: 'demo-os-1018', numero: 1018, nomeOS: 'PRESENÇA POLICIAL — LAGOA' },
+              commander: { rank: 'SGT', name: 'ROCHA', phone: '(21) 99906-0006' }, members: [{}, {}, {}]
+            },
+            order: {
+              id: 'demo-os-1018', numero: 1018, nomeOS: 'PRESENÇA POLICIAL — LAGOA',
+              atividades: [{ tipo: 'Patrulhamento', inicio: timeOffset(-45), fim: timeOffset(55), local: 'Entorno da Lagoa', gps: { tipo: 'poligono', coordenadas: [
+                { latitude: -22.9660, longitude: -43.2096 }, { latitude: -22.9695, longitude: -43.2057 },
+                { latitude: -22.9734, longitude: -43.2106 }, { latitude: -22.9692, longitude: -43.2152 }
+              ] } }]
+            }
+          }
+        ];
+
+        return demoRecords.map(function(record, index) {
+          return normalizeTeam(record.activation, record.order, index);
+        });
+      }
+
+      function updateMetrics() {
+        const metricValues = {
+          personnel: state.teams.reduce(function(total, team) { return total + team.personnel; }, 0),
+          vehicle: state.teams.filter(function(team) { return team.resourceKey === 'viatura'; }).length,
+          motorcycle: state.teams.filter(function(team) { return team.resourceKey === 'moto'; }).length,
+          foot: state.teams.filter(function(team) { return team.resourceKey === 'pe'; }).length,
+          briefing: state.teams.filter(function(team) { return team.stage === 'prelecao'; }).length,
+          moving: state.teams.filter(function(team) { return team.stage === 'deslocamento'; }).length,
+          base: state.teams.filter(function(team) { return team.stage === 'baseamento'; }).length,
+          patrol: state.teams.filter(function(team) { return team.stage === 'patrulhamento'; }).length,
+          breakTime: state.teams.filter(function(team) { return team.stage === 'intervalo'; }).length,
+          returning: state.teams.filter(function(team) { return team.stage === 'retorno'; }).length
+        };
+        elements.personnelMetric.textContent = String(metricValues.personnel);
+        elements.vehicleMetric.textContent = String(metricValues.vehicle);
+        elements.motorcycleMetric.textContent = String(metricValues.motorcycle);
+        elements.footMetric.textContent = String(metricValues.foot);
+        elements.briefingMetric.textContent = String(metricValues.briefing);
+        elements.movingMetric.textContent = String(metricValues.moving);
+        elements.baseMetric.textContent = String(metricValues.base);
+        elements.patrolMetric.textContent = String(metricValues.patrol);
+        elements.breakMetric.textContent = String(metricValues.breakTime);
+        elements.returnMetric.textContent = String(metricValues.returning);
+      }
+
+      function countAppliedMapFilters() {
+        let count = 0;
+        if (normalizeWhitespace(state.appliedFilters.query)) count += 1;
+        if (state.appliedFilters.resources.length !== TACTICAL_RESOURCE_FILTER_VALUES.length) count += 1;
+        if (state.appliedFilters.stage !== 'all') count += 1;
+        return count;
+      }
+
+      function hasPendingTacticalFilters() {
+        // Comparação anterior preservada após a retirada da pesquisa textual:
+        // return normalizeWhitespace(elements.teamSearch.value) !== normalizeWhitespace(state.appliedFilters.query) ||
+        return !resourceSelectionsMatch(selectedTacticalResources(), state.appliedFilters.resources) ||
+          elements.stageFilter.value !== state.appliedFilters.stage;
+      }
+
+      function updateTacticalFilterDraftState() {
+        const hasPendingChanges = hasPendingTacticalFilters();
+        elements.filterPending.classList.toggle('d-none', !hasPendingChanges);
+        elements.mobileFilterButton.classList.toggle('is-pending', hasPendingChanges);
+        elements.mobileFilterButton.setAttribute(
+          'aria-label',
+          hasPendingChanges
+            ? 'Abrir filtros do mapa; há alterações ainda não aplicadas'
+            : 'Abrir filtros do mapa'
+        );
+      }
+
+      function updateMapFilterFeedback() {
+        const totalCount = state.teams.length;
+        const visibleCount = state.visibleTeams.length;
+        const positionedCount = state.visibleTeams.filter(function(team) {
+          return Boolean(team.position);
+        }).length;
+        const unpositionedCount = visibleCount - positionedCount;
+        const appliedCount = countAppliedMapFilters();
+        let resultMessage = '';
+
+        elements.appliedFilterCount.textContent = String(appliedCount);
+        elements.appliedFilterCount.classList.toggle('d-none', appliedCount === 0);
+
+        if (!visibleCount && appliedCount) {
+          resultMessage = 'Nenhuma das ' + totalCount + ' equipes corresponde aos filtros informados.';
+        } else if (visibleCount && !positionedCount) {
+          resultMessage = visibleCount + (visibleCount === 1
+            ? ' equipe corresponde ao filtro, mas não possui posição programada.'
+            : ' equipes correspondem ao filtro, mas não possuem posições programadas.');
+        } else if (appliedCount) {
+          resultMessage = visibleCount + (visibleCount === 1
+            ? ' equipe exibida de '
+            : ' equipes exibidas de ') + totalCount + (totalCount === 1
+              ? ' disponível; '
+              : ' disponíveis; ') + positionedCount + (positionedCount === 1
+              ? ' posição no mapa.'
+              : ' posições no mapa.');
+        } else {
+          resultMessage = totalCount + (totalCount === 1
+            ? ' equipe disponível; '
+            : ' equipes disponíveis; ') + positionedCount + (positionedCount === 1
+              ? ' posicionada no mapa.'
+              : ' posicionadas no mapa.');
+        }
+        elements.filterResult.textContent = resultMessage;
+
+        if (appliedCount) {
+          elements.mapSubtitle.textContent = visibleCount + (visibleCount === 1
+            ? ' equipe exibida de '
+            : ' equipes exibidas de ') + totalCount + ' · ' + positionedCount + (positionedCount === 1
+              ? ' posição programada'
+              : ' posições programadas');
+          elements.positionedCount.textContent = positionedCount + (positionedCount === 1
+            ? ' equipe posicionada no filtro'
+            : ' equipes posicionadas no filtro');
+        } else {
+          elements.mapSubtitle.textContent = totalCount + (totalCount === 1 ? ' equipe ativa' : ' equipes ativas') +
+            ' · ' + positionedCount + (positionedCount === 1 ? ' posição programada' : ' posições programadas') +
+            (unpositionedCount ? ' · ' + unpositionedCount + (unpositionedCount === 1 ? ' sem coordenada' : ' sem coordenadas') : '');
+          elements.positionedCount.textContent = positionedCount + (positionedCount === 1
+            ? ' equipe posicionada'
+            : ' equipes posicionadas');
+        }
+
+        const shouldShowEmptyState = positionedCount === 0;
+        elements.filterEmpty.classList.toggle('is-visible', shouldShowEmptyState);
+        elements.emptyClearFiltersButton.classList.toggle('d-none', appliedCount === 0);
+        updateTacticalFilterDraftState();
+
+        if (!shouldShowEmptyState) return;
+        if (!visibleCount && appliedCount) {
+          elements.filterEmptyTitle.textContent = 'Nenhuma equipe encontrada';
+          // Texto anterior preservado: 'A pesquisa e a atividade selecionadas não correspondem às equipes ativas. Ajuste ou limpe os filtros.'
+          elements.filterEmptyMessage.textContent = 'Os tipos de recurso e a atividade selecionados não correspondem às equipes ativas. Ajuste ou limpe os filtros.';
+        } else if (visibleCount) {
+          elements.filterEmptyTitle.textContent = 'Sem posição programada';
+          elements.filterEmptyMessage.textContent = visibleCount + (visibleCount === 1
+            ? ' equipe corresponde ao filtro, mas ainda não possui coordenadas para aparecer no mapa.'
+            : ' equipes correspondem ao filtro, mas ainda não possuem coordenadas para aparecer no mapa.');
+        } else {
+          elements.filterEmptyTitle.textContent = 'Sem posições programadas';
+          elements.filterEmptyMessage.textContent = 'As equipes ativas ainda não possuem coordenadas disponíveis para este horário.';
+        }
+      }
+
+      function closeTacticalFilterPanel() {
+        const isMobile = window.matchMedia('(max-width: 767.98px)').matches;
+        if (!isMobile || !window.bootstrap || !window.bootstrap.Offcanvas) return;
+        const filterPanelInstance = window.bootstrap.Offcanvas.getInstance(elements.filterPanel);
+        if (filterPanelInstance) filterPanelInstance.hide();
+      }
+
+      async function openTacticalFiltersFromFullscreen() {
+        try {
+          if (document.fullscreenElement && document.exitFullscreen) {
+            await document.exitFullscreen();
+          }
+          window.setTimeout(function() {
+            const isMobile = window.matchMedia('(max-width: 767.98px)').matches;
+            if (isMobile && window.bootstrap && window.bootstrap.Offcanvas) {
+              window.bootstrap.Offcanvas.getOrCreateInstance(elements.filterPanel).show();
+            } else {
+              // Foco anterior preservado após a retirada da pesquisa textual:
+              // elements.teamSearch.focus();
+              elements.resourceFilters[0].focus();
+            }
+          }, 140);
+        } catch (error) {
+          showAlert('Não foi possível sair da tela cheia para abrir os filtros.', 'warning', true);
+        }
+      }
+
+      function applyTacticalFilters() {
+        // Pesquisa textual anterior preservada:
+        // const query = normalizeWhitespace(elements.teamSearch.value);
+        const resources = selectedTacticalResources();
+        const stage = elements.stageFilter.value || 'all';
+        // elements.teamSearch.value = query;
+        state.appliedFilters = {
+          query: '',
+          resources: resources,
+          stage: stage
+        };
+        renderRoster();
+        renderMapLayers(true);
+        closeTacticalFilterPanel();
+      }
+
+      function clearTacticalFilters(options) {
+        const shouldRestoreFromEmptyState = Boolean(options && options.restoreFromEmptyState);
+        // Campo textual anterior preservado:
+        // elements.teamSearch.value = '';
+        elements.resourceFilters.forEach(function(input) {
+          input.checked = true;
+        });
+        elements.stageFilter.value = 'all';
+        state.appliedFilters = {
+          query: '',
+          resources: TACTICAL_RESOURCE_FILTER_VALUES.slice(),
+          stage: 'all'
+        };
+        renderRoster();
+        renderMapLayers(true);
+        closeTacticalFilterPanel();
+        if (shouldRestoreFromEmptyState && document.fullscreenElement) {
+          elements.mapElement.focus();
+        } else if (shouldRestoreFromEmptyState && window.matchMedia('(max-width: 767.98px)').matches) {
+          elements.mobileFilterButton.focus();
+        } else if (!document.fullscreenElement && !window.matchMedia('(max-width: 767.98px)').matches) {
+          // Foco anterior preservado após a retirada da pesquisa textual:
+          // elements.teamSearch.focus();
+          elements.resourceFilters[0].focus();
+        }
+      }
+
+      function filterTeams() {
+        // Filtro instantâneo anterior preservado:
+        // const query = normalizeComparable(elements.teamSearch.value);
+        // const selectedStage = elements.stageFilter.value;
+        const query = normalizeComparable(state.appliedFilters.query);
+        const selectedResources = state.appliedFilters.resources;
+        const selectedStage = state.appliedFilters.stage;
+        state.visibleTeams = state.teams.filter(function(team) {
+          const searchable = normalizeComparable([
+            team.callSign, team.prefix, team.plate, team.orderNumber,
+            team.mission, team.commander, team.location, team.stageLabel
+          ].join(' '));
+          const queryMatches = !query || searchable.indexOf(query) >= 0;
+          const resourceMatches = selectedResources.indexOf(team.resourceKey) >= 0;
+          const stageMatches = selectedStage === 'all' ||
+            (selectedStage === 'sem-posicao' ? !team.position : team.stage === selectedStage);
+          return queryMatches && resourceMatches && stageMatches;
+        });
+
+        if (!state.visibleTeams.some(function(team) { return team.id === state.selectedTeamId; })) {
+          state.selectedTeamId = state.visibleTeams.length ? state.visibleTeams[0].id : '';
+        }
+      }
+
+      function stageBadgeClass(stage) {
+        return ['baseamento', 'patrulhamento', 'deslocamento', 'intervalo'].indexOf(stage) >= 0
+          ? ' is-' + stage
+          : '';
+      }
+
+      function renderRoster() {
+        filterTeams();
+        elements.teamList.replaceChildren();
+        elements.rosterCount.textContent = String(state.visibleTeams.length);
+        elements.rosterToggleCount.textContent = String(state.visibleTeams.length);
+        elements.rosterSubtitle.textContent = state.visibleTeams.length === state.teams.length
+          ? state.teams.length + (state.teams.length === 1 ? ' equipe ativa no turno atual.' : ' equipes ativas no turno atual.')
+          : state.visibleTeams.length + ' de ' + state.teams.length + ' equipes exibidas.';
+        updateMapFilterFeedback();
+
+        if (!state.visibleTeams.length) {
+          const emptyState = document.createElement('div');
+          emptyState.className = 'tactical-empty-state';
+          // Mensagem anterior preservada: Ajuste a busca ou o filtro de atividade para ampliar os resultados.
+          emptyState.innerHTML = '<i class="bi bi-funnel" aria-hidden="true"></i><strong>Nenhuma equipe encontrada</strong><span>Ajuste os tipos de recurso ou o filtro de atividade para ampliar os resultados.</span>';
+          elements.teamList.appendChild(emptyState);
+          return;
+        }
+
+        state.visibleTeams.forEach(function(team) {
+          const isSelected = team.id === state.selectedTeamId;
+          const article = document.createElement('article');
+          article.className = 'tactical-team-card' + (isSelected ? ' is-selected' : '');
+          article.setAttribute('role', 'listitem');
+          article.dataset.teamId = team.id;
+          article.innerHTML =
+            '<button type="button" class="tactical-team-summary" data-team-select="' + escapeHtml(team.id) + '" aria-expanded="' + String(isSelected) + '">' +
+              '<span class="tactical-team-topline">' +
+                '<span class="tactical-team-identity">' +
+                  '<span class="tactical-team-resource-icon" aria-hidden="true"><i class="bi ' + escapeHtml(team.resourceIcon) + '"></i></span>' +
+                  '<span class="min-w-0"><strong class="tactical-team-call-sign">' + escapeHtml(team.callSign) + '</strong><span class="tactical-team-prefix">' + escapeHtml(team.prefix + ' · ' + team.plate) + '</span></span>' +
+                '</span>' +
+                '<span class="tactical-team-chevron" aria-hidden="true"><i class="bi bi-chevron-down"></i></span>' +
+              '</span>' +
+              '<span class="tactical-team-meta"><span class="tactical-team-order">OS ' + escapeHtml(team.orderNumber) + ' · ' + escapeHtml(team.mission) + '</span><span class="tactical-stage-badge' + stageBadgeClass(team.stage) + '"><i class="bi ' + (team.position ? 'bi-geo-alt-fill' : 'bi-exclamation-circle') + '" aria-hidden="true"></i>' + escapeHtml(team.stageLabel) + '</span></span>' +
+            '</button>' +
+            '<div class="tactical-team-detail">' +
+              '<div class="tactical-detail-grid">' +
+                '<div class="tactical-detail-item"><span class="tactical-detail-label">Ativação</span><strong class="tactical-detail-value">' + escapeHtml(formatShortTime(team.activatedAt)) + '</strong></div>' +
+                '<div class="tactical-detail-item"><span class="tactical-detail-label">Atividade</span><strong class="tactical-detail-value">' + escapeHtml(team.activityWindow) + '</strong></div>' +
+                '<div class="tactical-detail-item"><span class="tactical-detail-label">Comandante</span><strong class="tactical-detail-value">' + escapeHtml(team.commander) + '</strong></div>' +
+                '<div class="tactical-detail-item"><span class="tactical-detail-label">Telefone</span><strong class="tactical-detail-value">' + escapeHtml(team.phone) + '</strong></div>' +
+              '</div>' +
+              '<div class="tactical-location-box' + (team.position ? '' : ' is-unavailable') + '">' +
+                '<i class="bi ' + (team.position ? 'bi-crosshair' : 'bi-exclamation-triangle-fill') + '" aria-hidden="true"></i>' +
+                '<span><span class="tactical-location-label">Local atual programado</span><strong class="tactical-location-name">' + escapeHtml(team.location) + '</strong><span class="tactical-location-note">' + escapeHtml(team.positionNote) + '</span></span>' +
+              '</div>' +
+            '</div>';
+          elements.teamList.appendChild(article);
+        });
+      }
+
+      function mapColorForTeam(team) {
+        if (team.id === state.selectedTeamId) return '#ef9f1b';
+        return team.stage === 'baseamento' ? '#16855a' : '#4154f1';
+      }
+
+      function markerIcon(team) {
+        const selectedClass = team.id === state.selectedTeamId ? ' is-selected' : '';
+        const stageClass = team.stage === 'baseamento' ? ' is-baseamento' : '';
+        return window.L.divIcon({
+          className: 'tactical-leaflet-icon',
+          html: '<span class="tactical-unit-marker' + stageClass + selectedClass + '"><span class="tactical-unit-marker-core"><i class="bi ' + escapeHtml(team.resourceIcon) + '" aria-hidden="true"></i></span><span class="tactical-unit-marker-label">' + escapeHtml(team.callSign) + '</span></span>',
+          iconSize: [42, 42],
+          iconAnchor: [20, 20],
+          popupAnchor: [20, -18]
+        });
+      }
+
+      function popupContent(team) {
+        return '<div class="tactical-popup">' +
+          '<div class="tactical-popup-head"><strong>' + escapeHtml(team.callSign) + '</strong><span>OS ' + escapeHtml(team.orderNumber) + '</span></div>' +
+          '<div class="tactical-popup-row"><span>Recurso</span><strong>' + escapeHtml(team.prefix + ' · ' + team.plate) + '</strong></div>' +
+          '<div class="tactical-popup-row"><span>Comandante</span><strong>' + escapeHtml(team.commander) + '</strong></div>' +
+          '<div class="tactical-popup-row"><span>Atividade</span><strong>' + escapeHtml(team.stageLabel) + '</strong></div>' +
+          '<div class="tactical-popup-row"><span>Local</span><strong>' + escapeHtml(team.location) + '</strong></div>' +
+          '<div class="tactical-popup-row"><span>Horário</span><strong>' + escapeHtml(team.activityWindow) + '</strong></div>' +
+        '</div>';
+      }
+
+      function renderMapLayers(shouldFit) {
+        if (!state.map || !state.operationalLayer || typeof window.L === 'undefined') return;
+        state.operationalLayer.clearLayers();
+        state.markerByTeamId.clear();
+
+        state.visibleTeams.forEach(function(team) {
+          if (!team.position) return;
+          const color = mapColorForTeam(team);
+          if (team.position.type === 'polygon' && team.position.coordinates.length >= 3) {
+            window.L.polygon(team.position.coordinates, {
+              color: color,
+              weight: team.id === state.selectedTeamId ? 3 : 2,
+              opacity: 0.92,
+              fillColor: color,
+              fillOpacity: team.id === state.selectedTeamId ? 0.2 : 0.12,
+              dashArray: team.id === state.selectedTeamId ? null : '6 5',
+              interactive: true
+            }).bindTooltip(team.callSign + ' · ' + team.location, { sticky: true }).addTo(state.operationalLayer);
+          }
+
+          const marker = window.L.marker(team.position.point, {
+            icon: markerIcon(team),
+            keyboard: true,
+            title: team.callSign + ' — ' + team.location,
+            alt: 'Equipe ' + team.callSign + ' em ' + team.location,
+            riseOnHover: true,
+            riseOffset: 400
+          });
+          marker.bindPopup(popupContent(team), { maxWidth: 300, closeButton: true });
+          marker.on('click', function() {
+            selectTeam(team.id, true);
+          });
+          marker.addTo(state.operationalLayer);
+          state.markerByTeamId.set(team.id, marker);
+        });
+
+        if (shouldFit) {
+          fitAllPositions();
+        }
+      }
+
+      function fitAllPositions() {
+        if (!state.map || typeof window.L === 'undefined') return;
+        const coordinates = [];
+        state.visibleTeams.forEach(function(team) {
+          if (team.position) {
+            team.position.coordinates.forEach(function(coordinate) {
+              coordinates.push(coordinate);
+            });
+          }
+        });
+        if (!coordinates.length) {
+          state.map.setView(DEFAULT_CENTER, DEFAULT_ZOOM);
+          return;
+        }
+        if (coordinates.length === 1) {
+          state.map.setView(coordinates[0], 14);
+          return;
+        }
+        state.map.fitBounds(window.L.latLngBounds(coordinates), {
+          paddingTopLeft: [54, 72],
+          paddingBottomRight: [150, 76],
+          maxZoom: 14,
+          animate: true
+        });
+      }
+
+      function focusTeam(team) {
+        if (!state.map || !team || !team.position) return;
+        if (team.position.type === 'polygon' && team.position.coordinates.length >= 3) {
+          state.map.fitBounds(window.L.latLngBounds(team.position.coordinates), { padding: [80, 80], maxZoom: 15, animate: true });
+        } else {
+          state.map.flyTo(team.position.point, Math.max(state.map.getZoom(), 14), { animate: true, duration: 0.7 });
+        }
+        const marker = state.markerByTeamId.get(team.id);
+        if (marker) {
+          window.setTimeout(function() { marker.openPopup(); }, 450);
+        }
+      }
+
+      function selectTeam(teamId, focusOnMap) {
+        const team = state.visibleTeams.find(function(candidate) { return candidate.id === teamId; });
+        if (!team) return;
+        state.selectedTeamId = team.id;
+        renderRoster();
+        renderMapLayers(false);
+        if (focusOnMap !== false) {
+          focusTeam(team);
+        }
+        if (window.matchMedia('(max-width: 991px)').matches) {
+          closeRoster();
+        }
+      }
+
+      function initializeMap() {
+        if (state.map) {
+          state.map.invalidateSize();
+          if (state.tileLayer && typeof state.tileLayer.redraw === 'function') {
+            state.tileFailureReported = false;
+            state.tileLayer.redraw();
+          }
+          return true;
+        }
+        if (typeof window.L === 'undefined') {
+          elements.mapLoading.classList.add('is-hidden');
+          elements.mapFallback.classList.add('is-visible');
+          return false;
+        }
+
+        state.map = window.L.map(elements.mapElement, {
+          center: DEFAULT_CENTER,
+          zoom: DEFAULT_ZOOM,
+          zoomControl: true,
+          preferCanvas: true,
+          scrollWheelZoom: true
+        });
+
+        state.tileLayer = window.L.tileLayer(TILE_URL, {
+          attribution: TILE_ATTRIBUTION,
+          minZoom: 3,
+          maxZoom: 19,
+          maxNativeZoom: 19,
+          detectRetina: true
+        });
+        state.tileLayer.on('loading', function() {
+          elements.mapLoading.classList.remove('is-hidden');
+        });
+        state.tileLayer.on('load', function() {
+          state.tileFailureReported = false;
+          elements.mapLoading.classList.add('is-hidden');
+          elements.mapFallback.classList.remove('is-visible');
+        });
+        state.tileLayer.on('tileerror', function() {
+          elements.mapLoading.classList.add('is-hidden');
+          if (!state.tileFailureReported) {
+            state.tileFailureReported = true;
+            showAlert('A cartografia não foi carregada por completo. As equipes e posições programadas continuam disponíveis para consulta.', 'warning', false);
+          }
+        });
+        state.tileLayer.addTo(state.map);
+        window.L.control.scale({ imperial: false, position: 'bottomleft' }).addTo(state.map);
+        state.operationalLayer = window.L.layerGroup().addTo(state.map);
+
+        state.map.on('focus', function() {
+          elements.mapElement.setAttribute('aria-label', 'Mapa tático em foco. Use as teclas de seta para navegar e mais ou menos para alterar o zoom.');
+        });
+
+        if (typeof ResizeObserver === 'function') {
+          state.resizeObserver = new ResizeObserver(function() {
+            if (state.map) state.map.invalidateSize({ pan: false });
+          });
+          state.resizeObserver.observe(elements.mapStage);
+        }
+
+        window.setTimeout(function() {
+          elements.mapLoading.classList.add('is-hidden');
+        }, 8000);
+        return true;
+      }
+
+      function renderDashboard(shouldFitMap) {
+        updateMetrics();
+        renderRoster();
+        const positioned = state.teams.filter(function(team) { return Boolean(team.position); }).length;
+        const unpositioned = state.teams.length - positioned;
+        elements.positionedCount.textContent = positioned + (positioned === 1 ? ' equipe posicionada' : ' equipes posicionadas');
+        elements.mapSubtitle.textContent = state.teams.length + (state.teams.length === 1 ? ' equipe ativa' : ' equipes ativas') +
+          ' · ' + positioned + (positioned === 1 ? ' posição programada' : ' posições programadas') +
+          (unpositioned ? ' · ' + unpositioned + (unpositioned === 1 ? ' sem coordenada' : ' sem coordenadas') : '');
+        elements.demoBadge.classList.toggle('is-visible', state.isDemo);
+        updateMapFilterFeedback();
+        renderMapLayers(Boolean(shouldFitMap));
+      }
+
+      function openRoster() {
+        elements.workspace.classList.remove('is-roster-collapsed');
+        elements.workspace.classList.add('is-roster-open');
+        syncRosterAccessibility();
+        window.setTimeout(function() {
+          const firstButton = elements.teamList.querySelector('[data-team-select]');
+          if (firstButton && window.matchMedia('(max-width: 991px)').matches) firstButton.focus();
+        }, 220);
+      }
+
+      function syncRosterAccessibility() {
+        const isMobile = window.matchMedia('(max-width: 991px)').matches;
+        // Cálculo anterior preservado para uma futura reativação do painel lateral:
+        // const isVisible = isMobile
+        //   ? elements.workspace.classList.contains('is-roster-open')
+        //   : !elements.workspace.classList.contains('is-roster-collapsed');
+        const isVisible = !elements.roster.hidden && (isMobile
+          ? elements.workspace.classList.contains('is-roster-open')
+          : !elements.workspace.classList.contains('is-roster-collapsed'));
+        elements.roster.inert = !isVisible;
+        elements.roster.setAttribute('aria-hidden', String(!isVisible));
+        elements.openRosterButton.setAttribute('aria-expanded', String(isVisible));
+        const isBackdropAvailable = isMobile && isVisible;
+        elements.rosterBackdrop.tabIndex = isBackdropAvailable ? 0 : -1;
+        elements.rosterBackdrop.setAttribute('aria-hidden', String(!isBackdropAvailable));
+      }
+
+      function closeRoster() {
+        const shouldRestoreFocus = elements.roster.contains(document.activeElement);
+        elements.workspace.classList.remove('is-roster-open');
+        if (!window.matchMedia('(max-width: 991px)').matches) {
+          elements.workspace.classList.add('is-roster-collapsed');
+        }
+        syncRosterAccessibility();
+        window.setTimeout(function() {
+          if (state.map) state.map.invalidateSize({ pan: false });
+          if (shouldRestoreFocus) elements.openRosterButton.focus();
+        }, 230);
+      }
+
+      async function refreshTacticalData(isInitialLoad) {
+        if (state.isRefreshing) return;
+        setRefreshing(true);
+        const previousTeams = state.teams.slice();
+        const previousDemoState = state.isDemo;
+        try {
+          await waitForVisualFeedback(isInitialLoad ? 680 : 850);
+          const loadedData = buildTeamsFromStorage();
+          state.teams = loadedData.teams;
+          state.isDemo = loadedData.isDemo;
+          if (!state.selectedTeamId || !state.teams.some(function(team) { return team.id === state.selectedTeamId; })) {
+            const firstPositioned = state.teams.find(function(team) { return Boolean(team.position); });
+            state.selectedTeamId = (firstPositioned || state.teams[0] || {}).id || '';
+          }
+
+          if (isInitialLoad) {
+            elements.pageLoading.classList.add('d-none');
+            elements.dashboard.hidden = false;
+            window.requestAnimationFrame(function() {
+              const mapReady = initializeMap();
+              renderDashboard(mapReady);
+            });
+          } else {
+            const mapReady = initializeMap();
+            renderDashboard(mapReady);
+          }
+          elements.updatedAt.textContent = 'Última atualização: ' + formatUpdateTime(new Date());
+
+          if (state.isDemo) {
+            // Alerta demonstrativo anterior preservado como referência; o estado agora é indicado pelo badge do card.
+            // showAlert('Exibindo dados demonstrativos. Ative uma guarnição para visualizar os dados operacionais reais.', 'info', false);
+            if (isInitialLoad) {
+              elements.alert.classList.add('d-none');
+            } else {
+              showAlert('Atualização concluída. Como ainda não há ativações, os dados demonstrativos foram mantidos.', 'info', true);
+            }
+          } else if (!isInitialLoad) {
+            showAlert('Mapa tático atualizado com sucesso.', 'success', true);
+          }
+        } catch (error) {
+          if (previousTeams.length) {
+            state.teams = previousTeams;
+            state.isDemo = previousDemoState;
+            renderDashboard(false);
+          } else {
+            state.teams = buildDemoTeams();
+            state.isDemo = true;
+            state.selectedTeamId = state.teams[0].id;
+            elements.pageLoading.classList.add('d-none');
+            elements.dashboard.hidden = false;
+            window.requestAnimationFrame(function() {
+              const mapReady = initializeMap();
+              renderDashboard(mapReady);
+            });
+          }
+          showAlert((error && error.message ? error.message + ' ' : '') + 'A visualização anterior foi preservada para uma nova tentativa.', 'danger', false);
+        } finally {
+          setRefreshing(false);
+        }
+      }
+
+      elements.teamList.addEventListener('click', function(event) {
+        const button = event.target.closest('[data-team-select]');
+        if (!button) return;
+        selectTeam(button.dataset.teamSelect, true);
+      });
+
+      /*
+        Aplicação instantânea anterior preservada como referência. Os valores
+        informados agora só alteram o mapa depois da ação explícita “Filtrar”.
+
+        elements.teamSearch.addEventListener('input', function() {
+          renderRoster();
+          renderMapLayers(true);
+        });
+
+        elements.stageFilter.addEventListener('change', function() {
+          renderRoster();
+          renderMapLayers(true);
+        });
+      */
+
+      elements.filterForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+        applyTacticalFilters();
+      });
+
+      // Listener anterior preservado após a retirada da pesquisa textual:
+      // elements.teamSearch.addEventListener('input', updateTacticalFilterDraftState);
+      elements.resourceFilters.forEach(function(input) {
+        input.addEventListener('change', updateTacticalFilterDraftState);
+      });
+      elements.stageFilter.addEventListener('change', updateTacticalFilterDraftState);
+      elements.clearFiltersButton.addEventListener('click', clearTacticalFilters);
+      elements.emptyClearFiltersButton.addEventListener('click', function() {
+        clearTacticalFilters({ restoreFromEmptyState: true });
+      });
+
+      elements.filterPanel.addEventListener('shown.bs.offcanvas', function() {
+        // Foco anterior preservado após a retirada da pesquisa textual:
+        // elements.teamSearch.focus();
+        elements.resourceFilters[0].focus();
+      });
+
+      elements.filterPanel.addEventListener('hidden.bs.offcanvas', function() {
+        if (window.matchMedia('(max-width: 767.98px)').matches) {
+          elements.mobileFilterButton.focus();
+        }
+      });
+
+      elements.refreshButton.addEventListener('click', function() {
+        refreshTacticalData(false);
+      });
+
+      elements.fitMapButton.addEventListener('click', fitAllPositions);
+      elements.openRosterButton.addEventListener('click', openRoster);
+      elements.closeRosterButton.addEventListener('click', closeRoster);
+      elements.rosterBackdrop.addEventListener('click', closeRoster);
+      elements.fullscreenFilterButton.addEventListener('click', openTacticalFiltersFromFullscreen);
+
+      elements.fullscreenButton.addEventListener('click', async function() {
+        try {
+          if (!document.fullscreenElement && elements.mapStage.requestFullscreen) {
+            await elements.mapStage.requestFullscreen();
+          } else if (document.fullscreenElement && document.exitFullscreen) {
+            await document.exitFullscreen();
+          }
+        } catch (error) {
+          showAlert('Não foi possível abrir o mapa em tela cheia neste navegador.', 'warning', true);
+        }
+      });
+
+      elements.fullscreenExitButton.addEventListener('click', function() {
+        if (document.fullscreenElement && document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      });
+
+      document.addEventListener('fullscreenchange', function() {
+        const isFullscreen = document.fullscreenElement === elements.mapStage;
+        elements.fullscreenButton.innerHTML = isFullscreen
+          ? '<i class="bi bi-fullscreen-exit" aria-hidden="true"></i>Sair da tela cheia'
+          : '<i class="bi bi-arrows-fullscreen" aria-hidden="true"></i>Tela cheia';
+        window.setTimeout(function() {
+          if (state.map) state.map.invalidateSize({ pan: false });
+        }, 120);
+      });
+
+      document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape' && elements.workspace.classList.contains('is-roster-open')) {
+          closeRoster();
+          elements.openRosterButton.focus();
+        }
+      });
+
+      window.addEventListener('resize', function() {
+        if (window.matchMedia('(min-width: 992px)').matches) {
+          elements.workspace.classList.remove('is-roster-open');
+        } else {
+          elements.workspace.classList.remove('is-roster-collapsed');
+        }
+        syncRosterAccessibility();
+        if (state.map) state.map.invalidateSize({ pan: false });
+      });
+
+      if (AUTOMATIC_POSITION_UPDATE_ENABLED) {
+        // window.setInterval(function() { refreshTacticalData(false); }, POSITION_UPDATE_INTERVAL);
+      }
+
+      syncRosterAccessibility();
+      refreshTacticalData(true);
+    });
+  </script>
+
+  <!--
+    Dependências anteriores da página de cadastro preservadas como referência:
+    assets/vendor/apexcharts/apexcharts.min.js
+    assets/vendor/chart.js/chart.umd.js
+    assets/vendor/echarts/echarts.min.js
+    assets/vendor/simple-datatables/simple-datatables.js
+    assets/vendor/quill/quill.js
+    assets/vendor/tinymce/tinymce.min.js
+    assets/vendor/choices.js/choices.min.js
+    assets/vendor/flatpickr/flatpickr.min.js
+    assets/vendor/php-email-form/validate.js
+  -->
 </body>
 
 </html>

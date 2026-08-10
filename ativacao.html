@@ -1,0 +1,1620 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ativar Guarnição - Ordena</title>
+  <meta name="description" content="Ativação operacional de guarnições no sistema Ordena">
+  <meta name="keywords" content="ordena, operação, ativação, guarnição, viatura">
+
+  <link href="assets/img/favicon.png" rel="icon">
+  <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&amp;family=Nunito+Sans:wght@400;500;600;700;800&amp;family=Poppins:wght@500;600;700&amp;display=swap" rel="stylesheet">
+
+  <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+  <link href="assets/vendor/phosphor-icons/phosphor-icons.css" rel="stylesheet">
+  <link href="assets/css/main.css" rel="stylesheet">
+
+  <!-- Estilos localizados da página de ativação. -->
+  <style>
+    .activation-page-intro {
+      max-width: 720px;
+      margin: 0;
+      color: var(--muted-color);
+      font-size: 0.9375rem;
+    }
+
+    .activation-heading-actions {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: var(--spacing-sm);
+    }
+
+    .activation-page-alert {
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .activation-page-loader {
+      min-height: 210px;
+      margin-bottom: var(--spacing-lg);
+      border-color: var(--border-color-light);
+    }
+
+    .activation-page-loader .card-body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: var(--spacing-xs);
+      text-align: center;
+    }
+
+    .activation-page-loader strong {
+      color: var(--heading-color);
+      font-size: 0.9375rem;
+    }
+
+    .activation-page-loader small {
+      color: var(--muted-color);
+    }
+
+    .activation-growing-dots {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      color: var(--accent-color);
+    }
+
+    .activation-growing-dots .spinner-grow {
+      width: 0.625rem;
+      height: 0.625rem;
+      color: currentColor;
+    }
+
+    .page-activation.is-loading .activation-interface {
+      display: none;
+    }
+
+    .activation-card .card-header {
+      align-items: flex-start;
+      gap: var(--spacing-md);
+    }
+
+    .activation-card-heading {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--spacing-sm);
+      min-width: 0;
+    }
+
+    .activation-card-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      flex: 0 0 38px;
+      color: var(--accent-color);
+      background: color-mix(in srgb, var(--accent-color), transparent 90%);
+      border-radius: var(--radius-md);
+      font-size: 1.125rem;
+    }
+
+    .activation-required-note {
+      color: var(--muted-color);
+      font-size: 0.8125rem;
+      white-space: nowrap;
+    }
+
+    .activation-mission-summary {
+      min-height: 78px;
+      resize: none;
+    }
+
+    .activation-members-header-actions {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+    }
+
+    .activation-members-count {
+      color: var(--muted-color);
+      font-size: 0.8125rem;
+      white-space: nowrap;
+    }
+
+    .activation-members-empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 132px;
+      padding: var(--spacing-lg);
+      border: 1px dashed var(--border-color);
+      border-radius: var(--radius-md);
+      color: var(--muted-color);
+      text-align: center;
+    }
+
+    .activation-members-empty i {
+      margin-bottom: var(--spacing-sm);
+      color: var(--light-color);
+      font-size: 1.75rem;
+    }
+
+    .activation-member-card {
+      padding: var(--spacing-md);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      background: color-mix(in srgb, var(--background-color), transparent 35%);
+    }
+
+    .activation-member-card + .activation-member-card {
+      margin-top: var(--spacing-md);
+    }
+
+    .activation-member-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--spacing-sm);
+      margin-bottom: var(--spacing-md);
+    }
+
+    .activation-member-title {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-xs);
+      margin: 0;
+      color: var(--heading-color);
+      font-size: 0.875rem;
+      font-weight: 700;
+    }
+
+    .activation-member-title i {
+      color: var(--accent-color);
+    }
+
+    .activation-form-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: flex-end;
+      gap: var(--spacing-sm);
+    }
+
+    .activation-submit-processing {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--spacing-sm);
+    }
+
+    .activation-submit-processing .activation-growing-dots {
+      color: currentColor;
+    }
+
+    .activation-submit-processing .spinner-grow {
+      width: 0.45rem;
+      height: 0.45rem;
+    }
+
+    .activation-data-note {
+      display: inline-flex;
+      align-items: flex-start;
+      gap: 6px;
+    }
+
+    @media (max-width: 767px) {
+      .activation-page-intro {
+        font-size: 0.875rem;
+      }
+
+      .activation-heading-actions {
+        width: 100%;
+        align-items: flex-start;
+      }
+
+      .activation-heading-actions .btn {
+        width: 100%;
+      }
+
+      .activation-card .card-header {
+        flex-direction: column;
+      }
+
+      .activation-required-note,
+      .activation-members-header-actions {
+        width: 100%;
+      }
+
+      .activation-members-header-actions {
+        flex-wrap: wrap;
+        justify-content: space-between;
+      }
+
+      .activation-members-header-actions .btn {
+        flex: 1 1 100%;
+      }
+
+      .activation-form-actions .btn {
+        flex: 1 1 100%;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .activation-growing-dots .spinner-grow {
+        opacity: 1;
+        transform: scale(0.75);
+        animation: none !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="header">
+    <div class="header-left">
+      <button class="sidebar-toggle" type="button" title="Alternar menu lateral" aria-label="Alternar menu lateral">
+        <span class="menu-lines" aria-hidden="true"><span></span><span></span><span></span></span>
+      </button>
+
+      <a href="index.html" class="header-brand" aria-label="Página inicial do Ordena">
+        <span class="header-logo"><img src="assets/img/logo.webp" alt="Ordena"></span>
+        <span class="header-context"><strong class="header-context-title">Ordena</strong></span>
+      </a>
+    </div>
+  </header>
+
+  <aside class="sidebar">
+    <div class="sidebar-shell">
+      <button class="sidebar-close" type="button" aria-label="Fechar menu lateral">
+        <i class="bi bi-x-lg" aria-hidden="true"></i>
+      </button>
+
+      <nav class="sidebar-nav" aria-label="Navegação principal">
+        <ul class="nav-menu">
+          <li class="nav-item">
+            <a class="nav-link" href="index.html">
+              <span class="nav-icon"><i class="ph-light ph-squares-four" aria-hidden="true"></i></span>
+              <span class="nav-text">Painel Operacional</span>
+              <span class="nav-meta">Home</span>
+            </a>
+          </li>
+
+          <li class="nav-item has-submenu">
+            <a class="nav-link" href="#" aria-expanded="false">
+              <span class="nav-icon"><i class="ph-light ph-gauge" aria-hidden="true"></i></span>
+              <span class="nav-text">Cadastro</span>
+              <span class="nav-badge">5</span>
+              <span class="nav-arrow"><i class="bi bi-chevron-right" aria-hidden="true"></i></span>
+            </a>
+            <ul class="nav-submenu">
+              <li><a class="nav-link" href="dashboard-sales.html"><span class="nav-dot"></span>Viaturas</a></li>
+              <li><a class="nav-link" href="dashboard-analytics.html"><span class="nav-dot"></span>Pontos de Baseamento</a></li>
+              <li><a class="nav-link" href="dashboard-crm.html"><span class="nav-dot"></span>Locais de Patrulhamento</a></li>
+              <li><a class="nav-link" href="dashboard-marketing.html"><span class="nav-dot"></span>Tipos de Serviço</a></li>
+              <li><a class="nav-link" href="dashboard-projects.html"><span class="nav-dot"></span>Operações Especiais</a></li>
+            </ul>
+          </li>
+
+          <li class="nav-item has-submenu">
+            <a class="nav-link" href="#" aria-expanded="false">
+              <span class="nav-icon"><i class="ph-light ph-magnifying-glass" aria-hidden="true"></i></span>
+              <span class="nav-text">Consultas</span>
+              <!-- Contagem anterior preservada: <span class="nav-badge">6</span> -->
+              <span class="nav-badge">7</span>
+              <span class="nav-arrow"><i class="bi bi-chevron-right" aria-hidden="true"></i></span>
+            </a>
+            <ul class="nav-submenu">
+              <li><a class="nav-link" href="consulta-viaturas.html"><span class="nav-dot"></span>Viaturas</a></li>
+              <li><a class="nav-link" href="consulta-pontos-baseamento.html"><span class="nav-dot"></span>Pontos de Baseamento</a></li>
+              <li><a class="nav-link" href="consulta-locais-patrulhamento.html"><span class="nav-dot"></span>Locais de Patrulhamento</a></li>
+              <li><a class="nav-link" href="consulta-tipos-servico.html"><span class="nav-dot"></span>Tipos de Serviço</a></li>
+              <li><a class="nav-link" href="consulta-operacoes-especiais.html"><span class="nav-dot"></span>Operações Especiais</a></li>
+              <li><a class="nav-link" href="historico-ativacoes.html"><span class="nav-dot"></span>Histórico de Ativações</a></li>
+              <li><a class="nav-link" href="users.html"><span class="nav-dot"></span>Ordens de Serviço</a></li>
+            </ul>
+          </li>
+
+          <li class="nav-item has-submenu">
+            <a class="nav-link" href="#" aria-expanded="false">
+              <span class="nav-icon"><i class="ph-light ph-users-three" aria-hidden="true"></i></span>
+              <span class="nav-text">Ordens de Serviço</span>
+              <span class="nav-badge">1</span>
+              <span class="nav-arrow"><i class="bi bi-chevron-right" aria-hidden="true"></i></span>
+            </a>
+            <ul class="nav-submenu">
+              <!-- Link anterior preservado; a consulta agora pertence ao grupo Consultas.
+              <li><a class="nav-link" href="users.html"><span class="nav-dot"></span>Consultar Ordens de Serviço</a></li>
+              -->
+              <li><a class="nav-link" href="users-view.html"><span class="nav-dot"></span>Criar Ordem de Serviço</a></li>
+            </ul>
+          </li>
+
+          <li class="nav-item has-submenu open">
+            <a class="nav-link" href="#" aria-expanded="true">
+              <span class="nav-icon"><i class="ph-light ph-shield-check" aria-hidden="true"></i></span>
+              <span class="nav-text">Operação</span>
+              <span class="nav-badge">3</span>
+              <span class="nav-arrow"><i class="bi bi-chevron-right" aria-hidden="true"></i></span>
+            </a>
+            <ul class="nav-submenu show">
+              <li><a class="nav-link active" href="ativacao.html" aria-current="page"><span class="nav-dot"></span>Ativar Guarnição</a></li>
+              <li><a class="nav-link" href="painel-ativacoes.html"><span class="nav-dot"></span>Painel de Ativações</a></li>
+              <li><a class="nav-link" href="auth-register.html"><span class="nav-dot"></span>Mapa Tático</a></li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </aside>
+
+  <div class="sidebar-overlay"></div>
+
+  <main class="main">
+    <div class="main-content page-activation is-loading" id="activationPageContent">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Ativar Guarnição</h1>
+          <p class="activation-page-intro">Vincule a equipe, a viatura e a Ordem de Serviço que orientarão o turno operacional.</p>
+        </div>
+        <div class="activation-heading-actions">
+          <nav class="breadcrumb" aria-label="Navegação estrutural">
+            <a href="index.html" class="breadcrumb-item">Painel Operacional</a>
+            <span class="breadcrumb-item">Operação</span>
+            <span class="breadcrumb-item active" aria-current="page">Ativar Guarnição</span>
+          </nav>
+        </div>
+      </div>
+
+      <div id="activationPageAlert" class="alert activation-page-alert d-none" role="status" aria-live="polite" aria-atomic="true">
+        <div class="d-flex align-items-start gap-2">
+          <i id="activationPageAlertIcon" class="bi mt-1" aria-hidden="true"></i>
+          <span id="activationPageAlertMessage"></span>
+        </div>
+      </div>
+
+      <div class="card activation-page-loader" id="activationPageLoader" role="status" aria-live="polite" aria-atomic="true">
+        <div class="card-body">
+          <div class="activation-growing-dots mb-2" aria-hidden="true">
+            <span class="spinner-grow spinner-grow-sm" style="animation-delay: 0s;"></span>
+            <span class="spinner-grow spinner-grow-sm" style="animation-delay: 0.15s;"></span>
+            <span class="spinner-grow spinner-grow-sm" style="animation-delay: 0.3s;"></span>
+          </div>
+          <strong id="activationLoaderTitle">Carregando dados operacionais...</strong>
+          <small id="activationLoaderMessage">Buscando viaturas, tipos de serviço e Ordens de Serviço.</small>
+        </div>
+      </div>
+
+      <noscript>
+        <style>#activationPageLoader { display: none !important; }</style>
+        <div class="alert alert-danger" role="alert">
+          <i class="bi bi-exclamation-triangle-fill me-1" aria-hidden="true"></i>
+          Não foi possível preparar a ativação. Ative o JavaScript e tente novamente.
+        </div>
+      </noscript>
+
+      <div class="activation-interface">
+        <form id="activationForm" class="needs-validation" novalidate autocomplete="off" aria-busy="true">
+          <section class="section mb-4" aria-labelledby="activationOperationalTitle">
+            <div class="card activation-card">
+              <div class="card-header">
+                <div class="activation-card-heading">
+                  <span class="activation-card-icon" aria-hidden="true"><i class="bi bi-shield-check"></i></span>
+                  <div>
+                    <h2 class="card-title" id="activationOperationalTitle">Dados operacionais</h2>
+                    <p class="card-subtitle">Selecione o emprego, o recurso e a Ordem de Serviço do turno.</p>
+                  </div>
+                </div>
+                <span class="activation-required-note"><span class="text-danger">*</span> Campos obrigatórios</span>
+              </div>
+
+              <div class="card-body">
+                <div class="row g-3">
+                  <div class="col-12 col-md-6 col-xl-3">
+                    <label for="activationPolicingType" class="form-label required">Tipo de policiamento</label>
+                    <select class="form-select" id="activationPolicingType" name="policingType" aria-describedby="activationPolicingTypeHelp activationPolicingTypeFeedback" required>
+                      <option value="" selected disabled>Selecione...</option>
+                      <!-- Opções anteriores mantidas por segurança.
+                      <option value="Radiopatrulhamento">Radiopatrulhamento</option>
+                      <option value="Patrulhamento com Motocicletas">Patrulhamento com Motocicletas</option>
+                      <option value="Policiamento a Pé">Policiamento a Pé</option>
+                      <option value="Ponto de Baseamento">Ponto de Baseamento</option>
+                      <option value="Apoio Operacional">Apoio Operacional</option>
+                      -->
+                      <option value="Motorizado">Motorizado</option>
+                      <option value="A pé">A pé</option>
+                      <option value="Outros">Outros</option>
+                    </select>
+                    <div class="invalid-feedback" id="activationPolicingTypeFeedback">Selecione o tipo de policiamento.</div>
+                    <div class="form-text" id="activationPolicingTypeHelp">Informe como a equipe será empregada durante o turno.</div>
+                  </div>
+
+                  <div class="col-12 col-md-6 col-xl-3">
+                    <label for="activationVehicle" class="form-label required">Viatura / recurso</label>
+                    <select class="form-select" id="activationVehicle" name="vehicle" aria-describedby="activationVehicleHelp activationVehicleFeedback" required>
+                      <option value="" selected disabled>Carregando viaturas...</option>
+                    </select>
+                    <div class="invalid-feedback" id="activationVehicleFeedback">Selecione uma viatura ativa.</div>
+                    <div class="form-text activation-data-note" id="activationVehicleHelp">
+                      <i class="bi bi-database" aria-hidden="true"></i>
+                      <span>Carregando recursos cadastrados...</span>
+                    </div>
+                  </div>
+
+                  <div class="col-12 col-md-6 col-xl-3">
+                    <label for="activationService" class="form-label required">Tipo de serviço</label>
+                    <select class="form-select" id="activationService" name="service" aria-describedby="activationServiceHelp activationServiceFeedback" required>
+                      <option value="" selected disabled>Carregando tipos...</option>
+                    </select>
+                    <div class="invalid-feedback" id="activationServiceFeedback">Selecione o tipo de serviço vinculado à OS.</div>
+                    <div class="form-text activation-data-note" id="activationServiceHelp">
+                      <i class="bi bi-database" aria-hidden="true"></i>
+                      <span>Carregando tipos de serviço...</span>
+                    </div>
+                  </div>
+
+                  <div class="col-12 col-md-6 col-xl-3">
+                    <label for="activationServiceOrder" class="form-label required">Ordem de Serviço (OS)</label>
+                    <select class="form-select" id="activationServiceOrder" name="serviceOrder" aria-describedby="activationServiceOrderHelp activationServiceOrderFeedback" required>
+                      <option value="" selected disabled>Carregando Ordens de Serviço...</option>
+                    </select>
+                    <div class="invalid-feedback" id="activationServiceOrderFeedback">Selecione uma Ordem de Serviço ativa.</div>
+                    <div class="form-text activation-data-note" id="activationServiceOrderHelp">
+                      <i class="bi bi-database" aria-hidden="true"></i>
+                      <span>Carregando Ordens de Serviço...</span>
+                    </div>
+                  </div>
+
+                  <!-- Resumo mantido no DOM para preservar a atualização da OS, mas ocultado da interface. -->
+                  <div class="col-12 d-none">
+                    <label for="activationMissionSummary" class="form-label">Resumo da missão e do turno</label>
+                    <textarea class="form-control activation-mission-summary" id="activationMissionSummary" rows="2" placeholder="Selecione uma Ordem de Serviço para visualizar a missão e o turno." readonly aria-describedby="activationMissionSummaryHelp" aria-live="polite"></textarea>
+                    <div class="form-text" id="activationMissionSummaryHelp">As informações são preenchidas automaticamente a partir da OS selecionada.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="section mb-4" aria-labelledby="activationCommanderTitle">
+            <div class="card activation-card">
+              <div class="card-header">
+                <div class="activation-card-heading">
+                  <span class="activation-card-icon" aria-hidden="true"><i class="bi bi-person-badge"></i></span>
+                  <div>
+                    <h2 class="card-title" id="activationCommanderTitle">Comandante da equipe</h2>
+                    <p class="card-subtitle">Identifique o policial responsável pela guarnição durante o turno.</p>
+                  </div>
+                </div>
+                <span class="activation-required-note"><span class="text-danger">*</span> Campos obrigatórios</span>
+              </div>
+
+              <div class="card-body">
+                <div class="row g-3">
+                  <div class="col-12 col-md-6 col-xl-3">
+                    <label for="activationCommanderRank" class="form-label required">Posto / graduação</label>
+                    <select class="form-select" id="activationCommanderRank" name="commanderRank" required>
+                      <option value="" selected disabled>Selecione...</option>
+                      <option value="Coronel">Coronel</option>
+                      <option value="Tenente-Coronel">Tenente-Coronel</option>
+                      <option value="Major">Major</option>
+                      <option value="Capitão">Capitão</option>
+                      <option value="1º Tenente">1º Tenente</option>
+                      <option value="2º Tenente">2º Tenente</option>
+                      <option value="Subtenente">Subtenente</option>
+                      <option value="1º Sargento">1º Sargento</option>
+                      <option value="2º Sargento">2º Sargento</option>
+                      <option value="3º Sargento">3º Sargento</option>
+                      <option value="Cabo">Cabo</option>
+                      <option value="Soldado">Soldado</option>
+                    </select>
+                    <div class="invalid-feedback">Selecione o posto ou a graduação.</div>
+                  </div>
+
+                  <div class="col-12 col-md-6 col-xl-3">
+                    <label for="activationCommanderName" class="form-label required">Nome de guerra</label>
+                    <input type="text" class="form-control text-uppercase" id="activationCommanderName" name="commanderName" placeholder="Ex.: Silva" minlength="2" maxlength="60" autocapitalize="characters" spellcheck="false" required>
+                    <div class="invalid-feedback">Informe o nome de guerra com 2 a 60 caracteres.</div>
+                  </div>
+
+                  <div class="col-12 col-md-6 col-xl-3">
+                    <label for="activationCommanderRg" class="form-label required">RG</label>
+                    <input type="text" class="form-control" id="activationCommanderRg" name="commanderRg" placeholder="Ex.: 123456" inputmode="numeric" minlength="4" maxlength="12" pattern="[0-9]{4,12}" data-digits-only required>
+                    <div class="invalid-feedback">Informe o RG com 4 a 12 números.</div>
+                  </div>
+
+                  <div class="col-12 col-md-6 col-xl-3">
+                    <label for="activationCommanderPhone" class="form-label required">Telefone</label>
+                    <input type="tel" class="form-control" id="activationCommanderPhone" name="commanderPhone" placeholder="(21) 90000-0000" inputmode="tel" maxlength="15" pattern="\([0-9]{2}\) [0-9]{4,5}-[0-9]{4}" data-phone-mask required>
+                    <div class="invalid-feedback">Informe um telefone com DDD.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="section mb-4" aria-labelledby="activationMembersTitle">
+            <div class="card activation-card">
+              <div class="card-header">
+                <div class="activation-card-heading">
+                  <span class="activation-card-icon" aria-hidden="true"><i class="bi bi-people"></i></span>
+                  <div>
+                    <h2 class="card-title" id="activationMembersTitle">Integrantes adicionais</h2>
+                    <p class="card-subtitle">Inclua os demais policiais que compõem a guarnição.</p>
+                  </div>
+                </div>
+                <div class="activation-members-header-actions">
+                  <span class="activation-members-count" id="activationMembersCount" aria-live="polite">0 integrantes</span>
+                  <button type="button" class="btn btn-sm btn-outline-primary" id="activationAddMemberButton">
+                    <i class="bi bi-person-plus me-1" aria-hidden="true"></i>
+                    Adicionar integrante
+                  </button>
+                </div>
+              </div>
+
+              <div class="card-body">
+                <div class="activation-members-empty" id="activationMembersEmpty">
+                  <i class="bi bi-person-plus" aria-hidden="true"></i>
+                  <strong>Nenhum integrante adicional</strong>
+                  <span class="small">Adicione somente os policiais que acompanham o comandante.</span>
+                </div>
+                <div id="activationMembersList"></div>
+              </div>
+
+              <div class="card-footer">
+                <div class="activation-form-actions">
+                  <button type="reset" class="btn btn-outline-secondary" id="activationResetButton">
+                    <i class="bi bi-arrow-counterclockwise me-1" aria-hidden="true"></i>
+                    Limpar formulário
+                  </button>
+                  <button type="submit" class="btn btn-primary" id="activationSubmitButton" disabled>
+                    <span id="activationSubmitIdle">
+                      <i class="bi bi-play-circle me-1" aria-hidden="true"></i>
+                      <span>Ativar guarnição e iniciar turno</span>
+                    </span>
+                    <span class="activation-submit-processing d-none" id="activationSubmitProcessing">
+                      <span class="activation-growing-dots" aria-hidden="true">
+                        <span class="spinner-grow spinner-grow-sm" style="animation-delay: 0s;"></span>
+                        <span class="spinner-grow spinner-grow-sm" style="animation-delay: 0.15s;"></span>
+                        <span class="spinner-grow spinner-grow-sm" style="animation-delay: 0.3s;"></span>
+                      </span>
+                      <span>Ativando...</span>
+                    </span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+        </form>
+      </div>
+
+      <span class="visually-hidden" id="activationOperationStatus" role="status" aria-live="polite" aria-atomic="true"></span>
+    </div>
+
+    <footer class="footer">
+      <div class="footer-content">
+        <div class="footer-links">
+          <a href="#">Docs</a>
+          <a href="#">Privacidade</a>
+          <a href="#">Segurança</a>
+          <a href="#">Suporte</a>
+        </div>
+        <div class="footer-credits">
+          <div class="footer-copyright">&copy; 2026 <a href="index.html">Ordena</a></div>
+        </div>
+      </div>
+    </footer>
+  </main>
+
+  <template id="activationMemberTemplate">
+    <div class="activation-member-card" data-member-card role="group">
+      <div class="activation-member-header">
+        <h3 class="activation-member-title" data-member-title>
+          <i class="bi bi-person" aria-hidden="true"></i>
+          <span>Integrante adicional</span>
+        </h3>
+        <button type="button" class="btn btn-sm btn-outline-danger" data-remove-member>
+          <i class="bi bi-trash3 me-1" aria-hidden="true"></i>
+          Remover
+        </button>
+      </div>
+      <div class="row g-3">
+        <div class="col-12 col-md-6 col-xl-3">
+          <label class="form-label required" data-label-for="rank">Posto / graduação</label>
+          <select class="form-select" data-member-field="rank" required>
+            <option value="" selected disabled>Selecione...</option>
+            <option value="Coronel">Coronel</option>
+            <option value="Tenente-Coronel">Tenente-Coronel</option>
+            <option value="Major">Major</option>
+            <option value="Capitão">Capitão</option>
+            <option value="1º Tenente">1º Tenente</option>
+            <option value="2º Tenente">2º Tenente</option>
+            <option value="Subtenente">Subtenente</option>
+            <option value="1º Sargento">1º Sargento</option>
+            <option value="2º Sargento">2º Sargento</option>
+            <option value="3º Sargento">3º Sargento</option>
+            <option value="Cabo">Cabo</option>
+            <option value="Soldado">Soldado</option>
+          </select>
+          <div class="invalid-feedback">Selecione o posto ou a graduação.</div>
+        </div>
+        <div class="col-12 col-md-6 col-xl-3">
+          <label class="form-label required" data-label-for="name">Nome de guerra</label>
+          <input type="text" class="form-control text-uppercase" data-member-field="name" placeholder="Ex.: Souza" minlength="2" maxlength="60" autocapitalize="characters" spellcheck="false" required>
+          <div class="invalid-feedback">Informe o nome de guerra com 2 a 60 caracteres.</div>
+        </div>
+        <div class="col-12 col-md-6 col-xl-3">
+          <label class="form-label required" data-label-for="rg">RG</label>
+          <input type="text" class="form-control" data-member-field="rg" placeholder="Ex.: 123456" inputmode="numeric" minlength="4" maxlength="12" pattern="[0-9]{4,12}" data-digits-only required>
+          <div class="invalid-feedback">Informe o RG com 4 a 12 números.</div>
+        </div>
+        <div class="col-12 col-md-6 col-xl-3">
+          <label class="form-label required" data-label-for="phone">Telefone</label>
+          <input type="tel" class="form-control" data-member-field="phone" placeholder="(21) 90000-0000" inputmode="tel" maxlength="15" pattern="\([0-9]{2}\) [0-9]{4,5}-[0-9]{4}" data-phone-mask required>
+          <div class="invalid-feedback">Informe um telefone com DDD.</div>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <a href="#" class="back-to-top" aria-label="Voltar ao topo"><i class="bi bi-arrow-up" aria-hidden="true"></i></a>
+
+  <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="assets/js/theme.js"></script>
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/apps-sidebar-toggle.js"></script>
+
+  <!-- Comportamento localizado da ativação de guarnições. -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      'use strict';
+
+      const STORAGE_KEYS = {
+        vehicles: 'ordena.viaturas.v1',
+        serviceTypes: 'ordena.tipos-servico.v1',
+        serviceOrders: 'ordena.ordens-servico.v1',
+        legacyServiceOrders: 'ordensServico',
+        activations: 'ordena.ativacoes.v1',
+        activationSequence: 'ordena.ativacoes.sequence.v1'
+      };
+      const ACTIVATION_WRITE_LOCK = 'ordena.ativacoes.escrita.v1';
+      const MAX_MEMBERS = 8;
+      const FALLBACK_VEHICLES = [
+        { id: 'vehicle-default-1', type: 'Carro', prefix: '80-9901', plate: 'RJQ9A11', radio: '990001', active: true },
+        { id: 'vehicle-default-2', type: 'Carro', prefix: '80-9902', plate: 'RJQ9A12', radio: '990002', active: true },
+        { id: 'vehicle-default-3', type: 'Motocicleta', prefix: '81-1201', plate: 'RJO9B21', radio: '991201', active: true }
+      ];
+      const FALLBACK_SERVICES = [
+        { id: 'service-type-default-routine', name: 'ROTINA', active: true },
+        { id: 'service-type-default-extraordinary', name: 'EXTRAORDINÁRIO', active: true }
+      ];
+      const FALLBACK_ORDERS = [
+        {
+          id: 'service-order-default-1',
+          numero: 1,
+          nomeOS: 'PATRULHAMENTO OSTENSIVO - SETOR CENTRO',
+          inicioGeral: '08:00',
+          terminoGeral: '20:00',
+          tipoServicoId: 'service-type-default-routine',
+          tipoOrdem: 'ROTINA',
+          status: 'Ativa'
+        }
+      ];
+
+      const elements = {
+        pageContent: document.getElementById('activationPageContent'),
+        pageLoader: document.getElementById('activationPageLoader'),
+        pageAlert: document.getElementById('activationPageAlert'),
+        pageAlertIcon: document.getElementById('activationPageAlertIcon'),
+        pageAlertMessage: document.getElementById('activationPageAlertMessage'),
+        operationStatus: document.getElementById('activationOperationStatus'),
+        form: document.getElementById('activationForm'),
+        policingType: document.getElementById('activationPolicingType'),
+        vehicle: document.getElementById('activationVehicle'),
+        vehicleHelp: document.querySelector('#activationVehicleHelp span'),
+        service: document.getElementById('activationService'),
+        serviceHelp: document.querySelector('#activationServiceHelp span'),
+        serviceOrder: document.getElementById('activationServiceOrder'),
+        serviceOrderHelp: document.querySelector('#activationServiceOrderHelp span'),
+        missionSummary: document.getElementById('activationMissionSummary'),
+        commanderRank: document.getElementById('activationCommanderRank'),
+        commanderName: document.getElementById('activationCommanderName'),
+        commanderRg: document.getElementById('activationCommanderRg'),
+        commanderPhone: document.getElementById('activationCommanderPhone'),
+        memberTemplate: document.getElementById('activationMemberTemplate'),
+        membersList: document.getElementById('activationMembersList'),
+        membersEmpty: document.getElementById('activationMembersEmpty'),
+        membersCount: document.getElementById('activationMembersCount'),
+        addMemberButton: document.getElementById('activationAddMemberButton'),
+        resetButton: document.getElementById('activationResetButton'),
+        submitButton: document.getElementById('activationSubmitButton'),
+        submitIdle: document.getElementById('activationSubmitIdle'),
+        submitProcessing: document.getElementById('activationSubmitProcessing')
+      };
+
+      if (Object.keys(elements).some(function(key) { return !elements[key]; })) {
+        return;
+      }
+
+      const state = {
+        vehicles: [],
+        services: [],
+        serviceOrders: [],
+        memberSequence: 0,
+        isSubmitting: false,
+        loadWarnings: []
+      };
+      let alertTimeout = null;
+
+      function normalizeWhitespace(value) {
+        return String(value || '').replace(/\s+/g, ' ').trim();
+      }
+
+      function normalizeUppercase(value) {
+        return normalizeWhitespace(value).toLocaleUpperCase('pt-BR');
+      }
+
+      function normalizeActive(value) {
+        if (value === undefined || value === null || value === '') {
+          return true;
+        }
+        if (typeof value === 'string') {
+          return !['false', '0', 'inativo', 'inativa', 'inactive', 'disabled', 'encerrada', 'encerrado'].includes(value.trim().toLocaleLowerCase('pt-BR'));
+        }
+        return value !== false && value !== 0;
+      }
+
+      function createId(prefix) {
+        if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+          return window.crypto.randomUUID();
+        }
+        return prefix + '-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
+      }
+
+      /* Implementação anterior do código alfanumérico preservada por segurança.
+      function normalizeActivationCode(value) {
+        return normalizeWhitespace(value).replace(/\s+/g, '').toLocaleUpperCase('pt-BR');
+      }
+
+      function activationCodeDatePart(value) {
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) {
+          return '00000000';
+        }
+        return String(date.getUTCFullYear()) +
+          String(date.getUTCMonth() + 1).padStart(2, '0') +
+          String(date.getUTCDate()).padStart(2, '0');
+      }
+
+      function activationCodeToken(value) {
+        const normalized = normalizeWhitespace(value)
+          .replace(/[^a-z0-9]/gi, '')
+          .toLocaleUpperCase('pt-BR');
+        return normalized.slice(-12).padStart(12, '0');
+      }
+
+      function createUniqueActivationCode(id, activatedAt, usedCodes) {
+        const baseCode = 'ATV-' + activationCodeDatePart(activatedAt) + '-' + activationCodeToken(id);
+        let candidate = baseCode;
+        let duplicateIndex = 2;
+
+        while (usedCodes.has(candidate)) {
+          candidate = baseCode + '-' + String(duplicateIndex).padStart(2, '0');
+          duplicateIndex += 1;
+        }
+        usedCodes.add(candidate);
+        return candidate;
+      }
+
+      function ensureActivationCodes(records) {
+        const usedCodes = new Set();
+
+        records.forEach(function(record) {
+          if (!record || typeof record !== 'object' || Array.isArray(record)) {
+            return;
+          }
+          const existingCode = normalizeActivationCode(
+            record.activationCode || record.codigoAtivacao || record.code
+          );
+          if (existingCode && !usedCodes.has(existingCode)) {
+            record.activationCode = existingCode;
+            usedCodes.add(existingCode);
+          } else {
+            record.activationCode = '';
+          }
+        });
+
+        records.forEach(function(record) {
+          if (!record || typeof record !== 'object' || Array.isArray(record) || record.activationCode || !record.id) {
+            return;
+          }
+          record.activationCode = createUniqueActivationCode(
+            record.id,
+            record.activatedAt || record.dataAtivacao || record.startedAt || record.horaInicio,
+            usedCodes
+          );
+        });
+
+        return usedCodes;
+      }
+      */
+
+      function normalizeSequentialActivationCode(value) {
+        const normalized = normalizeWhitespace(value);
+        if (!/^\d+$/.test(normalized)) {
+          return 0;
+        }
+        const code = Number(normalized);
+        return Number.isSafeInteger(code) && code > 0 ? code : 0;
+      }
+
+      function readActivationSequence() {
+        const storedValue = window.localStorage.getItem(STORAGE_KEYS.activationSequence);
+        if (storedValue === null || storedValue === '') {
+          return 0;
+        }
+        if (!/^\d+$/.test(String(storedValue).trim())) {
+          throw new Error('O contador de ativações está inválido.');
+        }
+        const storedSequence = Number(storedValue);
+        if (!Number.isSafeInteger(storedSequence) || storedSequence < 0) {
+          throw new Error('O contador de ativações excedeu o limite seguro.');
+        }
+        return storedSequence;
+      }
+
+      function activationSortTime(record) {
+        if (!record || typeof record !== 'object' || Array.isArray(record)) {
+          return 0;
+        }
+        const value = record.activatedAt || record.dataAtivacao || record.startedAt || record.horaInicio;
+        const date = new Date(value);
+        return Number.isNaN(date.getTime()) ? 0 : date.getTime();
+      }
+
+      function ensureSequentialActivationCodes(records) {
+        const usedCodes = new Set();
+        const pendingRecords = [];
+        const storedSequence = readActivationSequence();
+        let lastSequence = storedSequence;
+        let changed = false;
+
+        const orderedRecords = records.map(function(record, index) {
+          return { record: record, index: index, time: activationSortTime(record) };
+        }).filter(function(item) {
+          return item.record && typeof item.record === 'object' && !Array.isArray(item.record);
+        }).sort(function(first, second) {
+          if (!first.time && second.time) {
+            return 1;
+          }
+          if (first.time && !second.time) {
+            return -1;
+          }
+          if (first.time !== second.time) {
+            return first.time - second.time;
+          }
+          return second.index - first.index;
+        });
+
+        orderedRecords.forEach(function(item) {
+          const record = item.record;
+          const index = item.index;
+          const currentValue = record.activationCode || record.codigoAtivacao || record.code;
+          const currentCode = normalizeSequentialActivationCode(currentValue);
+          if (currentCode && !usedCodes.has(currentCode)) {
+            const normalizedCode = String(currentCode);
+            if (String(record.activationCode || '') !== normalizedCode) {
+              changed = true;
+            }
+            record.activationCode = normalizedCode;
+            usedCodes.add(currentCode);
+            lastSequence = Math.max(lastSequence, currentCode);
+            return;
+          }
+
+          const legacyCode = normalizeWhitespace(currentValue);
+          if (legacyCode && !record.legacyActivationCode) {
+            record.legacyActivationCode = legacyCode;
+            changed = true;
+          }
+          if (record.activationCode !== '') {
+            changed = true;
+          }
+          record.activationCode = '';
+          pendingRecords.push({ record: record, index: index, time: item.time });
+        });
+
+        pendingRecords.sort(function(first, second) {
+          if (!first.time && second.time) {
+            return 1;
+          }
+          if (first.time && !second.time) {
+            return -1;
+          }
+          if (first.time !== second.time) {
+            return first.time - second.time;
+          }
+          // O armazenamento utiliza unshift; em empate, o maior índice é o mais antigo.
+          return second.index - first.index;
+        });
+
+        pendingRecords.forEach(function(item) {
+          do {
+            if (lastSequence >= Number.MAX_SAFE_INTEGER) {
+              throw new Error('Não há mais códigos sequenciais disponíveis.');
+            }
+            lastSequence += 1;
+          } while (usedCodes.has(lastSequence));
+          item.record.activationCode = String(lastSequence);
+          usedCodes.add(lastSequence);
+          changed = true;
+        });
+
+        return {
+          changed: changed,
+          lastSequence: lastSequence,
+          storedSequence: storedSequence,
+          usedCodes: usedCodes
+        };
+      }
+
+      function waitForVisualFeedback(milliseconds) {
+        return new Promise(function(resolve) {
+          window.setTimeout(resolve, milliseconds || 250);
+        });
+      }
+
+      function announce(message) {
+        elements.operationStatus.textContent = '';
+        window.requestAnimationFrame(function() {
+          elements.operationStatus.textContent = message;
+        });
+      }
+
+      function showPageAlert(message, type, autoHide, scrollOnDanger) {
+        const alertType = type || 'success';
+
+        // A confirmação de carregamento inicial não representa uma ação do usuário
+        // e deve permanecer silenciosa. A proteção evita que a faixa seja reaberta
+        // caso alguma rotina antiga tente emitir novamente essa mensagem.
+        if (normalizeWhitespace(message) === 'Dados operacionais carregados com sucesso.') {
+          window.clearTimeout(alertTimeout);
+          elements.pageAlert.classList.add('d-none');
+          elements.pageAlertMessage.textContent = '';
+          return;
+        }
+
+        const iconByType = {
+          success: 'bi-check-circle-fill',
+          danger: 'bi-exclamation-triangle-fill',
+          warning: 'bi-exclamation-circle-fill',
+          info: 'bi-info-circle-fill'
+        };
+
+        window.clearTimeout(alertTimeout);
+        elements.pageAlert.className = 'alert alert-' + alertType + ' activation-page-alert';
+        elements.pageAlert.setAttribute('role', alertType === 'danger' ? 'alert' : 'status');
+        elements.pageAlert.setAttribute('aria-live', alertType === 'danger' ? 'assertive' : 'polite');
+        elements.pageAlertIcon.className = 'bi mt-1 ' + (iconByType[alertType] || iconByType.info);
+        elements.pageAlertMessage.textContent = message;
+        announce(message);
+
+        if (autoHide !== false) {
+          alertTimeout = window.setTimeout(function() {
+            elements.pageAlert.classList.add('d-none');
+          }, 5500);
+        }
+
+        if (alertType === 'danger' && scrollOnDanger !== false) {
+          window.requestAnimationFrame(function() {
+            elements.pageAlert.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          });
+        }
+      }
+
+      function setPageLoading(isLoading) {
+        elements.pageContent.classList.toggle('is-loading', isLoading);
+        elements.pageLoader.classList.toggle('d-none', !isLoading);
+        elements.form.setAttribute('aria-busy', String(isLoading));
+      }
+
+      function readStoredArray(key, label) {
+        try {
+          const storedValue = window.localStorage.getItem(key);
+          if (storedValue === null) {
+            return { exists: false, items: [], failed: false };
+          }
+          const parsedValue = JSON.parse(storedValue);
+          if (!Array.isArray(parsedValue)) {
+            state.loadWarnings.push(label + ' possui formato inválido; dados de demonstração foram utilizados.');
+            return { exists: true, items: [], failed: true };
+          }
+          return { exists: true, items: parsedValue, failed: false };
+        } catch (error) {
+          state.loadWarnings.push('Não foi possível carregar ' + label.toLocaleLowerCase('pt-BR') + '; dados de demonstração foram utilizados.');
+          return { exists: false, items: [], failed: true };
+        }
+      }
+
+      function normalizeVehicle(item, index) {
+        if (!item || typeof item !== 'object') {
+          return null;
+        }
+        const prefix = normalizeUppercase(item.prefix || item.prefixo);
+        if (!prefix) {
+          return null;
+        }
+        return {
+          id: String(item.id || ('vehicle-' + index)),
+          type: normalizeWhitespace(item.type || item.tipo) || 'Viatura',
+          prefix: prefix,
+          plate: normalizeUppercase(item.plate || item.placa),
+          radio: normalizeWhitespace(item.radio || item.identificadorRadio),
+          active: normalizeActive(item.active !== undefined ? item.active : item.ativo)
+        };
+      }
+
+      function loadVehicles() {
+        const source = readStoredArray(STORAGE_KEYS.vehicles, 'Viaturas');
+        const normalized = source.items.map(normalizeVehicle).filter(Boolean);
+        const sourceItems = (!source.exists || source.failed || normalized.length === 0)
+          ? FALLBACK_VEHICLES.map(function(item) { return Object.assign({}, item); })
+          : normalized;
+        const usedFallback = sourceItems !== normalized;
+        return {
+          items: sourceItems.filter(function(item) { return item.active; }),
+          usedFallback: usedFallback
+        };
+      }
+
+      function normalizeService(item, index) {
+        if (!item || typeof item !== 'object') {
+          return null;
+        }
+        const name = normalizeUppercase(item.name || item.nome);
+        if (!name) {
+          return null;
+        }
+        return {
+          id: String(item.id || ('service-type-' + index)),
+          name: name,
+          active: normalizeActive(item.active !== undefined ? item.active : item.ativo)
+        };
+      }
+
+      function loadServices() {
+        const source = readStoredArray(STORAGE_KEYS.serviceTypes, 'Tipos de serviço');
+        const normalized = source.items.map(normalizeService).filter(Boolean);
+        const sourceItems = (!source.exists || source.failed || normalized.length === 0)
+          ? FALLBACK_SERVICES.map(function(item) { return Object.assign({}, item); })
+          : normalized;
+        const unique = new Map();
+        sourceItems.filter(function(item) { return item.active; }).forEach(function(item) {
+          if (!unique.has(item.name)) {
+            unique.set(item.name, item);
+          }
+        });
+        return {
+          items: Array.from(unique.values()).sort(function(first, second) {
+            if (first.name === 'ROTINA') return -1;
+            if (second.name === 'ROTINA') return 1;
+            return first.name.localeCompare(second.name, 'pt-BR');
+          }),
+          usedFallback: sourceItems !== normalized
+        };
+      }
+
+      function normalizeServiceOrder(item, index) {
+        if (!item || typeof item !== 'object') {
+          return null;
+        }
+        const rawNumber = Number(item.numero !== undefined ? item.numero : item.number);
+        const name = normalizeUppercase(item.nomeOS || item.missao || item.name);
+        if (!name) {
+          return null;
+        }
+        return {
+          id: String(item.id || ('service-order-' + index)),
+          numero: Number.isFinite(rawNumber) ? rawNumber : String(item.numero || item.number || index + 1),
+          nomeOS: name,
+          inicioGeral: String(item.inicioGeral || item.inicio || item.start || ''),
+          terminoGeral: String(item.terminoGeral || item.termino || item.end || ''),
+          tipoServicoId: String(item.tipoServicoId || item.serviceTypeId || ''),
+          tipoOrdem: normalizeUppercase(item.tipoOrdem || item.tipoServico || item.serviceType),
+          active: normalizeActive(item.status !== undefined ? item.status : (item.active !== undefined ? item.active : item.ativo)) &&
+            item.ocultaNaTelaOS !== true && item.ocultaNaTelaOS !== 'true'
+        };
+      }
+
+      function loadServiceOrders() {
+        const modernSource = readStoredArray(STORAGE_KEYS.serviceOrders, 'Ordens de Serviço');
+        const legacySource = readStoredArray(STORAGE_KEYS.legacyServiceOrders, 'Ordens de Serviço anteriores');
+        const normalized = modernSource.items.map(normalizeServiceOrder).filter(Boolean)
+          .concat(legacySource.items.map(normalizeServiceOrder).filter(Boolean));
+        const hasStoredSource = modernSource.exists || legacySource.exists;
+        const sourceFailed = modernSource.failed || legacySource.failed;
+        // Regra anterior preservada: qualquer falha em uma das fontes acionava o fallback
+        // e poderia ocultar registros válidos carregados pela outra fonte.
+        // const sourceItems = (!hasStoredSource || sourceFailed || normalized.length === 0) ? FALLBACK_ORDERS : normalized;
+        const sourceItems = normalized.length === 0
+          ? FALLBACK_ORDERS.map(function(item) {
+              return Object.assign({}, item, { active: true });
+            })
+          : normalized;
+        const unique = new Map();
+        sourceItems.filter(function(item) { return item.active; }).forEach(function(item) {
+          const key = item.id ? 'id:' + item.id : 'number:' + item.numero;
+          if (!unique.has(key)) {
+            unique.set(key, item);
+          }
+        });
+        return {
+          items: Array.from(unique.values()).sort(function(first, second) {
+            return Number(second.numero) - Number(first.numero);
+          }),
+          usedFallback: sourceItems !== normalized
+        };
+      }
+
+      function replaceSelectOptions(select, placeholder, items, valueGetter, labelGetter) {
+        select.replaceChildren();
+        const placeholderOption = new Option(placeholder, '', true, true);
+        placeholderOption.disabled = true;
+        select.appendChild(placeholderOption);
+
+        items.forEach(function(item) {
+          select.appendChild(new Option(labelGetter(item), valueGetter(item)));
+        });
+
+        select.disabled = items.length === 0;
+      }
+
+      function populateOperationalFields(sources) {
+        replaceSelectOptions(
+          elements.vehicle,
+          state.vehicles.length ? 'Selecione a viatura...' : 'Nenhuma viatura ativa disponível',
+          state.vehicles,
+          function(item) { return item.id; },
+          function(item) {
+            return item.prefix + ' · ' + item.type + (item.plate ? ' · ' + item.plate : '');
+          }
+        );
+        elements.vehicleHelp.textContent = sources.vehicles.usedFallback
+          ? 'Viaturas demonstrativas disponíveis até que o cadastro seja integrado.'
+          : state.vehicles.length + (state.vehicles.length === 1 ? ' viatura ativa disponível.' : ' viaturas ativas disponíveis.');
+
+        replaceSelectOptions(
+          elements.service,
+          state.services.length ? 'Selecione o tipo...' : 'Nenhum tipo de serviço ativo',
+          state.services,
+          function(item) { return item.id; },
+          function(item) { return item.name; }
+        );
+        elements.serviceHelp.textContent = sources.services.usedFallback
+          ? 'Tipos demonstrativos disponíveis até que o cadastro seja integrado.'
+          : state.services.length + (state.services.length === 1 ? ' tipo ativo disponível.' : ' tipos ativos disponíveis.');
+
+        replaceSelectOptions(
+          elements.serviceOrder,
+          state.serviceOrders.length ? 'Selecione a OS...' : 'Nenhuma OS ativa disponível',
+          state.serviceOrders,
+          function(item) { return item.id; },
+          function(item) { return 'OS nº ' + item.numero + ' · ' + item.nomeOS; }
+        );
+        elements.serviceOrderHelp.textContent = sources.serviceOrders.usedFallback
+          ? 'Uma OS demonstrativa está disponível para a simulação da interface.'
+          : state.serviceOrders.length + (state.serviceOrders.length === 1 ? ' Ordem de Serviço ativa disponível.' : ' Ordens de Serviço ativas disponíveis.');
+
+        updateSubmitAvailability();
+      }
+
+      function formatTime(value) {
+        const normalized = String(value || '').slice(0, 5);
+        return /^\d{2}:\d{2}$/.test(normalized) ? normalized : 'não informado';
+      }
+
+      function selectedOrder() {
+        return state.serviceOrders.find(function(item) {
+          return item.id === elements.serviceOrder.value;
+        }) || null;
+      }
+
+      function selectedVehicle() {
+        return state.vehicles.find(function(item) {
+          return item.id === elements.vehicle.value;
+        }) || null;
+      }
+
+      function selectedService() {
+        return state.services.find(function(item) {
+          return item.id === elements.service.value;
+        }) || null;
+      }
+
+      function serviceMatchesOrder(service, order) {
+        if (!service || !order) {
+          return false;
+        }
+        const matchesId = order.tipoServicoId && service.id === order.tipoServicoId;
+        const matchesName = order.tipoOrdem && service.name === order.tipoOrdem;
+        return Boolean(matchesId || matchesName || (!order.tipoServicoId && !order.tipoOrdem));
+      }
+
+      function updateMissionSummary() {
+        const order = selectedOrder();
+        if (!order) {
+          elements.missionSummary.value = '';
+          return;
+        }
+
+        elements.missionSummary.value = order.nomeOS + '\nTurno: ' +
+          formatTime(order.inicioGeral) + ' às ' + formatTime(order.terminoGeral);
+
+        const matchingService = state.services.find(function(service) {
+          return service.id === order.tipoServicoId ||
+            (order.tipoOrdem && service.name === order.tipoOrdem);
+        });
+        if (matchingService) {
+          elements.service.value = matchingService.id;
+          elements.service.setCustomValidity('');
+        }
+      }
+
+      function updateMembersState() {
+        const cards = Array.from(elements.membersList.querySelectorAll('[data-member-card]'));
+        elements.membersEmpty.classList.toggle('d-none', cards.length > 0);
+        elements.membersCount.textContent = cards.length + (cards.length === 1 ? ' integrante' : ' integrantes');
+        elements.addMemberButton.disabled = state.isSubmitting || cards.length >= MAX_MEMBERS;
+
+        cards.forEach(function(card, index) {
+          const title = card.querySelector('[data-member-title] span');
+          const removeButton = card.querySelector('[data-remove-member]');
+          title.textContent = 'Integrante adicional ' + (index + 1);
+          removeButton.setAttribute('aria-label', 'Remover integrante adicional ' + (index + 1));
+        });
+      }
+
+      function addMember() {
+        const currentCount = elements.membersList.querySelectorAll('[data-member-card]').length;
+        if (currentCount >= MAX_MEMBERS) {
+          showPageAlert('É possível adicionar até ' + MAX_MEMBERS + ' integrantes adicionais.', 'warning');
+          return;
+        }
+
+        state.memberSequence += 1;
+        const memberId = 'activation-member-' + state.memberSequence;
+        const fragment = elements.memberTemplate.content.cloneNode(true);
+        const card = fragment.querySelector('[data-member-card]');
+        const title = fragment.querySelector('[data-member-title]');
+        card.dataset.memberId = memberId;
+        title.id = memberId + '-title';
+        card.setAttribute('aria-labelledby', title.id);
+
+        fragment.querySelectorAll('[data-member-field]').forEach(function(field) {
+          const fieldName = field.dataset.memberField;
+          field.id = memberId + '-' + fieldName;
+          field.name = 'members[' + state.memberSequence + '][' + fieldName + ']';
+          const label = fragment.querySelector('[data-label-for="' + fieldName + '"]');
+          if (label) {
+            label.setAttribute('for', field.id);
+          }
+        });
+
+        elements.membersList.appendChild(fragment);
+        updateMembersState();
+        const rankField = elements.membersList.querySelector('[data-member-id="' + memberId + '"] [data-member-field="rank"]');
+        if (rankField) {
+          rankField.focus();
+        }
+      }
+
+      function removeMember(button) {
+        const card = button.closest('[data-member-card]');
+        if (!card || state.isSubmitting) {
+          return;
+        }
+        card.remove();
+        updateMembersState();
+        elements.addMemberButton.focus();
+      }
+
+      function onlyDigits(value, maximumLength) {
+        return String(value || '').replace(/\D/g, '').slice(0, maximumLength);
+      }
+
+      function formatPhone(value) {
+        const digits = onlyDigits(value, 11);
+        if (!digits) return '';
+        if (digits.length < 3) return '(' + digits;
+        if (digits.length < 7) return '(' + digits.slice(0, 2) + ') ' + digits.slice(2);
+        if (digits.length <= 10) {
+          return '(' + digits.slice(0, 2) + ') ' + digits.slice(2, 6) + '-' + digits.slice(6);
+        }
+        return '(' + digits.slice(0, 2) + ') ' + digits.slice(2, 7) + '-' + digits.slice(7);
+      }
+
+      function updateSubmitAvailability() {
+        const hasRequiredSources = state.vehicles.length > 0 &&
+          state.services.length > 0 &&
+          state.serviceOrders.length > 0;
+        elements.submitButton.disabled = state.isSubmitting || !hasRequiredSources;
+      }
+
+      function validateSelections() {
+        const hasVehicle = Boolean(selectedVehicle());
+        const service = selectedService();
+        const order = selectedOrder();
+        const hasServiceOrder = Boolean(order);
+        const hasCompatibleService = Boolean(service && serviceMatchesOrder(service, order));
+        elements.vehicle.setCustomValidity(hasVehicle ? '' : 'invalid-vehicle');
+        elements.service.setCustomValidity(hasCompatibleService ? '' : 'invalid-service-order');
+        elements.serviceOrder.setCustomValidity(hasServiceOrder ? '' : 'invalid-order');
+        return hasVehicle && hasCompatibleService && hasServiceOrder;
+      }
+
+      function validateCrewNames() {
+        elements.commanderName.setCustomValidity(
+          normalizeWhitespace(elements.commanderName.value).length >= 2 ? '' : 'invalid-name'
+        );
+        elements.membersList.querySelectorAll('[data-member-field="name"]').forEach(function(field) {
+          field.setCustomValidity(normalizeWhitespace(field.value).length >= 2 ? '' : 'invalid-name');
+        });
+      }
+
+      function collectMembers() {
+        return Array.from(elements.membersList.querySelectorAll('[data-member-card]')).map(function(card) {
+          return {
+            rank: normalizeWhitespace(card.querySelector('[data-member-field="rank"]').value),
+            name: normalizeUppercase(card.querySelector('[data-member-field="name"]').value),
+            rg: onlyDigits(card.querySelector('[data-member-field="rg"]').value, 12),
+            phone: normalizeWhitespace(card.querySelector('[data-member-field="phone"]').value)
+          };
+        });
+      }
+
+      function beginSubmitting() {
+        state.isSubmitting = true;
+        elements.submitButton.disabled = true;
+        elements.submitButton.setAttribute('aria-busy', 'true');
+        elements.submitIdle.classList.add('d-none');
+        elements.submitProcessing.classList.remove('d-none');
+        elements.form.setAttribute('aria-busy', 'true');
+        elements.resetButton.disabled = true;
+        elements.addMemberButton.disabled = true;
+        elements.membersList.querySelectorAll('[data-remove-member]').forEach(function(button) {
+          button.disabled = true;
+        });
+        announce('Ativando guarnição...');
+      }
+
+      function endSubmitting() {
+        state.isSubmitting = false;
+        elements.submitButton.removeAttribute('aria-busy');
+        elements.submitIdle.classList.remove('d-none');
+        elements.submitProcessing.classList.add('d-none');
+        elements.form.setAttribute('aria-busy', 'false');
+        elements.resetButton.disabled = false;
+        elements.membersList.querySelectorAll('[data-remove-member]').forEach(function(button) {
+          button.disabled = false;
+        });
+        updateMembersState();
+        updateSubmitAvailability();
+      }
+
+      // Persistência anterior preservada; a versão atual também controla a sequência pública.
+      // function persistActivation(activation) {
+      //   ...
+      // }
+      function persistActivationWithoutLock(activation) {
+        const storedValue = window.localStorage.getItem(STORAGE_KEYS.activations);
+        let activations = [];
+        if (storedValue !== null) {
+          activations = JSON.parse(storedValue);
+          if (!Array.isArray(activations)) {
+            throw new Error('Formato inválido no armazenamento de ativações.');
+          }
+        }
+        const usedIds = new Set(activations.map(function(item) {
+          return item && item.id ? String(item.id) : '';
+        }).filter(Boolean));
+        while (usedIds.has(String(activation.id))) {
+          activation.id = createId('activation');
+        }
+        const sequenceState = ensureSequentialActivationCodes(activations);
+        let nextCode = sequenceState.lastSequence;
+        do {
+          if (nextCode >= Number.MAX_SAFE_INTEGER) {
+            throw new Error('Não há mais códigos sequenciais disponíveis.');
+          }
+          nextCode += 1;
+        } while (sequenceState.usedCodes.has(nextCode));
+        activation.activationCode = String(nextCode);
+        activations.unshift(activation);
+        // O contador é gravado antes do registro para que um número reservado nunca seja reutilizado.
+        window.localStorage.setItem(STORAGE_KEYS.activationSequence, String(nextCode));
+        window.localStorage.setItem(STORAGE_KEYS.activations, JSON.stringify(activations));
+        return activation.activationCode;
+      }
+
+      async function persistActivation(activation) {
+        if (window.navigator.locks && typeof window.navigator.locks.request === 'function') {
+          return window.navigator.locks.request(ACTIVATION_WRITE_LOCK, { mode: 'exclusive' }, function() {
+            return persistActivationWithoutLock(activation);
+          });
+        }
+        return persistActivationWithoutLock(activation);
+      }
+
+      function finishFormReset() {
+        elements.form.classList.remove('was-validated');
+        elements.missionSummary.value = '';
+        elements.membersList.replaceChildren();
+        elements.vehicle.setCustomValidity('');
+        elements.service.setCustomValidity('');
+        elements.serviceOrder.setCustomValidity('');
+        updateMembersState();
+      }
+
+      elements.serviceOrder.addEventListener('change', function() {
+        elements.serviceOrder.setCustomValidity('');
+        updateMissionSummary();
+      });
+
+      elements.vehicle.addEventListener('change', function() {
+        elements.vehicle.setCustomValidity('');
+      });
+
+      elements.service.addEventListener('change', function() {
+        elements.service.setCustomValidity('');
+      });
+
+      elements.addMemberButton.addEventListener('click', addMember);
+
+      elements.membersList.addEventListener('click', function(event) {
+        const removeButton = event.target.closest('[data-remove-member]');
+        if (removeButton) {
+          removeMember(removeButton);
+        }
+      });
+
+      elements.form.addEventListener('input', function(event) {
+        const field = event.target;
+        if (field.matches('[data-digits-only]')) {
+          field.value = onlyDigits(field.value, 12);
+        } else if (field.matches('[data-phone-mask]')) {
+          field.value = formatPhone(field.value);
+        }
+        if (typeof field.setCustomValidity === 'function') {
+          field.setCustomValidity('');
+        }
+      });
+
+      elements.form.addEventListener('reset', function() {
+        window.setTimeout(function() {
+          finishFormReset();
+          showPageAlert('Formulário limpo. Informe os dados para uma nova ativação.', 'info');
+          elements.policingType.focus();
+        }, 0);
+      });
+
+      elements.form.addEventListener('submit', async function(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        if (state.isSubmitting) {
+          return;
+        }
+
+        const selectionsAreValid = validateSelections();
+        validateCrewNames();
+        elements.form.classList.add('was-validated');
+        if (!selectionsAreValid || !elements.form.checkValidity()) {
+          showPageAlert('Revise os campos destacados antes de ativar a guarnição.', 'danger', false, false);
+          const firstInvalidField = elements.form.querySelector(':invalid');
+          if (firstInvalidField) {
+            firstInvalidField.focus();
+          }
+          return;
+        }
+
+        const vehicle = selectedVehicle();
+        const service = selectedService();
+        const serviceOrder = selectedOrder();
+        const now = new Date().toISOString();
+        const activation = {
+          id: createId('activation'),
+          activationCode: '',
+          status: 'Ativa',
+          activatedAt: now,
+          startedAt: now,
+          endedAt: null,
+          policingType: elements.policingType.value,
+          vehicle: {
+            id: vehicle.id,
+            type: vehicle.type,
+            prefix: vehicle.prefix,
+            plate: vehicle.plate,
+            radio: vehicle.radio
+          },
+          service: {
+            id: service.id,
+            name: service.name
+          },
+          serviceOrder: {
+            id: serviceOrder.id,
+            numero: serviceOrder.numero,
+            nomeOS: serviceOrder.nomeOS,
+            inicioGeral: serviceOrder.inicioGeral,
+            terminoGeral: serviceOrder.terminoGeral
+          },
+          commander: {
+            rank: normalizeWhitespace(elements.commanderRank.value),
+            name: normalizeUppercase(elements.commanderName.value),
+            rg: onlyDigits(elements.commanderRg.value, 12),
+            phone: normalizeWhitespace(elements.commanderPhone.value)
+          },
+          members: collectMembers(),
+          mission: serviceOrder.nomeOS
+        };
+
+        beginSubmitting();
+        try {
+          await waitForVisualFeedback(650);
+          const activationCode = await persistActivation(activation);
+          showPageAlert('Guarnição ativada com sucesso. Código: ' + activationCode + '. Abrindo o painel de ativações...', 'success', false);
+          await waitForVisualFeedback(450);
+          window.location.assign('painel-ativacoes.html?ativada=1');
+        } catch (error) {
+          console.error('Não foi possível salvar a ativação.', error);
+          showPageAlert('Não foi possível ativar a guarnição. Os dados foram preservados para uma nova tentativa.', 'danger', false);
+          endSubmitting();
+        }
+      });
+
+      async function initializePage() {
+        setPageLoading(true);
+        try {
+          await waitForVisualFeedback(300);
+          const sources = {
+            vehicles: loadVehicles(),
+            services: loadServices(),
+            serviceOrders: loadServiceOrders()
+          };
+          state.vehicles = sources.vehicles.items;
+          state.services = sources.services.items;
+          state.serviceOrders = sources.serviceOrders.items;
+          populateOperationalFields(sources);
+
+          if (!state.vehicles.length || !state.services.length || !state.serviceOrders.length) {
+            showPageAlert('Alguns dados obrigatórios não estão disponíveis. Verifique os cadastros de viaturas, tipos de serviço e Ordens de Serviço.', 'warning', false);
+          } else if (state.loadWarnings.length) {
+            showPageAlert(state.loadWarnings.join(' '), 'warning', false);
+          } else {
+            // Confirmação automática anterior preservada, mas desativada: abrir a página
+            // não é uma ação do usuário que precise gerar um alerta de sucesso.
+            // showPageAlert('Dados operacionais carregados com sucesso.', 'success');
+          }
+        } catch (error) {
+          console.error('Erro ao preparar a página de ativação.', error);
+          showPageAlert('Erro ao carregar os dados da ativação. Atualize a página e tente novamente.', 'danger', false);
+        } finally {
+          elements.form.setAttribute('aria-busy', 'false');
+          setPageLoading(false);
+        }
+      }
+
+      updateMembersState();
+      initializePage();
+    });
+  </script>
+</body>
+
+</html>

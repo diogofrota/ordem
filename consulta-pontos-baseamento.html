@@ -387,7 +387,7 @@
             <a class="nav-link" href="#" aria-expanded="true">
               <span class="nav-icon"><i class="ph-light ph-magnifying-glass"></i></span>
               <span class="nav-text">Consultas</span>
-              <span class="nav-badge">5</span>
+              <span class="nav-badge">6</span>
               <span class="nav-arrow"><i class="bi bi-chevron-right"></i></span>
             </a>
             <ul class="nav-submenu show">
@@ -396,6 +396,7 @@
               <li><a class="nav-link " href="consulta-locais-patrulhamento.html"><span class="nav-dot"></span>Locais de Patrulhamento</a></li>
               <li><a class="nav-link " href="consulta-tipos-servico.html"><span class="nav-dot"></span>Tipos de Serviço</a></li>
               <li><a class="nav-link " href="consulta-operacoes-especiais.html"><span class="nav-dot"></span>Operações Especiais</a></li>
+              <li><a class="nav-link " href="users.html"><span class="nav-dot"></span>Ordens de Serviço</a></li>
             </ul>
           </li>
 
@@ -403,11 +404,13 @@
             <a class="nav-link" href="#" aria-expanded="false">
               <span class="nav-icon"><i class="ph-light ph-users-three"></i></span>
               <span class="nav-text">Ordens de Serviço</span>
-              <span class="nav-badge">2</span>
+              <span class="nav-badge">1</span>
               <span class="nav-arrow"><i class="bi bi-chevron-right"></i></span>
             </a>
             <ul class="nav-submenu ">
+              <!-- Link anterior preservado; a consulta agora pertence ao grupo Consultas.
               <li><a class="nav-link " href="users.html"><span class="nav-dot"></span>Consultar Ordens de Serviço</a></li>
+              -->
               <li><a class="nav-link " href="users-view.html"><span class="nav-dot"></span>Criar Ordem de Serviço</a></li>
             </ul>
           </li>
@@ -416,11 +419,12 @@
             <a class="nav-link" href="#" aria-expanded="false">
               <span class="nav-icon"><i class="ph-light ph-shield-check"></i></span>
               <span class="nav-text">Operação</span>
-              <span class="nav-badge">2</span>
+              <span class="nav-badge">3</span>
               <span class="nav-arrow"><i class="bi bi-chevron-right"></i></span>
             </a>
             <ul class="nav-submenu ">
-              <li><a class="nav-link " href="auth-login.html"><span class="nav-dot"></span>Ativação</a></li>
+              <li><a class="nav-link " href="ativacao.html"><span class="nav-dot"></span>Ativar Guarnição</a></li>
+              <li><a class="nav-link " href="painel-ativacoes.html"><span class="nav-dot"></span>Painel de Ativações</a></li>
               <li><a class="nav-link " href="auth-register.html"><span class="nav-dot"></span>Mapa Tático</a></li>
             </ul>
           </li>
@@ -730,6 +734,7 @@
               id: String(point.id || ('base-point-stored-' + index)),
               code: code,
               nickname: String(point.nickname || ''),
+              description: String(point.description || point.descricao || '').trim(),
               road: String(point.road || ''),
               number: String(point.number || 'S/N'),
               district: String(point.district || ''),
@@ -1047,10 +1052,15 @@
           const actionsCell = document.createElement('td');
           const actions = document.createElement('div');
           const mapButton = createActionButton('map', point, 'Mapa', 'bi-map', 'btn-primary d-inline-flex');
-          const editButton = createActionButton('edit', point, 'Editar', 'bi-pencil', 'btn-light d-none d-md-inline-flex');
+          // Ação de edição anterior preservada: pontos cadastrados não podem mais ser alterados.
+          // const editButton = createActionButton('edit', point, 'Editar', 'bi-pencil', 'btn-light d-none d-md-inline-flex');
+          // Ação de status anterior preservada:
+          // const toggleButton = point.active
+          //   ? createActionButton('toggle-status', point, 'Inativar', 'bi-slash-circle', 'btn-outline-danger d-none d-md-inline-flex')
+          //   : createActionButton('toggle-status', point, 'Ativar', 'bi-check-circle', 'btn-outline-success d-none d-md-inline-flex');
           const toggleButton = point.active
-            ? createActionButton('toggle-status', point, 'Inativar', 'bi-slash-circle', 'btn-outline-danger d-none d-md-inline-flex')
-            : createActionButton('toggle-status', point, 'Ativar', 'bi-check-circle', 'btn-outline-success d-none d-md-inline-flex');
+            ? createActionButton('toggle-status', point, 'Inativar', 'bi-slash-circle', 'btn-outline-danger d-inline-flex')
+            : createActionButton('toggle-status', point, 'Reativar', 'bi-arrow-counterclockwise', 'btn-outline-success d-inline-flex');
 
           createTextCell(row, String(point.code), 'base-code d-none d-md-table-cell');
           createTextCell(row, point.nickname, 'fw-semibold text-uppercase');
@@ -1067,7 +1077,8 @@
           row.appendChild(statusCell);
 
           actions.className = 'table-actions';
-          actions.append(mapButton, editButton, toggleButton);
+          // Composição anterior preservada: actions.append(mapButton, editButton, toggleButton);
+          actions.append(mapButton, toggleButton);
           actionsCell.appendChild(actions);
           row.appendChild(actionsCell);
           tableBody.appendChild(row);
@@ -1094,6 +1105,7 @@
           return;
         }
 
+        // O código de criação permanece imutável; somente o status do mesmo registro é alternado.
         point.active = !point.active;
         const isStored = saveBasePoints();
         renderBasePoints();
@@ -1104,15 +1116,18 @@
         }
 
         showPageAlert(
-          'Ponto ' + point.nickname + (point.active ? ' ativado' : ' inativado') + ' com sucesso.' +
+          // Mensagem anterior preservada:
+          // 'Ponto ' + point.nickname + (point.active ? ' ativado' : ' inativado') + ' com sucesso.' +
+          'Ponto ' + point.nickname + (point.active ? ' reativado' : ' inativado') + ' com sucesso.' +
           (isStored ? '' : ' A alteração não pôde ser gravada neste navegador.'),
           isStored ? 'success' : 'warning'
         );
       }
 
-      function editPoint(pointId) {
-        window.location.href = 'dashboard-analytics.html?edit=' + encodeURIComponent(pointId);
-      }
+      // Fluxo anterior de edição preservado. Pontos cadastrados agora são imutáveis.
+      // function editPoint(pointId) {
+      //   window.location.href = 'dashboard-analytics.html?edit=' + encodeURIComponent(pointId);
+      // }
 
       function externalMapUrl(point) {
         return 'https://www.openstreetmap.org/?mlat=' +
@@ -1292,8 +1307,9 @@
         const pointId = actionButton.dataset.basePointId;
         if (action === 'map') {
           openPointMap(pointId);
-        } else if (action === 'edit') {
-          editPoint(pointId);
+        // Tratamento anterior preservado: a consulta não oferece mais edição.
+        // } else if (action === 'edit') {
+        //   editPoint(pointId);
         } else if (action === 'toggle-status') {
           togglePointStatus(pointId);
         }

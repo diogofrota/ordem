@@ -298,8 +298,278 @@
       color: var(--accent-color);
     }
 
+    .service-order-details-hero {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--spacing-md);
+      margin-bottom: var(--spacing-md);
+      padding: var(--spacing-lg);
+      border: 1px solid var(--border-color-light);
+      border-radius: var(--radius-md);
+      background: var(--background-color);
+    }
+
+    .service-order-details-kicker,
+    .service-order-details-mission,
+    .service-order-details-context {
+      display: block;
+    }
+
+    .service-order-details-kicker {
+      margin-bottom: 2px;
+      color: var(--muted-color);
+      font-size: 0.6875rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .service-order-details-number {
+      display: block;
+      color: var(--heading-color);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 1.125rem;
+      font-weight: 700;
+    }
+
+    .service-order-details-mission {
+      margin-top: 4px;
+      color: var(--heading-color);
+      font-size: 0.9375rem;
+      font-weight: 700;
+    }
+
+    .service-order-details-context {
+      margin-top: 2px;
+      color: var(--muted-color);
+      font-size: 0.8125rem;
+    }
+
+    .service-order-details-metrics {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: var(--spacing-sm);
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .service-order-details-metric {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+      min-width: 0;
+      padding: var(--spacing-md);
+      border: 1px solid var(--border-color-light);
+      border-radius: var(--radius-md);
+      background: var(--background-color);
+    }
+
+    .service-order-details-metric > i {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      flex: 0 0 34px;
+      color: var(--accent-color);
+      background: color-mix(in srgb, var(--accent-color), transparent 90%);
+      border-radius: var(--radius-md);
+      font-size: 1rem;
+    }
+
+    .service-order-details-metric strong,
+    .service-order-details-metric span {
+      display: block;
+    }
+
+    .service-order-details-metric strong {
+      overflow: hidden;
+      color: var(--heading-color);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.875rem;
+      font-weight: 700;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .service-order-details-metric span {
+      color: var(--muted-color);
+      font-size: 0.6875rem;
+      font-weight: 600;
+    }
+
+    .service-order-details-section + .service-order-details-section {
+      margin-top: var(--spacing-lg);
+    }
+
+    .service-order-details-title-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--spacing-sm);
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .service-order-details-title {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin: 0;
+      color: var(--heading-color);
+      font-size: 0.875rem;
+      font-weight: 700;
+    }
+
+    .service-order-details-title i {
+      color: var(--accent-color);
+    }
+
+    .service-order-details-summary {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: var(--spacing-sm);
+      margin: 0;
+    }
+
+    .service-order-details-summary > div {
+      min-width: 0;
+      padding: var(--spacing-md);
+      border: 1px solid var(--border-color-light);
+      border-radius: var(--radius-md);
+      background: var(--background-color);
+    }
+
+    .service-order-details-summary dt,
+    .service-order-details-summary dd {
+      margin: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .service-order-details-summary dt {
+      margin-bottom: 3px;
+      color: var(--muted-color);
+      font-size: 0.6875rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .service-order-details-summary dd {
+      color: var(--heading-color);
+      font-size: 0.8125rem;
+      font-weight: 600;
+    }
+
+    .service-order-details-table-region {
+      border: 1px solid var(--border-color-light);
+      border-radius: var(--radius-md);
+      outline: none;
+    }
+
+    .service-order-details-table-region:focus-visible {
+      outline: 2px solid color-mix(in srgb, var(--accent-color), transparent 45%);
+      outline-offset: 2px;
+    }
+
+    .service-order-details-activity-table {
+      min-width: 940px;
+    }
+
+    .service-order-details-activity-table th {
+      white-space: nowrap;
+    }
+
+    .service-order-details-index {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      color: var(--accent-color);
+      background: color-mix(in srgb, var(--accent-color), transparent 90%);
+      border-radius: var(--radius-full);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .service-order-details-activity-main strong,
+    .service-order-details-activity-main small,
+    .service-order-details-cell-meta {
+      display: block;
+    }
+
+    .service-order-details-activity-main strong {
+      color: var(--heading-color);
+      font-size: 0.8125rem;
+      font-weight: 700;
+    }
+
+    .service-order-details-activity-main small,
+    .service-order-details-cell-meta {
+      margin-top: 2px;
+      color: var(--muted-color);
+      font-size: 0.75rem;
+      line-height: 1.45;
+    }
+
+    .service-order-details-operation {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 7px;
+      color: var(--info-color);
+      background: color-mix(in srgb, var(--info-color), transparent 90%);
+      border-radius: var(--radius-full);
+      font-size: 0.6875rem;
+      font-weight: 700;
+    }
+
+    .service-order-details-operation-row > td:first-child {
+      box-shadow: inset 3px 0 0 var(--info-color);
+    }
+
+    .service-order-details-prescriptions {
+      min-height: 58px;
+      margin: 0;
+      padding: var(--spacing-md);
+      color: var(--default-color);
+      background: var(--background-color);
+      border: 1px solid var(--border-color-light);
+      border-radius: var(--radius-md);
+      font-size: 0.8125rem;
+      line-height: 1.55;
+      white-space: pre-wrap;
+    }
+
+    .service-order-details-empty {
+      padding: 2.75rem 1rem !important;
+      color: var(--muted-color);
+      text-align: center !important;
+    }
+
+    .service-order-details-empty i,
+    .service-order-details-empty span {
+      display: block;
+    }
+
+    .service-order-details-empty i {
+      margin-bottom: var(--spacing-sm);
+      color: var(--light-color);
+      font-size: 2rem;
+    }
+
     .service-order-print-sheet {
       display: none;
+    }
+
+    @media (max-width: 991px) {
+      .service-order-details-metrics,
+      .service-order-details-summary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
     }
 
     /* Empilhamento anterior em tablets preservado; o novo painel segue o breakpoint oficial da consulta de baseamento.
@@ -405,6 +675,21 @@
       .service-order-results-note {
         align-items: flex-start;
         flex-direction: column;
+      }
+
+      .service-order-details-hero {
+        align-items: flex-start;
+        padding: var(--spacing-md);
+      }
+
+      .service-order-details-summary {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 575px) {
+      .service-order-details-metrics {
+        grid-template-columns: 1fr;
       }
     }
 
@@ -1303,11 +1588,12 @@
             <a class="nav-link" href="#" aria-expanded="false">
               <span class="nav-icon"><i class="ph-light ph-shield-check" aria-hidden="true"></i></span>
               <span class="nav-text">Operação</span>
-              <span class="nav-badge">2</span>
+              <span class="nav-badge">3</span>
               <span class="nav-arrow"><i class="bi bi-chevron-right" aria-hidden="true"></i></span>
             </a>
             <ul class="nav-submenu">
-              <li><a class="nav-link" href="auth-login.html"><span class="nav-dot"></span>Ativação</a></li>
+              <li><a class="nav-link" href="ativacao.html"><span class="nav-dot"></span>Ativar Guarnição</a></li>
+              <li><a class="nav-link" href="painel-ativacoes.html"><span class="nav-dot"></span>Painel de Ativações</a></li>
               <li><a class="nav-link" href="auth-register.html"><span class="nav-dot"></span>Mapa Tático</a></li>
             </ul>
           </li>
@@ -1841,10 +2127,12 @@
           <p class="service-order-query-intro">Localize, imprima e gerencie as Ordens de Serviço gravadas. Use uma OS existente como modelo quando precisar repetir um planejamento.</p>
         </div>
         <div class="service-order-query-heading-actions">
+          <!-- Botão "Criar nova OS" ocultado conforme solicitado.
           <a href="users-view.html" class="btn btn-primary">
             <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>
             Criar nova OS
           </a>
+          -->
           <nav class="breadcrumb" aria-label="Navegação estrutural">
             <a href="index.html" class="breadcrumb-item">Painel Operacional</a>
             <span class="breadcrumb-item">Consultas</span>
@@ -1992,6 +2280,134 @@
         </div>
       </section>
 
+      <div class="modal fade" id="serviceOrderDetailsModal" tabindex="-1" aria-labelledby="serviceOrderDetailsModalLabel" aria-describedby="serviceOrderDetailsModalSubtitle" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+          <div class="modal-content">
+            <div class="modal-header">
+              <div>
+                <h2 class="modal-title fs-5" id="serviceOrderDetailsModalLabel">Detalhes da Ordem de Serviço</h2>
+                <p class="card-subtitle mb-0 mt-1" id="serviceOrderDetailsModalSubtitle">Planejamento, pontos e atividades vinculados à OS.</p>
+              </div>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar detalhes da Ordem de Serviço"></button>
+            </div>
+            <div class="modal-body">
+              <div class="service-order-details-hero">
+                <div>
+                  <span class="service-order-details-kicker">Ordem de Serviço</span>
+                  <strong class="service-order-details-number" id="serviceOrderDetailsNumber">OS nº —</strong>
+                  <span class="service-order-details-mission" id="serviceOrderDetailsMission">Missão não informada</span>
+                  <span class="service-order-details-context" id="serviceOrderDetailsContext">Tipo de serviço e recurso não informados</span>
+                </div>
+                <span class="service-order-status is-inactive" id="serviceOrderDetailsStatus">
+                  <i class="bi bi-slash-circle" aria-hidden="true"></i>
+                  Não informada
+                </span>
+              </div>
+
+              <div class="service-order-details-metrics" role="group" aria-label="Resumo do planejamento">
+                <div class="service-order-details-metric">
+                  <i class="bi bi-list-check" aria-hidden="true"></i>
+                  <div><strong id="serviceOrderDetailsActivityCount">0</strong><span>Atividades planejadas</span></div>
+                </div>
+                <div class="service-order-details-metric">
+                  <i class="bi bi-geo-alt" aria-hidden="true"></i>
+                  <div><strong id="serviceOrderDetailsPointCount">0</strong><span>Pontos vinculados</span></div>
+                </div>
+                <div class="service-order-details-metric">
+                  <i class="bi bi-shield-check" aria-hidden="true"></i>
+                  <div><strong id="serviceOrderDetailsOperationCount">0</strong><span>Operações vinculadas</span></div>
+                </div>
+                <div class="service-order-details-metric">
+                  <i class="bi bi-clock-history" aria-hidden="true"></i>
+                  <div><strong id="serviceOrderDetailsDuration">0h 00min</strong><span>Tempo planejado</span></div>
+                </div>
+              </div>
+
+              <section class="service-order-details-section" aria-labelledby="serviceOrderDetailsGeneralTitle">
+                <div class="service-order-details-title-row">
+                  <h3 class="service-order-details-title" id="serviceOrderDetailsGeneralTitle">
+                    <i class="bi bi-file-earmark-text" aria-hidden="true"></i>
+                    Dados gerais
+                  </h3>
+                </div>
+                <dl class="service-order-details-summary">
+                  <div>
+                    <dt>Tipo de serviço</dt>
+                    <dd id="serviceOrderDetailsServiceType">Não informado</dd>
+                  </div>
+                  <div>
+                    <dt>Recurso</dt>
+                    <dd id="serviceOrderDetailsResource">Não informado</dd>
+                  </div>
+                  <div>
+                    <dt>Turno</dt>
+                    <dd id="serviceOrderDetailsShift">Não informado</dd>
+                  </div>
+                  <div>
+                    <dt>Criada em</dt>
+                    <dd id="serviceOrderDetailsCreatedAt">Não informada</dd>
+                  </div>
+                  <div>
+                    <dt>Origem do planejamento</dt>
+                    <dd id="serviceOrderDetailsOrigin">Planejamento original</dd>
+                  </div>
+                  <div>
+                    <dt>Identificador</dt>
+                    <dd id="serviceOrderDetailsIdentifier">Não informado</dd>
+                  </div>
+                </dl>
+              </section>
+
+              <section class="service-order-details-section" aria-labelledby="serviceOrderDetailsActivitiesTitle">
+                <div class="service-order-details-title-row">
+                  <h3 class="service-order-details-title" id="serviceOrderDetailsActivitiesTitle">
+                    <i class="bi bi-pin-map" aria-hidden="true"></i>
+                    Pontos e atividades vinculados
+                  </h3>
+                  <span class="badge bg-light text-primary" id="serviceOrderDetailsActivityBadge">0 atividades</span>
+                </div>
+                <div class="table-responsive service-order-details-table-region" role="region" aria-label="Pontos e atividades da Ordem de Serviço; deslize horizontalmente para ver todas as colunas" tabindex="0">
+                  <table class="table table-hover align-middle mb-0 service-order-details-activity-table">
+                    <caption class="visually-hidden">Pontos e atividades planejados na Ordem de Serviço selecionada</caption>
+                    <thead>
+                      <tr>
+                        <th scope="col" style="width: 56px;">#</th>
+                        <th scope="col">Atividade</th>
+                        <th scope="col">Horário</th>
+                        <th scope="col">Ponto / local</th>
+                        <th scope="col">Operação</th>
+                        <th scope="col">Detalhes</th>
+                      </tr>
+                    </thead>
+                    <tbody id="serviceOrderDetailsActivityBody">
+                      <tr>
+                        <td colspan="6" class="service-order-details-empty">
+                          <i class="bi bi-list-check" aria-hidden="true"></i>
+                          <span>Selecione uma Ordem de Serviço para visualizar o planejamento.</span>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+
+              <section class="service-order-details-section" aria-labelledby="serviceOrderDetailsPrescriptionsTitle">
+                <div class="service-order-details-title-row">
+                  <h3 class="service-order-details-title" id="serviceOrderDetailsPrescriptionsTitle">
+                    <i class="bi bi-journal-text" aria-hidden="true"></i>
+                    Prescrições diversas
+                  </h3>
+                </div>
+                <p class="service-order-details-prescriptions" id="serviceOrderDetailsPrescriptions">Nenhuma prescrição diversa foi informada para esta Ordem de Serviço.</p>
+              </section>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="modal fade" id="serviceOrderConfirmModal" tabindex="-1" aria-labelledby="serviceOrderConfirmModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
           <div class="modal-content">
@@ -2088,6 +2504,25 @@
         appliedFilterCount: document.getElementById('serviceOrderAppliedFilterCount'),
         table: document.getElementById('serviceOrderQueryTable'),
         tableBody: document.getElementById('serviceOrderTableBody'),
+        detailsModal: document.getElementById('serviceOrderDetailsModal'),
+        detailsModalSubtitle: document.getElementById('serviceOrderDetailsModalSubtitle'),
+        detailsNumber: document.getElementById('serviceOrderDetailsNumber'),
+        detailsMission: document.getElementById('serviceOrderDetailsMission'),
+        detailsContext: document.getElementById('serviceOrderDetailsContext'),
+        detailsStatus: document.getElementById('serviceOrderDetailsStatus'),
+        detailsActivityCount: document.getElementById('serviceOrderDetailsActivityCount'),
+        detailsPointCount: document.getElementById('serviceOrderDetailsPointCount'),
+        detailsOperationCount: document.getElementById('serviceOrderDetailsOperationCount'),
+        detailsDuration: document.getElementById('serviceOrderDetailsDuration'),
+        detailsServiceType: document.getElementById('serviceOrderDetailsServiceType'),
+        detailsResource: document.getElementById('serviceOrderDetailsResource'),
+        detailsShift: document.getElementById('serviceOrderDetailsShift'),
+        detailsCreatedAt: document.getElementById('serviceOrderDetailsCreatedAt'),
+        detailsOrigin: document.getElementById('serviceOrderDetailsOrigin'),
+        detailsIdentifier: document.getElementById('serviceOrderDetailsIdentifier'),
+        detailsActivityBadge: document.getElementById('serviceOrderDetailsActivityBadge'),
+        detailsActivityBody: document.getElementById('serviceOrderDetailsActivityBody'),
+        detailsPrescriptions: document.getElementById('serviceOrderDetailsPrescriptions'),
         confirmModal: document.getElementById('serviceOrderConfirmModal'),
         confirmTitle: document.getElementById('serviceOrderConfirmModalLabel'),
         confirmNote: document.getElementById('serviceOrderConfirmNote'),
@@ -2103,7 +2538,9 @@
         !elements.advancedFilterPanel || !elements.advancedFilterForm ||
         !elements.filterNumber || !elements.filterMission || !elements.filterResource ||
         !elements.filterActivity || !elements.clearAdvancedFilters ||
-        !elements.mobileFilterButton || !elements.appliedFilterCount
+        !elements.mobileFilterButton || !elements.appliedFilterCount ||
+        !elements.detailsModal || !elements.detailsNumber || !elements.detailsMission ||
+        !elements.detailsStatus || !elements.detailsActivityBody || !elements.detailsPrescriptions
       ) {
         return;
       }
@@ -2122,9 +2559,14 @@
 
       let alertTimeout = null;
       let pendingConfirmation = null;
+      let lastDetailsTrigger = null;
 
       function normalizeWhitespace(value) {
         return String(value || '').replace(/\s+/g, ' ').trim();
+      }
+
+      function normalizeMultiline(value) {
+        return String(value || '').replace(/\r\n?/g, '\n').trim();
       }
 
       function normalizeUppercase(value) {
@@ -2219,6 +2661,9 @@
         const statusValue = normalizeUppercase(item.status);
         const status = statusValue === 'INATIVA' || statusValue === 'INATIVO' ? 'Inativa' : 'Ativa';
         const activities = Array.isArray(item.atividades) ? item.atividades.map(normalizeActivity) : [];
+        const prescriptionsSource = Object.prototype.hasOwnProperty.call(item, 'prescricoesDiversas')
+          ? item.prescricoesDiversas
+          : (item.prescricoes ?? item.orientacoesGerais ?? item.observacoesGerais ?? '');
         return Object.assign({}, item, {
           id: String(item.id || ('order-' + (Number.isFinite(number) ? number : index))),
           numero: Number.isFinite(number) ? number : 0,
@@ -2230,6 +2675,7 @@
           tipoRecurso: normalizeWhitespace(item.tipoRecurso || item.recurso),
           inicioGeral: String(item.inicioGeral || item.inicio || ''),
           terminoGeral: String(item.terminoGeral || item.termino || ''),
+          prescricoesDiversas: normalizeMultiline(prescriptionsSource),
           atividades: activities,
           ocultaNaTelaOS: item.ocultaNaTelaOS === true || item.ocultaNaTelaOS === 'true'
         });
@@ -2307,6 +2753,237 @@
           : '';
         const cityAndState = [activity.cidade && activity.cidade !== '-' ? activity.cidade : '', activity.estado].filter(Boolean).join(' - ');
         return [roadAndNumber, activity.bairro && activity.bairro !== '-' ? activity.bairro : '', cityAndState].filter(Boolean).join(' · ');
+      }
+
+      function timeToMinutes(value) {
+        const match = /^(\d{1,2}):(\d{2})$/.exec(String(value || ''));
+        if (!match) {
+          return null;
+        }
+        const hours = Number(match[1]);
+        const minutes = Number(match[2]);
+        if (hours > 23 || minutes > 59) {
+          return null;
+        }
+        return hours * 60 + minutes;
+      }
+
+      function activityDurationMinutes(activity) {
+        const storedDuration = Number(activity && activity.duracaoMinutos);
+        if (Number.isFinite(storedDuration) && storedDuration > 0) {
+          return storedDuration;
+        }
+        const start = timeToMinutes(activity && activity.inicio);
+        const end = timeToMinutes(activity && activity.fim);
+        if (!Number.isFinite(start) || !Number.isFinite(end)) {
+          return 0;
+        }
+        return end > start ? end - start : (end + 1440) - start;
+      }
+
+      function formatDurationMinutes(totalMinutes) {
+        const safeMinutes = Math.max(0, Math.round(Number(totalMinutes) || 0));
+        const hours = Math.floor(safeMinutes / 60);
+        const minutes = safeMinutes % 60;
+        return hours + 'h ' + String(minutes).padStart(2, '0') + 'min';
+      }
+
+      function formatStoredDate(value) {
+        if (!value) {
+          return 'Não informada';
+        }
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) {
+          return String(value);
+        }
+        return new Intl.DateTimeFormat('pt-BR', {
+          dateStyle: 'short',
+          timeStyle: 'short'
+        }).format(date);
+      }
+
+      function activityLocationType(activity) {
+        const locationType = normalizeSearch(activity && activity.localTipo);
+        const activityType = normalizeSearch(activity && activity.tipo);
+        if (locationType === 'BASEAMENTO' || activityType === 'BASEAMENTO') {
+          return 'Ponto de baseamento';
+        }
+        if (locationType === 'PATRULHAMENTO' || activityType === 'PATRULHAMENTO') {
+          return 'Local de patrulhamento';
+        }
+        return activity && activity.local ? 'Local relacionado' : '';
+      }
+
+      function activityGpsSummary(activity) {
+        const gps = activity && activity.gps;
+        if (!gps || typeof gps !== 'object') {
+          return '';
+        }
+        let coordinates = Array.isArray(gps.coordenadas)
+          ? gps.coordenadas
+          : (Array.isArray(gps.coordinates)
+            ? gps.coordinates
+            : (Array.isArray(gps.vertices)
+              ? gps.vertices
+              : (gps.geometry && Array.isArray(gps.geometry.coordinates) ? gps.geometry.coordinates : [])));
+        if (coordinates.length === 1 && Array.isArray(coordinates[0]) && Array.isArray(coordinates[0][0])) {
+          coordinates = coordinates[0];
+        }
+        if (coordinates.length) {
+          return 'Área geográfica com ' + coordinates.length + (coordinates.length === 1 ? ' vértice' : ' vértices');
+        }
+        const latitude = Number(gps.lat !== undefined ? gps.lat : gps.latitude);
+        const longitude = Number(gps.lng !== undefined ? gps.lng : gps.longitude);
+        if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+          return '';
+        }
+        return 'GPS ' + latitude.toFixed(6) + ', ' + longitude.toFixed(6);
+      }
+
+      function relatedPointCount(activities) {
+        const relatedPoints = new Set();
+        activities.forEach(function(activity) {
+          if (!normalizeWhitespace(activity.local)) {
+            return;
+          }
+          const typeKey = normalizeSearch(activity.localTipo || activity.tipo || 'local');
+          const identityKey = normalizeWhitespace(activity.localId)
+            ? 'id:' + activity.localId
+            : 'name:' + normalizeSearch(activity.local);
+          relatedPoints.add(typeKey + ':' + identityKey);
+        });
+        return relatedPoints.size;
+      }
+
+      function renderOrderDetailsActivities(order) {
+        elements.detailsActivityBody.replaceChildren();
+
+        if (!order.atividades.length) {
+          const row = document.createElement('tr');
+          const cell = createCell(row, 'service-order-details-empty');
+          const icon = document.createElement('i');
+          const text = document.createElement('span');
+          cell.colSpan = 6;
+          icon.className = 'bi bi-list-check';
+          icon.setAttribute('aria-hidden', 'true');
+          text.textContent = 'Nenhum ponto ou atividade foi vinculado a esta Ordem de Serviço.';
+          cell.append(icon, text);
+          elements.detailsActivityBody.appendChild(row);
+          return;
+        }
+
+        order.atividades.forEach(function(activity, index) {
+          const row = document.createElement('tr');
+          if (activity.operacao) {
+            row.classList.add('service-order-details-operation-row');
+          }
+
+          const indexCell = createCell(row);
+          const indexBadge = document.createElement('span');
+          indexBadge.className = 'service-order-details-index';
+          indexBadge.textContent = String(index + 1).padStart(2, '0');
+          indexCell.appendChild(indexBadge);
+
+          const activityCell = createCell(row);
+          appendTextBlock(
+            activityCell,
+            activityDisplayName(activity.tipo),
+            formatDurationMinutes(activityDurationMinutes(activity)),
+            'service-order-details-activity-main'
+          );
+
+          const timeCell = createCell(row);
+          const timeRange = document.createElement('span');
+          timeRange.className = 'service-order-time';
+          timeRange.textContent = (activity.inicio || '—') + ' – ' + (activity.fim || '—');
+          timeCell.appendChild(timeRange);
+
+          const locationCell = createCell(row);
+          const locationMeta = [activityLocationType(activity), activityAddress(activity)].filter(Boolean).join(' · ');
+          appendTextBlock(
+            locationCell,
+            activity.local || 'Sem ponto ou local específico',
+            locationMeta,
+            'service-order-details-activity-main'
+          );
+
+          const operationCell = createCell(row);
+          if (activity.operacao) {
+            const operationBadge = document.createElement('span');
+            const operationIcon = document.createElement('i');
+            operationBadge.className = 'service-order-details-operation';
+            operationIcon.className = 'bi bi-shield-check';
+            operationIcon.setAttribute('aria-hidden', 'true');
+            operationBadge.append(operationIcon, document.createTextNode(activity.operacao));
+            operationCell.appendChild(operationBadge);
+          } else {
+            const emptyOperation = document.createElement('span');
+            emptyOperation.className = 'service-order-details-cell-meta';
+            emptyOperation.textContent = 'Sem operação';
+            operationCell.appendChild(emptyOperation);
+          }
+
+          const detailsCell = createCell(row);
+          const detailsText = document.createElement('span');
+          const gpsText = document.createElement('span');
+          const gpsSummary = activityGpsSummary(activity);
+          detailsText.className = 'service-order-details-cell-meta';
+          detailsText.textContent = activity.detalhes && activity.detalhes !== '-'
+            ? activity.detalhes
+            : 'Sem detalhes adicionais';
+          detailsCell.appendChild(detailsText);
+          if (gpsSummary) {
+            gpsText.className = 'service-order-details-cell-meta';
+            gpsText.textContent = gpsSummary;
+            detailsCell.appendChild(gpsText);
+          }
+
+          elements.detailsActivityBody.appendChild(row);
+        });
+      }
+
+      function openOrderDetails(order, trigger) {
+        if (!window.bootstrap || !window.bootstrap.Modal) {
+          showAlert('Não foi possível abrir os detalhes da Ordem de Serviço. Atualize a página e tente novamente.', 'danger', false);
+          return;
+        }
+
+        const activities = order.atividades || [];
+        const operationCount = new Set(activities.map(function(activity) {
+          return normalizeSearch(activity.operacao);
+        }).filter(Boolean)).size;
+        const totalDuration = activities.reduce(function(total, activity) {
+          return total + activityDurationMinutes(activity);
+        }, 0);
+        const status = order.ocultaNaTelaOS ? 'Oculta' : order.status;
+        const statusIcon = document.createElement('i');
+
+        lastDetailsTrigger = trigger || null;
+        elements.detailsModalSubtitle.textContent = 'Planejamento, pontos e atividades vinculados à OS nº ' + (order.numero || '—') + '.';
+        elements.detailsNumber.textContent = 'OS nº ' + (order.numero || '—');
+        elements.detailsMission.textContent = order.nomeOS || 'Missão não informada';
+        elements.detailsContext.textContent = [order.tipoOrdem || 'Tipo de serviço não informado', order.tipoRecurso || 'Recurso não informado'].join(' · ');
+        elements.detailsStatus.className = 'service-order-status ' + (status === 'Ativa' ? 'is-active' : (status === 'Oculta' ? 'is-hidden' : 'is-inactive'));
+        statusIcon.className = 'bi ' + (status === 'Ativa' ? 'bi-check-circle-fill' : (status === 'Oculta' ? 'bi-eye-slash-fill' : 'bi-slash-circle'));
+        statusIcon.setAttribute('aria-hidden', 'true');
+        elements.detailsStatus.replaceChildren(statusIcon, document.createTextNode(status || 'Não informada'));
+
+        elements.detailsActivityCount.textContent = String(activities.length);
+        elements.detailsPointCount.textContent = String(relatedPointCount(activities));
+        elements.detailsOperationCount.textContent = String(operationCount);
+        elements.detailsDuration.textContent = formatDurationMinutes(totalDuration);
+        elements.detailsServiceType.textContent = order.tipoOrdem || 'Não informado';
+        elements.detailsResource.textContent = order.tipoRecurso || 'Não informado';
+        elements.detailsShift.textContent = (order.inicioGeral || '—') + ' – ' + (order.terminoGeral || '—');
+        elements.detailsCreatedAt.textContent = formatStoredDate(order.criadoEm);
+        elements.detailsOrigin.textContent = order.origemCopia
+          ? 'Criada a partir da OS nº ' + order.origemCopia
+          : 'Planejamento original';
+        elements.detailsIdentifier.textContent = order.id || 'Não informado';
+        elements.detailsActivityBadge.textContent = activities.length + (activities.length === 1 ? ' atividade' : ' atividades');
+        elements.detailsPrescriptions.textContent = order.prescricoesDiversas || 'Nenhuma prescrição diversa foi informada para esta Ordem de Serviço.';
+        renderOrderDetailsActivities(order);
+        window.bootstrap.Modal.getOrCreateInstance(elements.detailsModal).show();
       }
 
       function orderSearchText(order) {
@@ -2627,6 +3304,7 @@
           const actionsCell = createCell(row);
           const actions = document.createElement('div');
           actions.className = 'table-actions';
+          actions.appendChild(createActionButton('details', order, 'Detalhes', 'bi-eye', 'btn-outline-primary'));
           actions.appendChild(createActionButton('model', order, 'Usar como modelo', 'bi-copy', 'btn-outline-primary'));
           actions.appendChild(createActionButton('print', order, 'Imprimir', 'bi-printer', 'btn-outline-info'));
           if (order.ocultaNaTelaOS) {
@@ -2834,6 +3512,13 @@
         pendingConfirmation = null;
       });
 
+      elements.detailsModal.addEventListener('hidden.bs.modal', function() {
+        if (lastDetailsTrigger && lastDetailsTrigger.isConnected) {
+          lastDetailsTrigger.focus();
+        }
+        lastDetailsTrigger = null;
+      });
+
       elements.tableBody.addEventListener('click', function(event) {
         const button = event.target.closest('[data-service-order-action]');
         if (!button) {
@@ -2848,7 +3533,9 @@
         }
 
         const action = button.dataset.serviceOrderAction;
-        if (action === 'model') {
+        if (action === 'details') {
+          openOrderDetails(order, button);
+        } else if (action === 'model') {
           openAsModel(order);
         } else if (action === 'print') {
           printOrder(order);

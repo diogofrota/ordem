@@ -1,0 +1,1763 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Histórico de Ativações - Ordena</title>
+  <meta name="description" content="Consulta das ativações encerradas no sistema Ordena">
+  <meta name="keywords" content="ordena, consultas, histórico, ativações, guarnições, turnos">
+
+  <link href="assets/img/favicon.png" rel="icon">
+  <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&amp;family=Nunito+Sans:wght@400;500;600;700;800&amp;family=Poppins:wght@500;600;700&amp;display=swap" rel="stylesheet">
+
+  <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+  <link href="assets/vendor/phosphor-icons/phosphor-icons.css" rel="stylesheet">
+  <link href="assets/css/main.css" rel="stylesheet">
+
+  <style>
+    .activation-history-intro {
+      max-width: 720px;
+      margin: 0;
+      color: var(--muted-color);
+      font-size: 0.9375rem;
+    }
+
+    .activation-history-heading-actions {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: var(--spacing-sm);
+    }
+
+    .activation-history-alert {
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .activation-history-loading {
+      min-height: 230px;
+      margin-bottom: var(--spacing-xl);
+      border-color: var(--border-color-light);
+    }
+
+    .activation-history-loading .card-body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: var(--spacing-xs);
+      text-align: center;
+    }
+
+    .activation-history-loading strong {
+      color: var(--heading-color);
+      font-size: 0.9375rem;
+    }
+
+    .activation-history-loading small {
+      color: var(--muted-color);
+    }
+
+    .activation-growing-dots {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      color: var(--accent-color);
+    }
+
+    .activation-growing-dots .spinner-grow {
+      width: 0.625rem;
+      height: 0.625rem;
+      color: currentColor;
+    }
+
+    .activation-history-card .card-header {
+      align-items: flex-start;
+    }
+
+    .activation-history-card-heading {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--spacing-sm);
+    }
+
+    .activation-history-card-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      flex: 0 0 38px;
+      border-radius: var(--radius-md);
+      color: var(--accent-color);
+      background: color-mix(in srgb, var(--accent-color), transparent 90%);
+      font-size: 1.125rem;
+    }
+
+    .activation-history-tools {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+    }
+
+    .activation-history-refresh {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .activation-history-updated-at {
+      color: var(--muted-color);
+      font-size: 0.75rem;
+      white-space: nowrap;
+    }
+
+    .activation-history-table-region {
+      outline: none;
+    }
+
+    .activation-history-table-region:focus-visible {
+      outline: 2px solid color-mix(in srgb, var(--accent-color), transparent 45%);
+      outline-offset: -2px;
+    }
+
+    .activation-history-card .table {
+      min-width: 1370px;
+    }
+
+    .activation-history-card .table th {
+      white-space: nowrap;
+    }
+
+    .activation-history-card .table th:last-child,
+    .activation-history-card .table td:last-child {
+      text-align: right;
+    }
+
+    .activation-history-card .table-actions {
+      justify-content: flex-end;
+      flex-wrap: nowrap;
+    }
+
+    .activation-history-row {
+      cursor: pointer;
+    }
+
+    .activation-history-row:focus-visible {
+      outline: 2px solid color-mix(in srgb, var(--accent-color), transparent 45%);
+      outline-offset: -2px;
+    }
+
+    .activation-primary-text {
+      color: var(--heading-color);
+      font-size: 0.875rem;
+      font-weight: 600;
+    }
+
+    .activation-secondary-text {
+      display: block;
+      margin-top: 2px;
+      color: var(--muted-color);
+      font-size: 0.75rem;
+      line-height: 1.4;
+    }
+
+    .activation-code-text,
+    .activation-date-text {
+      color: var(--heading-color);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .activation-contact-text {
+      color: var(--heading-color);
+      font-size: 0.8125rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .activation-resource {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+      min-width: 150px;
+    }
+
+    .activation-resource-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      flex: 0 0 34px;
+      border-radius: var(--radius-md);
+      color: var(--accent-color);
+      background: color-mix(in srgb, var(--accent-color), transparent 91%);
+    }
+
+    .activation-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 8px;
+      border-radius: var(--radius-full);
+      color: color-mix(in srgb, var(--muted-color), black 18%);
+      background: var(--border-color-light);
+      font-size: 0.6875rem;
+      font-weight: 700;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    [data-theme=dark] .activation-status {
+      color: var(--muted-color);
+    }
+
+    .activation-history-empty {
+      padding: 3.5rem 1.5rem !important;
+      text-align: center !important;
+      color: var(--muted-color);
+    }
+
+    .activation-history-empty-content {
+      display: flex;
+      max-width: 440px;
+      margin: 0 auto;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .activation-history-empty-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 58px;
+      height: 58px;
+      margin-bottom: var(--spacing-md);
+      border-radius: 50%;
+      color: var(--accent-color);
+      background: color-mix(in srgb, var(--accent-color), transparent 92%);
+      font-size: 1.5rem;
+    }
+
+    .activation-history-empty-title {
+      margin: 0 0 var(--spacing-xs);
+      color: var(--heading-color);
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    .activation-history-empty-description {
+      margin: 0;
+      font-size: 0.875rem;
+      line-height: 1.55;
+    }
+
+    .activation-history-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--spacing-sm);
+      padding: var(--spacing-sm) var(--spacing-lg);
+      border-top: 1px solid var(--border-color-light);
+      color: var(--muted-color);
+      font-size: 0.75rem;
+    }
+
+    .activation-details-hero {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--spacing-sm);
+      margin-bottom: var(--spacing-md);
+      padding: var(--spacing-md);
+      border: 1px solid var(--border-color-light);
+      border-radius: var(--radius-md);
+      background: var(--background-color);
+    }
+
+    .activation-details-code {
+      color: var(--heading-color);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.9375rem;
+      font-weight: 700;
+    }
+
+    .activation-details-note {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--spacing-sm);
+      margin-bottom: var(--spacing-md);
+      padding: var(--spacing-md);
+      border: 1px solid var(--border-color-light);
+      border-radius: var(--radius-md);
+      color: var(--muted-color);
+      background: var(--background-color);
+      font-size: 0.875rem;
+    }
+
+    .activation-details-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--spacing-md);
+    }
+
+    .activation-details-section {
+      min-width: 0;
+    }
+
+    .activation-details-section.is-wide {
+      grid-column: 1 / -1;
+    }
+
+    .activation-details-title {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin: 0 0 var(--spacing-sm);
+      color: var(--heading-color);
+      font-size: 0.875rem;
+      font-weight: 700;
+    }
+
+    .activation-details-summary {
+      margin: 0;
+      padding: var(--spacing-md);
+      border: 1px solid var(--border-color-light);
+      border-radius: var(--radius-md);
+      background: var(--background-color);
+    }
+
+    .activation-details-summary > div {
+      display: grid;
+      grid-template-columns: minmax(110px, 0.48fr) 1fr;
+      gap: var(--spacing-sm);
+      padding: 6px 0;
+    }
+
+    .activation-details-summary > div + div {
+      border-top: 1px solid var(--border-color-light);
+    }
+
+    .activation-details-summary dt,
+    .activation-details-summary dd {
+      margin: 0;
+      overflow-wrap: anywhere;
+      font-size: 0.8125rem;
+    }
+
+    .activation-details-summary dt {
+      color: var(--muted-color);
+      font-weight: 600;
+    }
+
+    .activation-details-summary dd {
+      color: var(--heading-color);
+      font-weight: 600;
+    }
+
+    .activation-details-members {
+      max-height: 240px;
+      overflow-y: auto;
+      padding: var(--spacing-sm) var(--spacing-md);
+      border: 1px solid var(--border-color-light);
+      border-radius: var(--radius-md);
+      background: var(--background-color);
+    }
+
+    .activation-member-detail {
+      padding: 8px 0;
+    }
+
+    .activation-member-detail + .activation-member-detail {
+      border-top: 1px solid var(--border-color-light);
+    }
+
+    .btn.activation-action-processing {
+      position: relative;
+      color: transparent !important;
+      pointer-events: none;
+    }
+
+    .btn.activation-action-processing:disabled {
+      opacity: 1;
+    }
+
+    .btn.activation-action-processing > *:not(.activation-processing-content) {
+      visibility: hidden;
+    }
+
+    .btn.activation-action-processing .activation-processing-content {
+      position: absolute;
+      inset: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: inherit;
+      color: var(--bs-btn-color) !important;
+      visibility: visible;
+      white-space: nowrap;
+    }
+
+    .btn.activation-action-processing .activation-growing-dots {
+      color: currentColor;
+      gap: 4px;
+    }
+
+    .btn.activation-action-processing .activation-growing-dots .spinner-grow {
+      width: 0.45rem;
+      height: 0.45rem;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .activation-growing-dots .spinner-grow {
+        opacity: 1;
+        transform: scale(0.75);
+        animation: none !important;
+      }
+    }
+
+    @media (max-width: 767px) {
+      .activation-history-intro {
+        font-size: 0.875rem;
+      }
+
+      .activation-history-heading-actions,
+      .activation-history-tools,
+      .activation-history-refresh {
+        width: 100%;
+      }
+
+      .activation-history-heading-actions,
+      .activation-history-tools {
+        align-items: flex-start;
+      }
+
+      .activation-history-card .card-header {
+        flex-direction: column;
+        gap: var(--spacing-md);
+      }
+
+      .activation-history-card .table.is-empty {
+        min-width: 100%;
+        table-layout: fixed;
+      }
+
+      .activation-history-card .table.is-empty thead {
+        display: none;
+      }
+
+      .activation-history-updated-at {
+        white-space: normal;
+      }
+
+      .activation-history-footer {
+        flex-direction: column;
+        align-items: flex-start;
+        padding-right: var(--spacing-md);
+        padding-left: var(--spacing-md);
+      }
+
+      .activation-details-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .activation-details-section.is-wide {
+        grid-column: auto;
+      }
+
+      .activation-details-summary > div {
+        grid-template-columns: 1fr;
+        gap: 2px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="header">
+    <div class="header-left">
+      <button class="sidebar-toggle" type="button" title="Alternar menu lateral" aria-label="Alternar menu lateral">
+        <span class="menu-lines" aria-hidden="true"><span></span><span></span><span></span></span>
+      </button>
+
+      <a href="index.html" class="header-brand" aria-label="Página inicial do Ordena">
+        <span class="header-logo"><img src="assets/img/logo.webp" alt="Ordena"></span>
+        <span class="header-context"><strong class="header-context-title">Ordena</strong></span>
+      </a>
+    </div>
+  </header>
+
+  <aside class="sidebar">
+    <div class="sidebar-shell">
+      <button class="sidebar-close" type="button" aria-label="Fechar menu lateral">
+        <i class="bi bi-x-lg" aria-hidden="true"></i>
+      </button>
+
+      <nav class="sidebar-nav" aria-label="Navegação principal">
+        <ul class="nav-menu">
+          <li class="nav-item">
+            <a class="nav-link" href="index.html">
+              <span class="nav-icon"><i class="ph-light ph-squares-four" aria-hidden="true"></i></span>
+              <span class="nav-text">Painel Operacional</span>
+              <span class="nav-meta">Home</span>
+            </a>
+          </li>
+
+          <li class="nav-item has-submenu">
+            <a class="nav-link" href="#" aria-expanded="false">
+              <span class="nav-icon"><i class="ph-light ph-gauge" aria-hidden="true"></i></span>
+              <span class="nav-text">Cadastro</span>
+              <span class="nav-badge">5</span>
+              <span class="nav-arrow"><i class="bi bi-chevron-right" aria-hidden="true"></i></span>
+            </a>
+            <ul class="nav-submenu">
+              <li><a class="nav-link" href="dashboard-sales.html"><span class="nav-dot"></span>Viaturas</a></li>
+              <li><a class="nav-link" href="dashboard-analytics.html"><span class="nav-dot"></span>Pontos de Baseamento</a></li>
+              <li><a class="nav-link" href="dashboard-crm.html"><span class="nav-dot"></span>Locais de Patrulhamento</a></li>
+              <li><a class="nav-link" href="dashboard-marketing.html"><span class="nav-dot"></span>Tipos de Serviço</a></li>
+              <li><a class="nav-link" href="dashboard-projects.html"><span class="nav-dot"></span>Operações Especiais</a></li>
+            </ul>
+          </li>
+
+          <li class="nav-item has-submenu open">
+            <a class="nav-link" href="#" aria-expanded="true">
+              <span class="nav-icon"><i class="ph-light ph-magnifying-glass" aria-hidden="true"></i></span>
+              <span class="nav-text">Consultas</span>
+              <span class="nav-badge">7</span>
+              <span class="nav-arrow"><i class="bi bi-chevron-right" aria-hidden="true"></i></span>
+            </a>
+            <ul class="nav-submenu show">
+              <li><a class="nav-link" href="consulta-viaturas.html"><span class="nav-dot"></span>Viaturas</a></li>
+              <li><a class="nav-link" href="consulta-pontos-baseamento.html"><span class="nav-dot"></span>Pontos de Baseamento</a></li>
+              <li><a class="nav-link" href="consulta-locais-patrulhamento.html"><span class="nav-dot"></span>Locais de Patrulhamento</a></li>
+              <li><a class="nav-link" href="consulta-tipos-servico.html"><span class="nav-dot"></span>Tipos de Serviço</a></li>
+              <li><a class="nav-link" href="consulta-operacoes-especiais.html"><span class="nav-dot"></span>Operações Especiais</a></li>
+              <li><a class="nav-link active" href="historico-ativacoes.html" aria-current="page"><span class="nav-dot"></span>Histórico de Ativações</a></li>
+              <li><a class="nav-link" href="users.html"><span class="nav-dot"></span>Ordens de Serviço</a></li>
+            </ul>
+          </li>
+
+          <li class="nav-item has-submenu">
+            <a class="nav-link" href="#" aria-expanded="false">
+              <span class="nav-icon"><i class="ph-light ph-users-three" aria-hidden="true"></i></span>
+              <span class="nav-text">Ordens de Serviço</span>
+              <span class="nav-badge">1</span>
+              <span class="nav-arrow"><i class="bi bi-chevron-right" aria-hidden="true"></i></span>
+            </a>
+            <ul class="nav-submenu">
+              <!-- Link anterior preservado; a consulta agora pertence ao grupo Consultas.
+              <li><a class="nav-link" href="users.html"><span class="nav-dot"></span>Consultar Ordens de Serviço</a></li>
+              -->
+              <li><a class="nav-link" href="users-view.html"><span class="nav-dot"></span>Criar Ordem de Serviço</a></li>
+            </ul>
+          </li>
+
+          <li class="nav-item has-submenu">
+            <a class="nav-link" href="#" aria-expanded="false">
+              <span class="nav-icon"><i class="ph-light ph-shield-check" aria-hidden="true"></i></span>
+              <span class="nav-text">Operação</span>
+              <span class="nav-badge">3</span>
+              <span class="nav-arrow"><i class="bi bi-chevron-right" aria-hidden="true"></i></span>
+            </a>
+            <ul class="nav-submenu">
+              <li><a class="nav-link" href="ativacao.html"><span class="nav-dot"></span>Ativar Guarnição</a></li>
+              <li><a class="nav-link" href="painel-ativacoes.html"><span class="nav-dot"></span>Painel de Ativações</a></li>
+              <li><a class="nav-link" href="auth-register.html"><span class="nav-dot"></span>Mapa Tático</a></li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </aside>
+
+  <div class="sidebar-overlay"></div>
+
+  <main class="main">
+    <div class="main-content page-activation-history">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Histórico de Ativações</h1>
+          <p class="activation-history-intro">Consulte as guarnições que concluíram seus turnos e acesse os dados operacionais de cada ativação.</p>
+        </div>
+        <div class="activation-history-heading-actions">
+          <nav class="breadcrumb" aria-label="Navegação estrutural">
+            <a href="index.html" class="breadcrumb-item">Painel Operacional</a>
+            <span class="breadcrumb-item">Consultas</span>
+            <span class="breadcrumb-item active" aria-current="page">Histórico de Ativações</span>
+          </nav>
+        </div>
+      </div>
+
+      <div id="activationHistoryAlert" class="alert activation-history-alert d-none" role="status" aria-live="polite" aria-atomic="true">
+        <div class="d-flex align-items-start gap-2">
+          <i id="activationHistoryAlertIcon" class="bi mt-1" aria-hidden="true"></i>
+          <span id="activationHistoryAlertMessage"></span>
+        </div>
+      </div>
+
+      <div class="card activation-history-loading" id="activationHistoryLoading" role="status" aria-live="polite" aria-atomic="true">
+        <div class="card-body">
+          <div class="activation-growing-dots mb-2" aria-hidden="true">
+            <span class="spinner-grow spinner-grow-sm" style="animation-delay: 0s;"></span>
+            <span class="spinner-grow spinner-grow-sm" style="animation-delay: 0.15s;"></span>
+            <span class="spinner-grow spinner-grow-sm" style="animation-delay: 0.3s;"></span>
+          </div>
+          <strong>Carregando histórico de ativações...</strong>
+          <small>Organizando os turnos encerrados e seus dados operacionais.</small>
+        </div>
+      </div>
+
+      <noscript>
+        <style>#activationHistoryLoading { display: none !important; }</style>
+        <div class="alert alert-danger" role="alert">
+          <i class="bi bi-exclamation-triangle-fill me-1" aria-hidden="true"></i>
+          Não foi possível carregar o histórico. Ative o JavaScript e tente novamente.
+        </div>
+      </noscript>
+
+      <div id="activationHistoryContent" hidden>
+        <section class="section" aria-labelledby="activationHistoryListTitle">
+          <div class="card activation-history-card">
+            <div class="card-header">
+              <div class="activation-history-card-heading">
+                <span class="activation-history-card-icon" aria-hidden="true"><i class="bi bi-clock-history"></i></span>
+                <div>
+                  <h2 class="card-title" id="activationHistoryListTitle">Ativações encerradas</h2>
+                  <p class="card-subtitle" id="activationHistoryRecordCount" aria-live="polite">Carregando registros...</p>
+                </div>
+              </div>
+              <div class="activation-history-tools">
+                <button type="button" class="btn btn-sm btn-outline-primary activation-history-refresh" id="refreshActivationHistoryButton">
+                  <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+                  <span>Atualizar</span>
+                </button>
+                <span class="activation-history-updated-at" id="activationHistoryUpdatedAt" role="status" aria-live="polite">Última atualização: aguardando</span>
+              </div>
+            </div>
+            <div class="card-body p-0">
+              <div class="table-responsive activation-history-table-region" role="region" aria-label="Tabela do histórico de ativações; deslize horizontalmente para ver todas as colunas" tabindex="0">
+                <table class="table table-hover align-middle mb-0" id="activationHistoryTable" aria-busy="true">
+                  <caption class="visually-hidden">Relação de ativações operacionais encerradas</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">Código</th>
+                      <th scope="col">Viatura / recurso</th>
+                      <th scope="col">Tipo de serviço</th>
+                      <th scope="col">Ordem de Serviço (OS)</th>
+                      <th scope="col">Posto / graduação</th>
+                      <th scope="col">Nome de guerra</th>
+                      <th scope="col">Telefone</th>
+                      <th scope="col">Encerrada em</th>
+                      <th scope="col">Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody id="activationHistoryTableBody"></tbody>
+                </table>
+              </div>
+              <div class="activation-history-footer">
+                <span><i class="bi bi-database me-1" aria-hidden="true"></i>Dados operacionais armazenados neste navegador.</span>
+                <span id="activationHistoryVisibleCount" aria-live="polite">0 registros exibidos</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="modal fade" id="activationHistoryDetailsModal" tabindex="-1" aria-labelledby="activationHistoryDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h2 class="modal-title fs-5" id="activationHistoryDetailsModalLabel">Detalhes da ativação</h2>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+              <div class="activation-details-hero">
+                <div>
+                  <span class="activation-secondary-text mt-0">Código da ativação</span>
+                  <strong class="activation-details-code" id="activationHistoryDetailsCode">Não informado</strong>
+                </div>
+                <span class="activation-status"><i class="bi bi-check2-circle" aria-hidden="true"></i>Encerrada</span>
+              </div>
+
+              <div class="activation-details-note">
+                <i class="bi bi-info-circle-fill mt-1" aria-hidden="true"></i>
+                <span>Registro encerrado disponível somente para consulta.</span>
+              </div>
+
+              <div class="activation-details-grid">
+                <section class="activation-details-section" aria-labelledby="activationHistoryOperationalTitle">
+                  <h3 class="activation-details-title" id="activationHistoryOperationalTitle">
+                    <i class="bi bi-shield-check" aria-hidden="true"></i>
+                    Dados operacionais
+                  </h3>
+                  <dl class="activation-details-summary">
+                    <div>
+                      <dt>Tipo de policiamento</dt>
+                      <dd id="activationHistoryDetailsPolicingType">Não informado</dd>
+                    </div>
+                    <div>
+                      <dt>Viatura / recurso</dt>
+                      <dd id="activationHistoryDetailsResource">Não informado</dd>
+                    </div>
+                    <div>
+                      <dt>Identificador de rádio</dt>
+                      <dd id="activationHistoryDetailsVehicleRadio">Não informado</dd>
+                    </div>
+                    <div>
+                      <dt>Tipo de serviço</dt>
+                      <dd id="activationHistoryDetailsService">Não informado</dd>
+                    </div>
+                    <div>
+                      <dt>Ordem de Serviço (OS)</dt>
+                      <dd id="activationHistoryDetailsServiceOrder">Não informado</dd>
+                    </div>
+                    <div>
+                      <dt>Resumo da missão e do turno</dt>
+                      <dd id="activationHistoryDetailsMission">Não informado</dd>
+                    </div>
+                  </dl>
+                </section>
+
+                <section class="activation-details-section" aria-labelledby="activationHistoryCommanderTitle">
+                  <h3 class="activation-details-title" id="activationHistoryCommanderTitle">
+                    <i class="bi bi-person-badge" aria-hidden="true"></i>
+                    Comandante da equipe
+                  </h3>
+                  <dl class="activation-details-summary">
+                    <div>
+                      <dt>Posto / graduação</dt>
+                      <dd id="activationHistoryDetailsCommanderRank">Não informado</dd>
+                    </div>
+                    <div>
+                      <dt>Nome de guerra</dt>
+                      <dd id="activationHistoryDetailsCommanderName">Não informado</dd>
+                    </div>
+                    <div>
+                      <dt>RG</dt>
+                      <dd id="activationHistoryDetailsCommanderRg">Não informado</dd>
+                    </div>
+                    <div>
+                      <dt>Telefone</dt>
+                      <dd id="activationHistoryDetailsCommanderPhone">Não informado</dd>
+                    </div>
+                  </dl>
+                </section>
+
+                <section class="activation-details-section" aria-labelledby="activationHistoryScheduleTitle">
+                  <h3 class="activation-details-title" id="activationHistoryScheduleTitle">
+                    <i class="bi bi-clock-history" aria-hidden="true"></i>
+                    Ativação e turno
+                  </h3>
+                  <dl class="activation-details-summary">
+                    <div>
+                      <dt>Momento da ativação</dt>
+                      <dd id="activationHistoryDetailsActivatedAt">Não informado</dd>
+                    </div>
+                    <div>
+                      <dt>Início do turno</dt>
+                      <dd id="activationHistoryDetailsStartedAt">Não informado</dd>
+                    </div>
+                    <div>
+                      <dt>Término do turno</dt>
+                      <dd id="activationHistoryDetailsEndedAt">Não informado</dd>
+                    </div>
+                    <div>
+                      <dt>Duração</dt>
+                      <dd id="activationHistoryDetailsDuration">Não informada</dd>
+                    </div>
+                  </dl>
+                </section>
+
+                <section class="activation-details-section" aria-labelledby="activationHistoryMembersTitle">
+                  <h3 class="activation-details-title" id="activationHistoryMembersTitle">
+                    <i class="bi bi-people" aria-hidden="true"></i>
+                    Integrantes adicionais
+                  </h3>
+                  <div class="activation-details-members" id="activationHistoryDetailsMembers">Nenhum integrante adicional.</div>
+                </section>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="footer">
+      <div class="footer-content">
+        <div class="footer-links">
+          <a href="#">Docs</a>
+          <a href="#">Privacidade</a>
+          <a href="#">Segurança</a>
+          <a href="#">Suporte</a>
+        </div>
+        <div class="footer-credits">
+          <div class="footer-copyright">&copy; 2026 <a href="index.html">Ordena</a></div>
+        </div>
+      </div>
+    </footer>
+  </main>
+
+  <a href="#" class="back-to-top" aria-label="Voltar ao topo"><i class="bi bi-arrow-up" aria-hidden="true"></i></a>
+
+  <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="assets/js/theme.js"></script>
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/apps-sidebar-toggle.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const STORAGE_KEY = 'ordena.ativacoes.v1';
+      const SEQUENCE_KEY = 'ordena.ativacoes.sequence.v1';
+      const WRITE_LOCK_KEY = 'ordena.ativacoes.escrita.v1';
+      const CLOSED_STATUS = 'Encerrada';
+      const buttonProcessingState = new WeakMap();
+
+      const elements = {
+        alert: document.getElementById('activationHistoryAlert'),
+        alertIcon: document.getElementById('activationHistoryAlertIcon'),
+        alertMessage: document.getElementById('activationHistoryAlertMessage'),
+        loading: document.getElementById('activationHistoryLoading'),
+        content: document.getElementById('activationHistoryContent'),
+        recordCount: document.getElementById('activationHistoryRecordCount'),
+        visibleCount: document.getElementById('activationHistoryVisibleCount'),
+        updatedAt: document.getElementById('activationHistoryUpdatedAt'),
+        refreshButton: document.getElementById('refreshActivationHistoryButton'),
+        table: document.getElementById('activationHistoryTable'),
+        tableBody: document.getElementById('activationHistoryTableBody'),
+        detailsModal: document.getElementById('activationHistoryDetailsModal'),
+        detailsCode: document.getElementById('activationHistoryDetailsCode'),
+        detailsPolicingType: document.getElementById('activationHistoryDetailsPolicingType'),
+        detailsResource: document.getElementById('activationHistoryDetailsResource'),
+        detailsVehicleRadio: document.getElementById('activationHistoryDetailsVehicleRadio'),
+        detailsService: document.getElementById('activationHistoryDetailsService'),
+        detailsServiceOrder: document.getElementById('activationHistoryDetailsServiceOrder'),
+        detailsMission: document.getElementById('activationHistoryDetailsMission'),
+        detailsCommanderRank: document.getElementById('activationHistoryDetailsCommanderRank'),
+        detailsCommanderName: document.getElementById('activationHistoryDetailsCommanderName'),
+        detailsCommanderRg: document.getElementById('activationHistoryDetailsCommanderRg'),
+        detailsCommanderPhone: document.getElementById('activationHistoryDetailsCommanderPhone'),
+        detailsActivatedAt: document.getElementById('activationHistoryDetailsActivatedAt'),
+        detailsStartedAt: document.getElementById('activationHistoryDetailsStartedAt'),
+        detailsEndedAt: document.getElementById('activationHistoryDetailsEndedAt'),
+        detailsDuration: document.getElementById('activationHistoryDetailsDuration'),
+        detailsMembers: document.getElementById('activationHistoryDetailsMembers')
+      };
+
+      if (!elements.table || !elements.tableBody || !elements.content || !elements.refreshButton || !elements.detailsModal) {
+        return;
+      }
+
+      const state = {
+        records: [],
+        refreshing: false,
+        alertTimeout: null,
+        lastDetailsTrigger: null
+      };
+
+      function safeString(value) {
+        if (typeof value === 'string' || typeof value === 'number') {
+          return String(value).trim();
+        }
+        return '';
+      }
+
+      function firstDefined() {
+        for (let index = 0; index < arguments.length; index += 1) {
+          const value = arguments[index];
+          if (value !== undefined && value !== null && value !== '') {
+            return value;
+          }
+        }
+        return '';
+      }
+
+      function pickText(value, keys) {
+        const directValue = safeString(value);
+        if (directValue) {
+          return directValue;
+        }
+        if (!value || typeof value !== 'object' || Array.isArray(value)) {
+          return '';
+        }
+        for (let index = 0; index < keys.length; index += 1) {
+          const selected = safeString(value[keys[index]]);
+          if (selected) {
+            return selected;
+          }
+        }
+        return '';
+      }
+
+      function parseTimestamp(value) {
+        if (value instanceof Date && !Number.isNaN(value.getTime())) {
+          return new Date(value.getTime());
+        }
+        if (typeof value === 'number' && Number.isFinite(value)) {
+          const numericDate = new Date(value < 100000000000 ? value * 1000 : value);
+          return Number.isNaN(numericDate.getTime()) ? null : numericDate;
+        }
+        if (value && typeof value === 'object' && !Array.isArray(value)) {
+          const seconds = Number(firstDefined(value.seconds, value._seconds));
+          if (Number.isFinite(seconds) && seconds > 0) {
+            const milliseconds = seconds * 1000 + Number(firstDefined(value.nanoseconds, value._nanoseconds, 0)) / 1000000;
+            const timestampDate = new Date(milliseconds);
+            return Number.isNaN(timestampDate.getTime()) ? null : timestampDate;
+          }
+        }
+        const textValue = safeString(value);
+        if (!textValue) {
+          return null;
+        }
+        const brazilianDate = textValue.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:[ ,T]+(\d{1,2}):(\d{2})(?::(\d{2}))?)?$/);
+        if (brazilianDate) {
+          const localDate = new Date(
+            Number(brazilianDate[3]),
+            Number(brazilianDate[2]) - 1,
+            Number(brazilianDate[1]),
+            Number(brazilianDate[4] || 0),
+            Number(brazilianDate[5] || 0),
+            Number(brazilianDate[6] || 0)
+          );
+          return Number.isNaN(localDate.getTime()) ? null : localDate;
+        }
+        const parsedDate = new Date(textValue);
+        return Number.isNaN(parsedDate.getTime()) ? null : parsedDate;
+      }
+
+      function normalizeTimestamp(value) {
+        const parsedDate = parseTimestamp(value);
+        return parsedDate ? parsedDate.toISOString() : '';
+      }
+
+      function normalizeSequentialCode(value) {
+        const textValue = safeString(value);
+        if (!/^\d+$/.test(textValue)) {
+          return 0;
+        }
+        const numericValue = Number(textValue);
+        return Number.isSafeInteger(numericValue) && numericValue > 0 ? numericValue : 0;
+      }
+
+      function readStoredSequence() {
+        const storedValue = window.localStorage.getItem(SEQUENCE_KEY);
+        if (storedValue === null || storedValue === '') {
+          return 0;
+        }
+        if (!/^\d+$/.test(String(storedValue).trim())) {
+          throw new Error('Contador sequencial de ativações inválido.');
+        }
+        const sequence = Number(storedValue);
+        if (!Number.isSafeInteger(sequence) || sequence < 0) {
+          throw new Error('Contador sequencial de ativações inválido.');
+        }
+        return sequence;
+      }
+
+      function recordChronology(record, index) {
+        const timestamp = parseTimestamp(firstDefined(
+          record.activatedAt,
+          record.dataAtivacao,
+          record.startedAt,
+          record.horaInicio,
+          record.createdAt,
+          record.dataCriacao,
+          record.endedAt,
+          record.horaFim
+        ));
+        return {
+          record: record,
+          index: index,
+          timestamp: timestamp ? timestamp.getTime() : null
+        };
+      }
+
+      function ensureSequentialActivationCodes(records) {
+        const orderedRecords = records
+          .map(recordChronology)
+          .filter(function(item) {
+            return item.record && typeof item.record === 'object' && !Array.isArray(item.record);
+          })
+          .sort(function(first, second) {
+            if (first.timestamp !== null && second.timestamp !== null && first.timestamp !== second.timestamp) {
+              return first.timestamp - second.timestamp;
+            }
+            if (first.timestamp !== null && second.timestamp === null) {
+              return -1;
+            }
+            if (first.timestamp === null && second.timestamp !== null) {
+              return 1;
+            }
+            return second.index - first.index;
+          });
+        const usedCodes = new Set();
+        const pendingRecords = [];
+        const storedSequence = readStoredSequence();
+        let highestCode = storedSequence;
+        let recordsChanged = false;
+
+        orderedRecords.forEach(function(item) {
+          const existingCode = normalizeSequentialCode(firstDefined(
+            item.record.activationCode,
+            item.record.codigoAtivacao,
+            item.record.code
+          ));
+          if (existingCode && !usedCodes.has(existingCode)) {
+            usedCodes.add(existingCode);
+            highestCode = Math.max(highestCode, existingCode);
+            if (String(item.record.activationCode || '') !== String(existingCode)) {
+              const originalActivationCode = safeString(item.record.activationCode);
+              if (originalActivationCode && !safeString(item.record.legacyActivationCode)) {
+                item.record.legacyActivationCode = originalActivationCode;
+              }
+              item.record.activationCode = String(existingCode);
+              recordsChanged = true;
+            }
+            return;
+          }
+          pendingRecords.push({
+            record: item.record,
+            legacyCode: safeString(firstDefined(
+              item.record.activationCode,
+              item.record.codigoAtivacao,
+              item.record.code
+            ))
+          });
+        });
+
+        pendingRecords.forEach(function(item) {
+          if (highestCode >= Number.MAX_SAFE_INTEGER) {
+            throw new Error('A sequência de ativações atingiu o limite numérico seguro.');
+          }
+          do {
+            highestCode += 1;
+            if (highestCode > Number.MAX_SAFE_INTEGER) {
+              throw new Error('A sequência de ativações atingiu o limite numérico seguro.');
+            }
+          } while (usedCodes.has(highestCode));
+          if (item.legacyCode && !safeString(item.record.legacyActivationCode)) {
+            item.record.legacyActivationCode = item.legacyCode;
+          }
+          item.record.activationCode = String(highestCode);
+          usedCodes.add(highestCode);
+          recordsChanged = true;
+        });
+
+        return {
+          highestCode: highestCode,
+          recordsChanged: recordsChanged,
+          sequenceChanged: highestCode !== storedSequence
+        };
+      }
+
+      function normalizeStatus(value, endedAt) {
+        if (endedAt) {
+          return CLOSED_STATUS;
+        }
+        const comparable = safeString(value)
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .toLowerCase();
+        if (comparable.indexOf('encerr') === 0 || comparable.indexOf('finaliz') === 0 || comparable.indexOf('conclu') === 0) {
+          return CLOSED_STATUS;
+        }
+        return 'Ativa';
+      }
+
+      function normalizeActivation(rawActivation, index, usedViewIds) {
+        if (!rawActivation || typeof rawActivation !== 'object' || Array.isArray(rawActivation)) {
+          return null;
+        }
+        const endedAt = normalizeTimestamp(firstDefined(
+          rawActivation.endedAt,
+          rawActivation.horaFim,
+          rawActivation.finishedAt,
+          rawActivation.dataEncerramento,
+          rawActivation.termino
+        ));
+        const status = normalizeStatus(firstDefined(rawActivation.status, rawActivation.situacao, rawActivation.estado), endedAt);
+        if (status !== CLOSED_STATUS) {
+          return null;
+        }
+        const activatedAt = normalizeTimestamp(firstDefined(
+          rawActivation.activatedAt,
+          rawActivation.dataAtivacao,
+          rawActivation.createdAt,
+          rawActivation.dataCriacao
+        ));
+        const startedAt = normalizeTimestamp(firstDefined(
+          rawActivation.startedAt,
+          rawActivation.horaInicio,
+          rawActivation.inicio,
+          activatedAt
+        ));
+        const baseId = safeString(firstDefined(rawActivation.id, rawActivation.uid, rawActivation.uuid)) || 'registro-' + String(index + 1);
+        let viewId = baseId;
+        let duplicateIndex = 2;
+        while (usedViewIds.has(viewId)) {
+          viewId = baseId + '-' + String(duplicateIndex);
+          duplicateIndex += 1;
+        }
+        usedViewIds.add(viewId);
+
+        return {
+          id: viewId,
+          technicalId: baseId,
+          activationCode: String(normalizeSequentialCode(rawActivation.activationCode)),
+          status: CLOSED_STATUS,
+          activatedAt: activatedAt,
+          startedAt: startedAt,
+          endedAt: endedAt,
+          policingType: firstDefined(rawActivation.policingType, rawActivation.tipoPoliciamento, rawActivation.policiamento),
+          vehicle: firstDefined(rawActivation.vehicle, rawActivation.viatura, rawActivation.recurso),
+          service: firstDefined(rawActivation.service, rawActivation.servico, rawActivation.tipoServico),
+          serviceOrder: firstDefined(rawActivation.serviceOrder, rawActivation.ordemServico, rawActivation.os),
+          commander: firstDefined(rawActivation.commander, rawActivation.comandante, rawActivation.responsavel),
+          members: firstDefined(rawActivation.members, rawActivation.integrantes, rawActivation.membros, rawActivation.equipe, []),
+          mission: firstDefined(rawActivation.mission, rawActivation.missao, rawActivation.resumoMissao, rawActivation.resumo)
+        };
+      }
+
+      function readActivationsUnlocked() {
+        try {
+          const storedSequence = readStoredSequence();
+          const storedValue = window.localStorage.getItem(STORAGE_KEY);
+          if (!storedValue) {
+            return { records: [], skipped: 0, migrated: false, error: null };
+          }
+          const parsedValue = JSON.parse(storedValue);
+          if (!Array.isArray(parsedValue)) {
+            throw new Error('Formato de armazenamento inválido.');
+          }
+
+          const migration = ensureSequentialActivationCodes(parsedValue);
+          if (migration.recordsChanged || migration.sequenceChanged || migration.highestCode !== storedSequence) {
+            window.localStorage.setItem(SEQUENCE_KEY, String(migration.highestCode));
+          }
+          if (migration.recordsChanged) {
+            window.localStorage.setItem(STORAGE_KEY, JSON.stringify(parsedValue));
+          }
+
+          const records = [];
+          const usedViewIds = new Set();
+          let skipped = 0;
+          parsedValue.forEach(function(item, index) {
+            if (!item || typeof item !== 'object' || Array.isArray(item)) {
+              skipped += 1;
+              return;
+            }
+            const normalized = normalizeActivation(item, index, usedViewIds);
+            if (normalized) {
+              records.push(normalized);
+            }
+          });
+          return {
+            records: records,
+            skipped: skipped,
+            migrated: migration.recordsChanged || migration.sequenceChanged,
+            error: null
+          };
+        } catch (error) {
+          return { records: [], skipped: 0, migrated: false, error: error };
+        }
+      }
+
+      async function readActivations() {
+        try {
+          if (navigator.locks && typeof navigator.locks.request === 'function') {
+            return await navigator.locks.request(WRITE_LOCK_KEY, { mode: 'exclusive' }, function() {
+              return readActivationsUnlocked();
+            });
+          }
+          return readActivationsUnlocked();
+        } catch (error) {
+          return { records: [], skipped: 0, migrated: false, error: error };
+        }
+      }
+
+      function vehicleDetails(vehicle) {
+        const directValue = safeString(vehicle);
+        if (directValue) {
+          return { primary: directValue, secondary: '' };
+        }
+        if (!vehicle || typeof vehicle !== 'object' || Array.isArray(vehicle)) {
+          return { primary: 'Viatura não informada', secondary: '' };
+        }
+        const prefix = pickText(vehicle, ['prefix', 'prefixo', 'code', 'codigo']);
+        const plate = pickText(vehicle, ['plate', 'placa']);
+        const name = pickText(vehicle, ['name', 'nome', 'label', 'identificacao']);
+        const type = pickText(vehicle, ['type', 'tipo', 'category', 'categoria']);
+        const primary = prefix || name || plate || 'Viatura não informada';
+        const secondaryParts = [];
+        [type, plate].forEach(function(part) {
+          if (part && part.toLocaleLowerCase('pt-BR') !== primary.toLocaleLowerCase('pt-BR') && secondaryParts.indexOf(part) === -1) {
+            secondaryParts.push(part);
+          }
+        });
+        return { primary: primary, secondary: secondaryParts.join(' • ') };
+      }
+
+      function commanderDetails(commander) {
+        const directValue = safeString(commander);
+        if (directValue) {
+          return { rank: '', name: directValue, rg: '', phone: '' };
+        }
+        if (!commander || typeof commander !== 'object' || Array.isArray(commander)) {
+          return { rank: '', name: '', rg: '', phone: '' };
+        }
+        return {
+          rank: pickText(commander, ['rank', 'postoGraduacao', 'posto', 'graduacao']),
+          name: pickText(commander, ['warName', 'nomeGuerra', 'name', 'nome', 'label']),
+          rg: pickText(commander, ['rg', 'registroGeral', 'registration', 'matricula']),
+          phone: pickText(commander, ['phone', 'telefone', 'celular'])
+        };
+      }
+
+      function memberDetails(member) {
+        const directValue = safeString(member);
+        if (directValue) {
+          return { rank: '', name: directValue, rg: '', phone: '', informed: true };
+        }
+        if (!member || typeof member !== 'object' || Array.isArray(member)) {
+          return { rank: '', name: '', rg: '', phone: '', informed: false };
+        }
+        const details = {
+          rank: pickText(member, ['rank', 'postoGraduacao', 'posto', 'graduacao']),
+          name: pickText(member, ['warName', 'nomeGuerra', 'name', 'nome', 'label']),
+          rg: pickText(member, ['rg', 'registroGeral', 'registration', 'matricula']),
+          phone: pickText(member, ['phone', 'telefone', 'celular'])
+        };
+        details.informed = Boolean(details.rank || details.name || details.rg || details.phone);
+        return details;
+      }
+
+      function serviceOrderLabel(serviceOrder) {
+        const selected = pickText(serviceOrder, ['number', 'numero', 'code', 'codigo', 'name', 'nome', 'label', 'id']);
+        if (!selected) {
+          return '';
+        }
+        return /^os\b/i.test(selected) ? selected : 'OS ' + selected;
+      }
+
+      function serviceOrderDetails(serviceOrder) {
+        const start = firstDefined(
+          serviceOrder && serviceOrder.inicioGeral,
+          serviceOrder && serviceOrder.start,
+          serviceOrder && serviceOrder.inicio
+        );
+        const end = firstDefined(
+          serviceOrder && serviceOrder.terminoGeral,
+          serviceOrder && serviceOrder.end,
+          serviceOrder && serviceOrder.termino
+        );
+        const period = start || end
+          ? 'Período previsto: ' + formatServiceOrderMoment(start) + ' a ' + formatServiceOrderMoment(end)
+          : '';
+        return {
+          number: serviceOrderLabel(serviceOrder) || 'Ordem de Serviço não informada',
+          summary: pickText(serviceOrder, ['nomeOS', 'name', 'nome', 'label', 'description', 'descricao']),
+          period: period
+        };
+      }
+
+      function formatServiceOrderMoment(value) {
+        const textValue = safeString(value);
+        if (/^\d{2}:\d{2}$/.test(textValue)) {
+          return textValue;
+        }
+        return formatDateTime(value);
+      }
+
+      function formatDateTime(value) {
+        const date = parseTimestamp(value);
+        if (!date) {
+          return 'Não informado';
+        }
+        return new Intl.DateTimeFormat('pt-BR', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        }).format(date);
+      }
+
+      function formatUpdateTime(value) {
+        return new Intl.DateTimeFormat('pt-BR', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit'
+        }).format(value);
+      }
+
+      function formatDuration(startValue, endValue) {
+        const start = parseTimestamp(startValue);
+        const end = parseTimestamp(endValue);
+        if (!start || !end || end.getTime() < start.getTime()) {
+          return '';
+        }
+        const totalMinutes = Math.floor((end.getTime() - start.getTime()) / 60000);
+        const days = Math.floor(totalMinutes / 1440);
+        const hours = Math.floor((totalMinutes % 1440) / 60);
+        const minutes = totalMinutes % 60;
+        if (days > 0) {
+          return days + 'd ' + String(hours).padStart(2, '0') + 'h ' + String(minutes).padStart(2, '0') + 'min';
+        }
+        if (hours > 0) {
+          return hours + 'h ' + String(minutes).padStart(2, '0') + 'min';
+        }
+        return minutes + 'min';
+      }
+
+      function showAlert(message, type) {
+        const safeType = ['success', 'danger', 'warning', 'info'].indexOf(type) >= 0 ? type : 'info';
+        const icons = {
+          success: 'bi-check-circle-fill',
+          danger: 'bi-exclamation-octagon-fill',
+          warning: 'bi-exclamation-triangle-fill',
+          info: 'bi-info-circle-fill'
+        };
+        window.clearTimeout(state.alertTimeout);
+        elements.alert.className = 'alert activation-history-alert alert-' + safeType;
+        elements.alert.setAttribute('role', safeType === 'danger' ? 'alert' : 'status');
+        elements.alert.setAttribute('aria-live', safeType === 'danger' ? 'assertive' : 'polite');
+        elements.alertIcon.className = 'bi mt-1 ' + icons[safeType];
+        elements.alertMessage.textContent = message;
+        if (safeType === 'success' || safeType === 'info') {
+          state.alertTimeout = window.setTimeout(function() {
+            elements.alert.classList.add('d-none');
+          }, 7000);
+        }
+      }
+
+      function createGrowingDots() {
+        const dots = document.createElement('span');
+        dots.className = 'activation-growing-dots';
+        dots.setAttribute('aria-hidden', 'true');
+        for (let index = 0; index < 3; index += 1) {
+          const dot = document.createElement('span');
+          dot.className = 'spinner-grow spinner-grow-sm';
+          dot.style.animationDelay = String(index * 0.15) + 's';
+          dots.appendChild(dot);
+        }
+        return dots;
+      }
+
+      function beginButtonProcessing(button, label) {
+        if (!button || buttonProcessingState.has(button)) {
+          return false;
+        }
+        const processingContent = document.createElement('span');
+        const processingLabel = document.createElement('span');
+        processingContent.className = 'activation-processing-content';
+        processingLabel.textContent = label;
+        processingContent.append(createGrowingDots(), processingLabel);
+        buttonProcessingState.set(button, {
+          disabled: button.disabled,
+          ariaBusy: button.getAttribute('aria-busy')
+        });
+        button.disabled = true;
+        button.setAttribute('aria-busy', 'true');
+        button.appendChild(processingContent);
+        button.classList.add('activation-action-processing');
+        return true;
+      }
+
+      function endButtonProcessing(button) {
+        const previousState = buttonProcessingState.get(button);
+        if (!button || !previousState) {
+          return;
+        }
+        const processingContent = button.querySelector('.activation-processing-content');
+        if (processingContent) {
+          processingContent.remove();
+        }
+        button.classList.remove('activation-action-processing');
+        button.disabled = previousState.disabled;
+        if (previousState.ariaBusy === null) {
+          button.removeAttribute('aria-busy');
+        } else {
+          button.setAttribute('aria-busy', previousState.ariaBusy);
+        }
+        buttonProcessingState.delete(button);
+      }
+
+      function waitForMinimumFeedback(startedAt, minimumMilliseconds) {
+        const elapsed = Date.now() - startedAt;
+        return new Promise(function(resolve) {
+          window.setTimeout(resolve, Math.max(0, minimumMilliseconds - elapsed));
+        });
+      }
+
+      function createTextStack(primary, secondary) {
+        const container = document.createElement('div');
+        const primaryElement = document.createElement('span');
+        primaryElement.className = 'activation-primary-text';
+        primaryElement.textContent = primary;
+        container.appendChild(primaryElement);
+        if (secondary) {
+          const secondaryElement = document.createElement('span');
+          secondaryElement.className = 'activation-secondary-text';
+          secondaryElement.textContent = secondary;
+          container.appendChild(secondaryElement);
+        }
+        return container;
+      }
+
+      function createEmptyState(titleText, descriptionText, isError) {
+        const row = document.createElement('tr');
+        const cell = document.createElement('td');
+        const content = document.createElement('div');
+        const icon = document.createElement('span');
+        const title = document.createElement('h3');
+        const description = document.createElement('p');
+        const iconElement = document.createElement('i');
+        cell.colSpan = 9;
+        cell.className = 'activation-history-empty';
+        content.className = 'activation-history-empty-content';
+        icon.className = 'activation-history-empty-icon';
+        iconElement.className = 'bi ' + (isError ? 'bi-exclamation-triangle' : 'bi-clock-history');
+        iconElement.setAttribute('aria-hidden', 'true');
+        icon.appendChild(iconElement);
+        title.className = 'activation-history-empty-title';
+        title.textContent = titleText;
+        description.className = 'activation-history-empty-description';
+        description.textContent = descriptionText;
+        content.append(icon, title, description);
+        cell.appendChild(content);
+        row.appendChild(cell);
+        return row;
+      }
+
+      function createActivationRow(activation) {
+        const row = document.createElement('tr');
+        const codeCell = document.createElement('td');
+        const resourceCell = document.createElement('td');
+        const serviceCell = document.createElement('td');
+        const serviceOrderCell = document.createElement('td');
+        const commanderRankCell = document.createElement('td');
+        const commanderNameCell = document.createElement('td');
+        const commanderPhoneCell = document.createElement('td');
+        const endedAtCell = document.createElement('td');
+        const actionsCell = document.createElement('td');
+        const resource = document.createElement('div');
+        const resourceIcon = document.createElement('span');
+        const actions = document.createElement('div');
+        const detailsButton = document.createElement('button');
+        const detailsIcon = document.createElement('i');
+        const vehicle = vehicleDetails(activation.vehicle);
+        const commander = commanderDetails(activation.commander);
+        const order = serviceOrderDetails(activation.serviceOrder);
+        const serviceName = pickText(activation.service, ['name', 'nome', 'label', 'type', 'tipo', 'description', 'descricao']);
+        const duration = formatDuration(activation.startedAt || activation.activatedAt, activation.endedAt);
+
+        row.className = 'activation-history-row';
+        row.tabIndex = 0;
+        row.dataset.activationHistoryRow = activation.id;
+        row.setAttribute('aria-label', 'Abrir detalhes da ativação ' + activation.activationCode);
+        row.setAttribute('aria-haspopup', 'dialog');
+        row.setAttribute('aria-controls', 'activationHistoryDetailsModal');
+
+        codeCell.className = 'activation-code-text';
+        codeCell.textContent = activation.activationCode;
+        codeCell.title = 'Identificador técnico: ' + activation.technicalId;
+
+        resource.className = 'activation-resource';
+        resourceIcon.className = 'activation-resource-icon';
+        resourceIcon.setAttribute('aria-hidden', 'true');
+        resourceIcon.appendChild(document.createElement('i'));
+        resourceIcon.firstChild.className = 'bi bi-car-front-fill';
+        resource.append(resourceIcon, createTextStack(vehicle.primary, vehicle.secondary));
+        resourceCell.appendChild(resource);
+
+        serviceCell.appendChild(createTextStack(serviceName || 'Serviço não informado', ''));
+        serviceOrderCell.appendChild(createTextStack(order.number, order.summary));
+        commanderRankCell.appendChild(createTextStack(commander.rank || 'Não informado', ''));
+        commanderNameCell.appendChild(createTextStack(commander.name || 'Não informado', ''));
+        commanderPhoneCell.className = 'activation-contact-text';
+        commanderPhoneCell.textContent = commander.phone || 'Não informado';
+        endedAtCell.appendChild(createTextStack(formatDateTime(activation.endedAt), duration ? 'Duração: ' + duration : 'Duração não informada'));
+        endedAtCell.classList.add('activation-date-text');
+
+        actions.className = 'table-actions';
+        detailsButton.type = 'button';
+        detailsButton.className = 'btn btn-sm btn-outline-primary';
+        detailsButton.dataset.activationHistoryAction = 'details';
+        detailsButton.dataset.activationId = activation.id;
+        detailsButton.setAttribute('aria-label', 'Ver detalhes da ativação ' + activation.activationCode);
+        detailsIcon.className = 'bi bi-eye me-1';
+        detailsIcon.setAttribute('aria-hidden', 'true');
+        detailsButton.append(detailsIcon, document.createTextNode('Detalhes'));
+        actions.appendChild(detailsButton);
+        actionsCell.appendChild(actions);
+
+        row.append(
+          codeCell,
+          resourceCell,
+          serviceCell,
+          serviceOrderCell,
+          commanderRankCell,
+          commanderNameCell,
+          commanderPhoneCell,
+          endedAtCell,
+          actionsCell
+        );
+        return row;
+      }
+
+      function renderHistory(records, error) {
+        const sortedRecords = records.slice().sort(function(first, second) {
+          const firstDate = parseTimestamp(first.endedAt || first.startedAt || first.activatedAt);
+          const secondDate = parseTimestamp(second.endedAt || second.startedAt || second.activatedAt);
+          return (secondDate ? secondDate.getTime() : 0) - (firstDate ? firstDate.getTime() : 0);
+        });
+        elements.table.setAttribute('aria-busy', 'true');
+        elements.table.classList.toggle('is-empty', sortedRecords.length === 0);
+        elements.tableBody.replaceChildren();
+
+        if (error) {
+          elements.tableBody.appendChild(createEmptyState(
+            'Não foi possível carregar o histórico',
+            'Os dados armazenados estão em um formato inválido. Corrija o armazenamento ou tente novamente.',
+            true
+          ));
+          elements.recordCount.textContent = 'Histórico indisponível';
+        } else if (sortedRecords.length === 0) {
+          elements.tableBody.appendChild(createEmptyState(
+            'Nenhuma ativação encerrada',
+            'Quando um turno for concluído, a ativação aparecerá neste histórico.',
+            false
+          ));
+          elements.recordCount.textContent = 'Nenhuma ativação encerrada encontrada';
+        } else {
+          sortedRecords.forEach(function(activation) {
+            elements.tableBody.appendChild(createActivationRow(activation));
+          });
+          elements.recordCount.textContent = sortedRecords.length === 1
+            ? '1 ativação encerrada'
+            : sortedRecords.length + ' ativações encerradas';
+        }
+
+        elements.visibleCount.textContent = sortedRecords.length === 1
+          ? '1 registro exibido'
+          : sortedRecords.length + ' registros exibidos';
+        elements.table.setAttribute('aria-busy', 'false');
+      }
+
+      function updateTimestamp() {
+        elements.updatedAt.textContent = 'Última atualização: ' + formatUpdateTime(new Date());
+      }
+
+      function createMembersDetails(members) {
+        const fragment = document.createDocumentFragment();
+        const normalizedMembers = Array.isArray(members)
+          ? members.map(memberDetails).filter(function(member) { return member.informed; })
+          : [];
+
+        if (!normalizedMembers.length) {
+          const empty = document.createElement('span');
+          empty.className = 'activation-secondary-text mt-0';
+          const declaredMembers = safeString(
+            typeof members === 'string' || typeof members === 'number'
+              ? members
+              : firstDefined(
+                members && members.count,
+                members && members.total,
+                members && members.length
+              )
+          );
+          if (/^\d+$/.test(declaredMembers) && Number(declaredMembers) > 0) {
+            empty.textContent = declaredMembers + (Number(declaredMembers) === 1
+              ? ' integrante informado; detalhes não disponíveis neste registro.'
+              : ' integrantes informados; detalhes não disponíveis neste registro.');
+          } else {
+            empty.textContent = declaredMembers || 'Nenhum integrante adicional.';
+          }
+          fragment.appendChild(empty);
+          return fragment;
+        }
+
+        normalizedMembers.forEach(function(member) {
+          const item = document.createElement('div');
+          const identity = [member.rank, member.name].filter(Boolean).join(' ') || 'Integrante sem identificação';
+          const details = [];
+          if (member.rg) {
+            details.push('RG ' + member.rg);
+          }
+          if (member.phone) {
+            details.push(member.phone);
+          }
+          item.className = 'activation-member-detail';
+          item.appendChild(createTextStack(identity, details.join(' • ') || 'Dados complementares não informados'));
+          fragment.appendChild(item);
+        });
+        return fragment;
+      }
+
+      function findActivation(activationId) {
+        return state.records.find(function(record) {
+          return String(record.id) === String(activationId);
+        }) || null;
+      }
+
+      function openDetailsModal(activation, trigger) {
+        if (!window.bootstrap || !window.bootstrap.Modal) {
+          showAlert('Não foi possível abrir os detalhes da ativação. Atualize a página e tente novamente.', 'danger');
+          return;
+        }
+        const vehicle = vehicleDetails(activation.vehicle);
+        const commander = commanderDetails(activation.commander);
+        const order = serviceOrderDetails(activation.serviceOrder);
+        const policingType = pickText(activation.policingType, ['name', 'nome', 'label', 'type', 'tipo']);
+        const vehicleRadio = pickText(activation.vehicle, ['radio', 'identificadorRadio', 'radioCode', 'codigoRadio']);
+        const serviceName = pickText(activation.service, ['name', 'nome', 'label', 'type', 'tipo', 'description', 'descricao']);
+        const mission = pickText(activation.mission, ['name', 'nome', 'label', 'description', 'descricao']);
+        const startMoment = activation.startedAt || activation.activatedAt;
+        const duration = formatDuration(startMoment, activation.endedAt);
+
+        state.lastDetailsTrigger = trigger || null;
+        elements.detailsCode.textContent = activation.activationCode;
+        elements.detailsPolicingType.textContent = policingType || 'Não informado';
+        elements.detailsResource.textContent = vehicle.primary + (vehicle.secondary ? ' — ' + vehicle.secondary : '');
+        elements.detailsVehicleRadio.textContent = vehicleRadio || 'Não informado';
+        elements.detailsService.textContent = serviceName || 'Não informado';
+        elements.detailsServiceOrder.textContent = order.number
+          + (order.summary ? ' — ' + order.summary : '')
+          + (order.period ? ' — ' + order.period : '');
+        elements.detailsMission.textContent = mission || order.summary || 'Não informado';
+        elements.detailsCommanderRank.textContent = commander.rank || 'Não informado';
+        elements.detailsCommanderName.textContent = commander.name || 'Não informado';
+        elements.detailsCommanderRg.textContent = commander.rg || 'Não informado';
+        elements.detailsCommanderPhone.textContent = commander.phone || 'Não informado';
+        elements.detailsActivatedAt.textContent = formatDateTime(activation.activatedAt || activation.startedAt);
+        elements.detailsStartedAt.textContent = formatDateTime(startMoment);
+        elements.detailsEndedAt.textContent = formatDateTime(activation.endedAt);
+        elements.detailsDuration.textContent = duration || 'Não informada';
+        elements.detailsMembers.replaceChildren(createMembersDetails(activation.members));
+        window.bootstrap.Modal.getOrCreateInstance(elements.detailsModal).show();
+      }
+
+      async function initializeHistory() {
+        const startedAt = Date.now();
+        const result = await readActivations();
+        await waitForMinimumFeedback(startedAt, 320);
+        elements.loading.hidden = true;
+        elements.content.hidden = false;
+        state.records = result.records;
+        renderHistory(state.records, result.error);
+        updateTimestamp();
+
+        if (result.error) {
+          showAlert('Não foi possível carregar as ativações salvas. Os registros operacionais originais foram preservados.', 'danger');
+        } else if (result.skipped > 0) {
+          showAlert('O histórico foi carregado, mas alguns itens incompatíveis não puderam ser processados.', 'warning');
+        } else if (result.migrated) {
+          showAlert('Histórico carregado e códigos das ativações organizados em sequência numérica.', 'success');
+        }
+      }
+
+      async function refreshHistory() {
+        if (state.refreshing) {
+          return;
+        }
+        state.refreshing = true;
+        const startedAt = Date.now();
+        beginButtonProcessing(elements.refreshButton, 'Atualizando...');
+        elements.table.setAttribute('aria-busy', 'true');
+        const result = await readActivations();
+        await waitForMinimumFeedback(startedAt, 420);
+
+        if (result.error) {
+          elements.table.setAttribute('aria-busy', 'false');
+          endButtonProcessing(elements.refreshButton);
+          state.refreshing = false;
+          showAlert('Não foi possível atualizar o histórico. Os registros exibidos anteriormente foram mantidos.', 'danger');
+          return;
+        }
+
+        state.records = result.records;
+        renderHistory(state.records, null);
+        updateTimestamp();
+        endButtonProcessing(elements.refreshButton);
+        state.refreshing = false;
+
+        if (result.skipped > 0) {
+          showAlert('Histórico atualizado, mas alguns itens incompatíveis não puderam ser processados.', 'warning');
+        } else if (result.migrated) {
+          showAlert('Histórico atualizado e códigos organizados em sequência numérica.', 'success');
+        } else {
+          showAlert('Histórico de ativações atualizado com sucesso.', 'success');
+        }
+      }
+
+      elements.refreshButton.addEventListener('click', refreshHistory);
+
+      elements.tableBody.addEventListener('click', function(event) {
+        if (state.refreshing) {
+          return;
+        }
+        const actionButton = event.target.closest('[data-activation-history-action]');
+        const activationRow = event.target.closest('[data-activation-history-row]');
+        const activationId = actionButton
+          ? actionButton.dataset.activationId
+          : (activationRow ? activationRow.dataset.activationHistoryRow : '');
+        if (!activationId) {
+          return;
+        }
+        const activation = findActivation(activationId);
+        if (!activation) {
+          showAlert('A ativação selecionada não está mais disponível. Atualize o histórico e tente novamente.', 'warning');
+          return;
+        }
+        openDetailsModal(activation, actionButton || activationRow);
+      });
+
+      elements.tableBody.addEventListener('keydown', function(event) {
+        const activationRow = event.target.closest('[data-activation-history-row]');
+        if (!activationRow || event.target !== activationRow || state.refreshing) {
+          return;
+        }
+        if (event.key !== 'Enter' && event.key !== ' ') {
+          return;
+        }
+        event.preventDefault();
+        const activation = findActivation(activationRow.dataset.activationHistoryRow);
+        if (activation) {
+          openDetailsModal(activation, activationRow);
+        }
+      });
+
+      elements.detailsModal.addEventListener('hidden.bs.modal', function() {
+        const trigger = state.lastDetailsTrigger;
+        state.lastDetailsTrigger = null;
+        window.requestAnimationFrame(function() {
+          if (trigger && trigger.isConnected && !trigger.disabled) {
+            trigger.focus();
+          }
+        });
+      });
+
+      initializeHistory();
+    });
+  </script>
+</body>
+
+</html>

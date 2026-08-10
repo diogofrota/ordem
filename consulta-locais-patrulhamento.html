@@ -289,7 +289,7 @@
             <a class="nav-link" href="#" aria-expanded="true">
               <span class="nav-icon"><i class="ph-light ph-magnifying-glass"></i></span>
               <span class="nav-text">Consultas</span>
-              <span class="nav-badge">5</span>
+              <span class="nav-badge">6</span>
               <span class="nav-arrow"><i class="bi bi-chevron-right"></i></span>
             </a>
             <ul class="nav-submenu show">
@@ -298,6 +298,7 @@
               <li><a class="nav-link active" href="consulta-locais-patrulhamento.html" aria-current="page"><span class="nav-dot"></span>Locais de Patrulhamento</a></li>
               <li><a class="nav-link" href="consulta-tipos-servico.html"><span class="nav-dot"></span>Tipos de Serviço</a></li>
               <li><a class="nav-link" href="consulta-operacoes-especiais.html"><span class="nav-dot"></span>Operações Especiais</a></li>
+              <li><a class="nav-link" href="users.html"><span class="nav-dot"></span>Ordens de Serviço</a></li>
             </ul>
           </li>
 
@@ -305,11 +306,13 @@
             <a class="nav-link" href="#" aria-expanded="false">
               <span class="nav-icon"><i class="ph-light ph-users-three"></i></span>
               <span class="nav-text">Ordens de Serviço</span>
-              <span class="nav-badge">2</span>
+              <span class="nav-badge">1</span>
               <span class="nav-arrow"><i class="bi bi-chevron-right"></i></span>
             </a>
             <ul class="nav-submenu">
+              <!-- Link anterior preservado; a consulta agora pertence ao grupo Consultas.
               <li><a class="nav-link" href="users.html"><span class="nav-dot"></span>Consultar Ordens de Serviço</a></li>
+              -->
               <li><a class="nav-link" href="users-view.html"><span class="nav-dot"></span>Criar Ordem de Serviço</a></li>
             </ul>
           </li>
@@ -318,11 +321,12 @@
             <a class="nav-link" href="#" aria-expanded="false">
               <span class="nav-icon"><i class="ph-light ph-shield-check"></i></span>
               <span class="nav-text">Operação</span>
-              <span class="nav-badge">2</span>
+              <span class="nav-badge">3</span>
               <span class="nav-arrow"><i class="bi bi-chevron-right"></i></span>
             </a>
             <ul class="nav-submenu">
-              <li><a class="nav-link" href="auth-login.html"><span class="nav-dot"></span>Ativação</a></li>
+              <li><a class="nav-link" href="ativacao.html"><span class="nav-dot"></span>Ativar Guarnição</a></li>
+              <li><a class="nav-link" href="painel-ativacoes.html"><span class="nav-dot"></span>Painel de Ativações</a></li>
               <li><a class="nav-link" href="auth-register.html"><span class="nav-dot"></span>Mapa Tático</a></li>
             </ul>
           </li>
@@ -599,6 +603,7 @@
           return parsedAreas.reduce(function(validAreas, area, index) {
             const code = Number(area && area.code);
             const name = String((area && (area.name || area.nickname)) || '').trim();
+            const description = String((area && (area.description || area.descricao)) || '').trim();
             const coordinates = normalizeCoordinates(area || {});
 
             if (!Number.isInteger(code) || code < 1 || !name || !coordinates) {
@@ -609,6 +614,7 @@
               id: String(area.id || ('patrol-area-stored-' + index)),
               code: code,
               name: name,
+              description: description,
               coordinates: coordinates,
               active: area.active !== false
             });
@@ -759,10 +765,15 @@
           const actionsCell = document.createElement('td');
           const actions = document.createElement('div');
           const mapButton = createActionButton('map', area, 'Mapa', 'bi-map', 'btn-primary d-inline-flex');
-          const editButton = createActionButton('edit', area, 'Editar', 'bi-pencil', 'btn-light d-none d-md-inline-flex');
+          // Ação de edição anterior preservada: locais cadastrados não podem mais ser alterados.
+          // const editButton = createActionButton('edit', area, 'Editar', 'bi-pencil', 'btn-light d-none d-md-inline-flex');
+          // Ação de status anterior preservada:
+          // const toggleButton = area.active
+          //   ? createActionButton('toggle-status', area, 'Inativar', 'bi-slash-circle', 'btn-outline-danger d-none d-md-inline-flex')
+          //   : createActionButton('toggle-status', area, 'Ativar', 'bi-check-circle', 'btn-outline-success d-none d-md-inline-flex');
           const toggleButton = area.active
-            ? createActionButton('toggle-status', area, 'Inativar', 'bi-slash-circle', 'btn-outline-danger d-none d-md-inline-flex')
-            : createActionButton('toggle-status', area, 'Ativar', 'bi-check-circle', 'btn-outline-success d-none d-md-inline-flex');
+            ? createActionButton('toggle-status', area, 'Inativar', 'bi-slash-circle', 'btn-outline-danger d-inline-flex')
+            : createActionButton('toggle-status', area, 'Reativar', 'bi-arrow-counterclockwise', 'btn-outline-success d-inline-flex');
 
           createTextCell(row, String(area.code), 'patrol-code d-none d-md-table-cell');
           createTextCell(row, area.name, 'fw-semibold text-uppercase');
@@ -779,7 +790,8 @@
           row.appendChild(statusCell);
 
           actions.className = 'table-actions';
-          actions.append(mapButton, editButton, toggleButton);
+          // Composição anterior preservada: actions.append(mapButton, editButton, toggleButton);
+          actions.append(mapButton, toggleButton);
           actionsCell.appendChild(actions);
           row.appendChild(actionsCell);
           tableBody.appendChild(row);
@@ -805,6 +817,7 @@
           return;
         }
 
+        // O código de criação permanece imutável; somente o status do mesmo registro é alternado.
         area.active = !area.active;
         const isStored = savePatrolAreas();
         renderPatrolAreas();
@@ -815,15 +828,18 @@
         }
 
         showPageAlert(
-          'Local ' + area.name + (area.active ? ' ativado' : ' inativado') + ' com sucesso.' +
+          // Mensagem anterior preservada:
+          // 'Local ' + area.name + (area.active ? ' ativado' : ' inativado') + ' com sucesso.' +
+          'Local ' + area.name + (area.active ? ' reativado' : ' inativado') + ' com sucesso.' +
           (isStored ? '' : ' A alteração não pôde ser gravada neste navegador.'),
           isStored ? 'success' : 'warning'
         );
       }
 
-      function editArea(areaId) {
-        window.location.href = 'dashboard-crm.html?edit=' + encodeURIComponent(areaId);
-      }
+      // Fluxo anterior de edição preservado. Locais cadastrados agora são imutáveis.
+      // function editArea(areaId) {
+      //   window.location.href = 'dashboard-crm.html?edit=' + encodeURIComponent(areaId);
+      // }
 
       function areaCenter(area) {
         const totals = area.coordinates.reduce(function(result, coordinate) {
@@ -992,8 +1008,9 @@
         const areaId = actionButton.dataset.patrolAreaId;
         if (action === 'map') {
           openAreaMap(areaId);
-        } else if (action === 'edit') {
-          editArea(areaId);
+        // Tratamento anterior preservado: a consulta não oferece mais edição.
+        // } else if (action === 'edit') {
+        //   editArea(areaId);
         } else if (action === 'toggle-status') {
           toggleAreaStatus(areaId);
         }

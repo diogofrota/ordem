@@ -1,0 +1,3596 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel de Ativações - Ordena</title>
+  <meta name="description" content="Acompanhamento das guarnições ativadas no sistema Ordena">
+  <meta name="keywords" content="ordena, operações, ativações, guarnições, turnos">
+
+  <link href="assets/img/favicon.png" rel="icon">
+  <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&amp;family=Nunito+Sans:wght@400;500;600;700;800&amp;family=Poppins:wght@500;600;700&amp;display=swap" rel="stylesheet">
+
+  <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+  <link href="assets/vendor/phosphor-icons/phosphor-icons.css" rel="stylesheet">
+  <link href="assets/css/main.css" rel="stylesheet">
+
+  <style>
+    .activation-page-intro {
+      max-width: 720px;
+      margin: 0;
+      color: var(--muted-color);
+      font-size: 0.9375rem;
+    }
+
+    .activation-heading-actions {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: var(--spacing-sm);
+    }
+
+    .activation-page-alert {
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .activation-page-loading {
+      min-height: 230px;
+      margin-bottom: var(--spacing-xl);
+      border-color: var(--border-color-light);
+    }
+
+    .activation-page-loading .card-body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: var(--spacing-xs);
+      text-align: center;
+    }
+
+    .activation-page-loading strong {
+      color: var(--heading-color);
+      font-size: 0.9375rem;
+    }
+
+    .activation-page-loading small {
+      color: var(--muted-color);
+    }
+
+    .activation-growing-dots {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      color: var(--accent-color);
+    }
+
+    .activation-growing-dots .spinner-grow {
+      width: 0.625rem;
+      height: 0.625rem;
+      color: currentColor;
+    }
+
+    .activation-kpis {
+      margin-bottom: var(--spacing-xl);
+    }
+
+    .activation-kpi {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .activation-kpi::after {
+      position: absolute;
+      right: -24px;
+      bottom: -32px;
+      width: 92px;
+      height: 92px;
+      border-radius: 50%;
+      background: color-mix(in srgb, var(--accent-color), transparent 96%);
+      content: "";
+      pointer-events: none;
+    }
+
+    .activation-kpi .widget-stat-header {
+      position: relative;
+      z-index: 1;
+      margin-bottom: 0;
+    }
+
+    .activation-kpi .widget-stat-label {
+      font-size: 0.8125rem;
+      font-weight: 600;
+    }
+
+    .activation-kpi-note {
+      position: relative;
+      z-index: 1;
+      display: block;
+      margin-top: var(--spacing-sm);
+      color: var(--muted-color);
+      font-size: 0.75rem;
+    }
+
+    .activation-list-card .card-header {
+      align-items: flex-start;
+    }
+
+    .activation-card-heading {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--spacing-sm);
+    }
+
+    .activation-card-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      flex: 0 0 38px;
+      border-radius: var(--radius-md);
+      color: var(--accent-color);
+      background: color-mix(in srgb, var(--accent-color), transparent 90%);
+      font-size: 1.125rem;
+    }
+
+    .activation-list-tools {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      justify-content: flex-end;
+      gap: var(--spacing-sm);
+    }
+
+    .activation-filter .btn,
+    .activation-refresh-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .activation-filter .badge {
+      min-width: 22px;
+    }
+
+    .activation-refresh-group {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+    }
+
+    .activation-updated-at {
+      color: var(--muted-color);
+      font-size: 0.75rem;
+      white-space: nowrap;
+    }
+
+    .activation-table-region {
+      outline: none;
+    }
+
+    .activation-table-region:focus-visible {
+      outline: 2px solid color-mix(in srgb, var(--accent-color), transparent 45%);
+      outline-offset: -2px;
+    }
+
+    /* Largura anterior preservada; a tabela passou a exibir cada campo da ativação em uma coluna própria.
+    .activation-list-card .table {
+      min-width: 1120px;
+    }
+    */
+    /* Largura de 14 colunas preservada por segurança.
+    .activation-list-card .table {
+      min-width: 2400px;
+    }
+    */
+    .activation-list-card .table {
+      /* Larguras anteriores preservadas: min-width: 1450px; min-width: 1280px; */
+      min-width: 1580px;
+    }
+
+    .activation-list-card .table th {
+      white-space: nowrap;
+    }
+
+    .activation-list-card .table th:last-child,
+    .activation-list-card .table td:last-child {
+      text-align: right;
+    }
+
+    .activation-list-card .table-actions {
+      justify-content: flex-end;
+      flex-wrap: nowrap;
+    }
+
+    .activation-row {
+      cursor: pointer;
+    }
+
+    .activation-row:focus-visible {
+      outline: 2px solid color-mix(in srgb, var(--accent-color), transparent 45%);
+      outline-offset: -2px;
+    }
+
+    .activation-primary-text {
+      color: var(--heading-color);
+      font-size: 0.875rem;
+      font-weight: 600;
+    }
+
+    .activation-secondary-text {
+      display: block;
+      margin-top: 2px;
+      color: var(--muted-color);
+      font-size: 0.75rem;
+      line-height: 1.4;
+    }
+
+    .activation-date-text {
+      color: var(--heading-color);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .activation-code-text,
+    .activation-identity-text {
+      color: var(--heading-color);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .activation-contact-text {
+      color: var(--heading-color);
+      font-size: 0.8125rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .activation-resource {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+      min-width: 150px;
+    }
+
+    .activation-resource-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      flex: 0 0 34px;
+      border-radius: var(--radius-md);
+      color: var(--accent-color);
+      background: color-mix(in srgb, var(--accent-color), transparent 91%);
+    }
+
+    .activation-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 6px;
+      padding: 3px 8px;
+      border-radius: var(--radius-full);
+      font-size: 0.6875rem;
+      font-weight: 700;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .activation-status.is-active {
+      color: color-mix(in srgb, var(--success-color), black 35%);
+      background: var(--success-color-light);
+    }
+
+    .activation-status.is-closed {
+      color: color-mix(in srgb, var(--muted-color), black 18%);
+      background: var(--border-color-light);
+    }
+
+    .activation-mission {
+      max-width: 240px;
+      color: var(--default-color);
+      font-size: 0.8125rem;
+      line-height: 1.45;
+      white-space: normal;
+    }
+
+    .activation-members-summary {
+      display: flex;
+      min-width: 220px;
+      flex-direction: column;
+    }
+
+    .activation-member-summary {
+      padding: 5px 0;
+    }
+
+    .activation-member-summary + .activation-member-summary {
+      border-top: 1px solid var(--border-color-light);
+    }
+
+    .activation-turn-state {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      color: color-mix(in srgb, var(--success-color), black 35%);
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .activation-turn-state.is-closed {
+      color: color-mix(in srgb, var(--muted-color), black 18%);
+    }
+
+    [data-theme=dark] .activation-status.is-active,
+    [data-theme=dark] .activation-turn-state {
+      color: var(--success-color);
+    }
+
+    [data-theme=dark] .activation-status.is-closed,
+    [data-theme=dark] .activation-turn-state.is-closed {
+      color: var(--muted-color);
+    }
+
+    .activation-empty-state {
+      padding: 3.5rem 1.5rem !important;
+      text-align: center !important;
+      color: var(--muted-color);
+    }
+
+    .activation-empty-content {
+      display: flex;
+      max-width: 440px;
+      margin: 0 auto;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .activation-empty-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 58px;
+      height: 58px;
+      margin-bottom: var(--spacing-md);
+      border-radius: 50%;
+      color: var(--accent-color);
+      background: color-mix(in srgb, var(--accent-color), transparent 92%);
+      font-size: 1.5rem;
+    }
+
+    .activation-empty-title {
+      margin: 0 0 var(--spacing-xs);
+      color: var(--heading-color);
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    .activation-empty-description {
+      margin: 0 0 var(--spacing-md);
+      font-size: 0.875rem;
+      line-height: 1.55;
+    }
+
+    .activation-table-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--spacing-sm);
+      padding: var(--spacing-sm) var(--spacing-lg);
+      border-top: 1px solid var(--border-color-light);
+      color: var(--muted-color);
+      font-size: 0.75rem;
+    }
+
+    .activation-modal-note {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--spacing-sm);
+      padding: var(--spacing-md);
+      border: 1px solid color-mix(in srgb, var(--warning-color), transparent 65%);
+      border-radius: var(--radius-md);
+      color: color-mix(in srgb, var(--warning-color), #000 40%);
+      background: var(--warning-color-light);
+      font-size: 0.875rem;
+    }
+
+    .activation-modal-note.is-closed {
+      border-color: var(--border-color-light);
+      color: var(--muted-color);
+      background: var(--background-color);
+    }
+
+    [data-theme=dark] .activation-modal-note {
+      color: var(--warning-color);
+    }
+
+    .activation-modal-summary {
+      margin: 0;
+      padding: var(--spacing-md);
+      border: 1px solid var(--border-color-light);
+      border-radius: var(--radius-md);
+      background: var(--background-color);
+    }
+
+    .activation-modal-summary > div {
+      display: grid;
+      grid-template-columns: minmax(90px, 0.45fr) 1fr;
+      gap: var(--spacing-sm);
+      padding: 6px 0;
+    }
+
+    .activation-modal-summary > div + div {
+      border-top: 1px solid var(--border-color-light);
+    }
+
+    .activation-modal-summary dt,
+    .activation-modal-summary dd {
+      margin: 0;
+      font-size: 0.8125rem;
+    }
+
+    .activation-modal-summary dt {
+      color: var(--muted-color);
+      font-weight: 600;
+    }
+
+    .activation-modal-summary dd {
+      color: var(--heading-color);
+      font-weight: 600;
+    }
+
+    .activation-details-hero {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--spacing-sm);
+      margin-bottom: var(--spacing-md);
+      padding: var(--spacing-md);
+      border: 1px solid var(--border-color-light);
+      border-radius: var(--radius-md);
+      background: var(--background-color);
+    }
+
+    .activation-details-code {
+      color: var(--heading-color);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.9375rem;
+      font-weight: 700;
+    }
+
+    .activation-details-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--spacing-md);
+    }
+
+    .activation-details-section {
+      min-width: 0;
+    }
+
+    .activation-details-section.is-wide {
+      grid-column: 1 / -1;
+    }
+
+    .activation-details-title {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin: 0 0 var(--spacing-sm);
+      color: var(--heading-color);
+      font-size: 0.875rem;
+      font-weight: 700;
+    }
+
+    .activation-details-members {
+      max-height: 220px;
+      overflow-y: auto;
+      padding: var(--spacing-sm) var(--spacing-md);
+      border: 1px solid var(--border-color-light);
+      border-radius: var(--radius-md);
+      background: var(--background-color);
+    }
+
+    .activation-print-sheet {
+      display: none;
+    }
+
+    .btn.activation-action-processing {
+      position: relative;
+      color: transparent !important;
+      pointer-events: none;
+    }
+
+    .btn.activation-action-processing:disabled {
+      opacity: 1;
+    }
+
+    .btn.activation-action-processing > *:not(.activation-processing-content) {
+      visibility: hidden;
+    }
+
+    .btn.activation-action-processing .activation-processing-content {
+      position: absolute;
+      inset: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: inherit;
+      color: var(--bs-btn-color) !important;
+      visibility: visible;
+      white-space: nowrap;
+    }
+
+    .btn.activation-action-processing .activation-growing-dots {
+      color: currentColor;
+      gap: 4px;
+    }
+
+    .btn.activation-action-processing .activation-growing-dots .spinner-grow {
+      width: 0.45rem;
+      height: 0.45rem;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .activation-growing-dots .spinner-grow {
+        opacity: 1;
+        transform: scale(0.75);
+        animation: none !important;
+      }
+    }
+
+    @media (max-width: 767px) {
+      .activation-page-intro {
+        font-size: 0.875rem;
+      }
+
+      .activation-heading-actions,
+      .activation-heading-actions .btn,
+      .activation-list-tools,
+      .activation-filter,
+      .activation-refresh-group,
+      .activation-refresh-button {
+        width: 100%;
+      }
+
+      .activation-heading-actions,
+      .activation-refresh-group {
+        align-items: flex-start;
+      }
+
+      .activation-list-card .card-header {
+        flex-direction: column;
+        gap: var(--spacing-md);
+      }
+
+      .activation-list-card .table.is-empty {
+        min-width: 100%;
+        table-layout: fixed;
+      }
+
+      .activation-list-card .table.is-empty thead {
+        display: none;
+      }
+
+      .activation-filter .btn {
+        flex: 1 1 0;
+      }
+
+      .activation-updated-at {
+        white-space: normal;
+      }
+
+      .activation-table-footer {
+        flex-direction: column;
+        align-items: flex-start;
+        padding-right: var(--spacing-md);
+        padding-left: var(--spacing-md);
+      }
+
+      .activation-modal-summary > div {
+        grid-template-columns: 1fr;
+        gap: 2px;
+      }
+
+      .activation-details-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .activation-details-section.is-wide {
+        grid-column: auto;
+      }
+    }
+
+    @media print {
+      @page {
+        size: A4 portrait;
+        margin: 12mm;
+      }
+
+      body > :not(.activation-print-sheet) {
+        display: none !important;
+      }
+
+      .activation-print-sheet[aria-hidden="false"] {
+        display: block !important;
+        color: #111827;
+        font-family: Arial, sans-serif;
+        font-size: 10px;
+        line-height: 1.4;
+      }
+
+      .activation-print-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 20px;
+        padding-bottom: 12px;
+        border-bottom: 2px solid #1d4ed8;
+      }
+
+      .activation-print-brand {
+        color: #1e3a8a;
+        font-size: 20px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+      }
+
+      .activation-print-header-meta {
+        text-align: right;
+      }
+
+      .activation-print-header-meta strong,
+      .activation-print-header-meta span {
+        display: block;
+      }
+
+      .activation-print-header-meta strong {
+        color: #1e3a8a;
+        font-size: 12px;
+      }
+
+      .activation-print-header-meta span {
+        margin-top: 2px;
+        color: #64748b;
+        font-size: 9px;
+      }
+
+      .activation-print-title {
+        margin: 18px 0 14px;
+        color: #111827;
+        font-size: 18px;
+        text-transform: uppercase;
+      }
+
+      .activation-print-section {
+        margin-top: 16px;
+        break-inside: avoid;
+      }
+
+      .activation-print-section.is-breakable {
+        break-inside: auto;
+      }
+
+      .activation-print-section-title {
+        margin: 0 0 7px;
+        padding-bottom: 5px;
+        border-bottom: 1px solid #cbd5e1;
+        color: #1e3a8a;
+        font-size: 12px;
+        text-transform: uppercase;
+      }
+
+      .activation-print-meta {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px 18px;
+        padding: 11px;
+        border: 1px solid #e2e8f0;
+        background: #f8fafc;
+      }
+
+      .activation-print-meta span,
+      .activation-print-meta strong {
+        display: block;
+      }
+
+      .activation-print-meta span {
+        color: #64748b;
+        font-size: 8px;
+        text-transform: uppercase;
+      }
+
+      .activation-print-meta strong {
+        margin-top: 2px;
+        overflow-wrap: anywhere;
+        font-size: 10px;
+      }
+
+      .activation-print-prescriptions {
+        min-height: 34px;
+        margin: 0;
+        padding: 10px;
+        border: 1px solid #cbd5e1;
+        white-space: pre-wrap;
+      }
+
+      .activation-print-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 9px;
+      }
+
+      .activation-print-table thead {
+        display: table-header-group;
+      }
+
+      .activation-print-table tr {
+        break-inside: avoid;
+      }
+
+      .activation-print-table th,
+      .activation-print-table td {
+        padding: 7px;
+        border: 1px solid #cbd5e1;
+        text-align: left;
+        vertical-align: top;
+        overflow-wrap: anywhere;
+      }
+
+      .activation-print-table th {
+        color: #1e3a8a;
+        background: #eef3ff;
+        font-size: 8px;
+        text-transform: uppercase;
+      }
+
+      .activation-print-identifiers {
+        color: #475569;
+        font-family: "Courier New", monospace;
+      }
+
+      .activation-print-footer {
+        margin-top: 18px;
+        padding-top: 8px;
+        border-top: 1px solid #e2e8f0;
+        color: #64748b;
+        font-size: 8px;
+        text-align: right;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="header">
+    <div class="header-left">
+      <button class="sidebar-toggle" type="button" title="Alternar menu lateral" aria-label="Alternar menu lateral">
+        <span class="menu-lines" aria-hidden="true"><span></span><span></span><span></span></span>
+      </button>
+
+      <a href="index.html" class="header-brand" aria-label="Página inicial do Ordena">
+        <span class="header-logo"><img src="assets/img/logo.webp" alt="Ordena"></span>
+        <span class="header-context"><strong class="header-context-title">Ordena</strong></span>
+      </a>
+    </div>
+  </header>
+
+  <aside class="sidebar">
+    <div class="sidebar-shell">
+      <button class="sidebar-close" type="button" aria-label="Fechar menu lateral">
+        <i class="bi bi-x-lg" aria-hidden="true"></i>
+      </button>
+
+      <nav class="sidebar-nav" aria-label="Navegação principal">
+        <ul class="nav-menu">
+          <li class="nav-item">
+            <a class="nav-link" href="index.html">
+              <span class="nav-icon"><i class="ph-light ph-squares-four" aria-hidden="true"></i></span>
+              <span class="nav-text">Painel Operacional</span>
+              <span class="nav-meta">Home</span>
+            </a>
+          </li>
+
+          <li class="nav-item has-submenu">
+            <a class="nav-link" href="#" aria-expanded="false">
+              <span class="nav-icon"><i class="ph-light ph-gauge" aria-hidden="true"></i></span>
+              <span class="nav-text">Cadastro</span>
+              <span class="nav-badge">5</span>
+              <span class="nav-arrow"><i class="bi bi-chevron-right" aria-hidden="true"></i></span>
+            </a>
+            <ul class="nav-submenu">
+              <li><a class="nav-link" href="dashboard-sales.html"><span class="nav-dot"></span>Viaturas</a></li>
+              <li><a class="nav-link" href="dashboard-analytics.html"><span class="nav-dot"></span>Pontos de Baseamento</a></li>
+              <li><a class="nav-link" href="dashboard-crm.html"><span class="nav-dot"></span>Locais de Patrulhamento</a></li>
+              <li><a class="nav-link" href="dashboard-marketing.html"><span class="nav-dot"></span>Tipos de Serviço</a></li>
+              <li><a class="nav-link" href="dashboard-projects.html"><span class="nav-dot"></span>Operações Especiais</a></li>
+            </ul>
+          </li>
+
+          <li class="nav-item has-submenu">
+            <a class="nav-link" href="#" aria-expanded="false">
+              <span class="nav-icon"><i class="ph-light ph-magnifying-glass" aria-hidden="true"></i></span>
+              <span class="nav-text">Consultas</span>
+              <!-- Contagem anterior preservada: <span class="nav-badge">6</span> -->
+              <span class="nav-badge">7</span>
+              <span class="nav-arrow"><i class="bi bi-chevron-right" aria-hidden="true"></i></span>
+            </a>
+            <ul class="nav-submenu">
+              <li><a class="nav-link" href="consulta-viaturas.html"><span class="nav-dot"></span>Viaturas</a></li>
+              <li><a class="nav-link" href="consulta-pontos-baseamento.html"><span class="nav-dot"></span>Pontos de Baseamento</a></li>
+              <li><a class="nav-link" href="consulta-locais-patrulhamento.html"><span class="nav-dot"></span>Locais de Patrulhamento</a></li>
+              <li><a class="nav-link" href="consulta-tipos-servico.html"><span class="nav-dot"></span>Tipos de Serviço</a></li>
+              <li><a class="nav-link" href="consulta-operacoes-especiais.html"><span class="nav-dot"></span>Operações Especiais</a></li>
+              <li><a class="nav-link" href="historico-ativacoes.html"><span class="nav-dot"></span>Histórico de Ativações</a></li>
+              <li><a class="nav-link" href="users.html"><span class="nav-dot"></span>Ordens de Serviço</a></li>
+            </ul>
+          </li>
+
+          <li class="nav-item has-submenu">
+            <a class="nav-link" href="#" aria-expanded="false">
+              <span class="nav-icon"><i class="ph-light ph-users-three" aria-hidden="true"></i></span>
+              <span class="nav-text">Ordens de Serviço</span>
+              <span class="nav-badge">1</span>
+              <span class="nav-arrow"><i class="bi bi-chevron-right" aria-hidden="true"></i></span>
+            </a>
+            <ul class="nav-submenu">
+              <!-- Link anterior preservado; a consulta agora pertence ao grupo Consultas.
+              <li><a class="nav-link" href="users.html"><span class="nav-dot"></span>Consultar Ordens de Serviço</a></li>
+              -->
+              <li><a class="nav-link" href="users-view.html"><span class="nav-dot"></span>Criar Ordem de Serviço</a></li>
+            </ul>
+          </li>
+
+          <li class="nav-item has-submenu open">
+            <a class="nav-link" href="#" aria-expanded="true">
+              <span class="nav-icon"><i class="ph-light ph-shield-check" aria-hidden="true"></i></span>
+              <span class="nav-text">Operação</span>
+              <span class="nav-badge">3</span>
+              <span class="nav-arrow"><i class="bi bi-chevron-right" aria-hidden="true"></i></span>
+            </a>
+            <ul class="nav-submenu show">
+              <li><a class="nav-link" href="ativacao.html"><span class="nav-dot"></span>Ativar Guarnição</a></li>
+              <li><a class="nav-link active" href="painel-ativacoes.html" aria-current="page"><span class="nav-dot"></span>Painel de Ativações</a></li>
+              <li><a class="nav-link" href="auth-register.html"><span class="nav-dot"></span>Mapa Tático</a></li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </aside>
+
+  <div class="sidebar-overlay"></div>
+
+  <main class="main">
+    <div class="main-content page-activation-dashboard">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Painel de Ativações</h1>
+          <p class="activation-page-intro">Acompanhe as guarnições em serviço, os recursos empenhados e o andamento dos turnos operacionais.</p>
+        </div>
+        <div class="activation-heading-actions">
+          <!-- Botão superior de nova ativação preservado, porém ocultado conforme solicitado.
+          <a href="ativacao.html" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>
+            Nova ativação
+          </a>
+          -->
+          <nav class="breadcrumb" aria-label="Navegação estrutural">
+            <a href="index.html" class="breadcrumb-item">Painel Operacional</a>
+            <span class="breadcrumb-item">Operação</span>
+            <span class="breadcrumb-item active" aria-current="page">Painel de Ativações</span>
+          </nav>
+        </div>
+      </div>
+
+      <div id="activationPageAlert" class="alert activation-page-alert d-none" role="status" aria-live="polite" aria-atomic="true">
+        <div class="d-flex align-items-start gap-2">
+          <i id="activationPageAlertIcon" class="bi mt-1" aria-hidden="true"></i>
+          <span id="activationPageAlertMessage"></span>
+        </div>
+      </div>
+
+      <div class="card activation-page-loading" id="activationPageLoading" role="status" aria-live="polite" aria-atomic="true">
+        <div class="card-body">
+          <div class="activation-growing-dots mb-2" aria-hidden="true">
+            <span class="spinner-grow spinner-grow-sm" style="animation-delay: 0s;"></span>
+            <span class="spinner-grow spinner-grow-sm" style="animation-delay: 0.15s;"></span>
+            <span class="spinner-grow spinner-grow-sm" style="animation-delay: 0.3s;"></span>
+          </div>
+          <strong>Carregando painel de ativações...</strong>
+          <small>Consolidando guarnições, viaturas e turnos operacionais.</small>
+        </div>
+      </div>
+
+      <noscript>
+        <style>#activationPageLoading { display: none !important; }</style>
+        <div class="alert alert-danger" role="alert">
+          <i class="bi bi-exclamation-triangle-fill me-1" aria-hidden="true"></i>
+          Não foi possível carregar o painel. Ative o JavaScript e tente novamente.
+        </div>
+      </noscript>
+
+      <div id="activationDashboardContent" hidden>
+        <section aria-labelledby="activationSummaryTitle">
+          <h2 class="visually-hidden" id="activationSummaryTitle">Resumo das ativações</h2>
+          <div class="dashboard-grid dashboard-grid-4 activation-kpis">
+            <article class="card widget-stat activation-kpi" aria-label="Ativações em andamento">
+              <div class="widget-stat-header">
+                <div>
+                  <div class="widget-stat-value" id="activeNowKpi">0</div>
+                  <div class="widget-stat-label">Ativas agora</div>
+                </div>
+                <div class="widget-stat-icon success" aria-hidden="true">
+                  <i class="bi bi-broadcast"></i>
+                </div>
+              </div>
+              <span class="activation-kpi-note">Guarnições com turno em andamento</span>
+            </article>
+
+            <article class="card widget-stat activation-kpi" aria-label="Efetivo em serviço">
+              <div class="widget-stat-header">
+                <div>
+                  <div class="widget-stat-value" id="onDutyPersonnelKpi">0</div>
+                  <div class="widget-stat-label">Efetivo em serviço</div>
+                </div>
+                <div class="widget-stat-icon info" aria-hidden="true">
+                  <i class="bi bi-people-fill"></i>
+                </div>
+              </div>
+              <span class="activation-kpi-note">Comandantes e integrantes informados</span>
+            </article>
+
+            <article class="card widget-stat activation-kpi" aria-label="Viaturas empregadas">
+              <div class="widget-stat-header">
+                <div>
+                  <div class="widget-stat-value" id="deployedVehiclesKpi">0</div>
+                  <div class="widget-stat-label">Viaturas empregadas</div>
+                </div>
+                <div class="widget-stat-icon primary" aria-hidden="true">
+                  <i class="bi bi-car-front-fill"></i>
+                </div>
+              </div>
+              <span class="activation-kpi-note">Recursos vinculados às ativações</span>
+            </article>
+
+            <article class="card widget-stat activation-kpi" aria-label="Policiamento a pé">
+              <div class="widget-stat-header">
+                <div>
+                  <div class="widget-stat-value" id="footPatrolKpi">0</div>
+                  <div class="widget-stat-label">Policiamento a pé</div>
+                </div>
+                <div class="widget-stat-icon warning" aria-hidden="true">
+                  <i class="bi bi-person-walking"></i>
+                </div>
+              </div>
+              <span class="activation-kpi-note">Guarnições ativas nesse policiamento</span>
+            </article>
+
+            <!-- Card anterior preservado por segurança; substituído pelo indicador de policiamento a pé.
+            <article class="card widget-stat activation-kpi" aria-label="Turnos encerrados hoje">
+              <div class="widget-stat-header">
+                <div>
+                  <div class="widget-stat-value" id="closedTodayKpi">0</div>
+                  <div class="widget-stat-label">Encerradas hoje</div>
+                </div>
+                <div class="widget-stat-icon warning" aria-hidden="true">
+                  <i class="bi bi-check2-circle"></i>
+                </div>
+              </div>
+              <span class="activation-kpi-note">Turnos concluídos na data atual</span>
+            </article>
+            -->
+          </div>
+        </section>
+
+        <section class="section" aria-labelledby="activationListTitle">
+          <div class="card activation-list-card">
+            <div class="card-header">
+              <div class="activation-card-heading">
+                <span class="activation-card-icon" aria-hidden="true"><i class="bi bi-shield-check"></i></span>
+                <div>
+                  <h2 class="card-title" id="activationListTitle">Controle operacional</h2>
+                  <p class="card-subtitle" id="activationRecordCount" aria-live="polite">Nenhuma ativação encontrada</p>
+                </div>
+              </div>
+              <div class="activation-list-tools">
+                <!-- Filtros anteriores preservados; ativações encerradas agora ficam no Histórico de Ativações.
+                <div class="btn-group activation-filter" role="group" aria-label="Filtrar ativações por situação">
+                  <button type="button" class="btn btn-sm btn-primary" data-activation-filter="Ativa" aria-pressed="true">
+                    <i class="bi bi-broadcast" aria-hidden="true"></i>
+                    Ativas
+                    <span class="badge bg-light text-primary" id="activeActivationCount">0</span>
+                  </button>
+                  <button type="button" class="btn btn-sm btn-outline-primary" data-activation-filter="Encerrada" aria-pressed="false">
+                    <i class="bi bi-check2-circle" aria-hidden="true"></i>
+                    Encerradas
+                    <span class="badge bg-light text-primary" id="closedActivationCount">0</span>
+                  </button>
+                </div>
+                -->
+                <div class="activation-refresh-group">
+                  <button type="button" class="btn btn-sm btn-outline-primary activation-refresh-button" id="refreshActivationsButton">
+                    <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+                    <span>Atualizar</span>
+                  </button>
+                  <span class="activation-updated-at" id="activationUpdatedAt" role="status" aria-live="polite">Última atualização: aguardando</span>
+                </div>
+              </div>
+            </div>
+            <div class="card-body p-0">
+              <div class="table-responsive activation-table-region" role="region" aria-label="Tabela de ativações em andamento; deslize horizontalmente para ver todas as colunas" tabindex="0">
+                <table class="table table-hover align-middle mb-0" id="activationTable" aria-busy="false">
+                  <caption class="visually-hidden">Relação de ativações operacionais em andamento</caption>
+                  <thead>
+                    <!-- Cabeçalho anterior preservado por segurança.
+                    <tr>
+                      <th scope="col">Ativação</th>
+                      <th scope="col">Recurso</th>
+                      <th scope="col">Serviço / OS</th>
+                      <th scope="col">Guarnição</th>
+                      <th scope="col">Missão</th>
+                      <th scope="col">Turno</th>
+                      <th scope="col">Ações</th>
+                    </tr>
+                    -->
+                    <!-- Cabeçalho agregado anterior preservado por segurança.
+                    <tr>
+                      <th scope="col">Momento da ativação</th>
+                      <th scope="col">Viatura / recurso</th>
+                      <th scope="col">Tipo de policiamento / Tipo de serviço / Ordem de Serviço (OS)</th>
+                      <th scope="col">Comandante da equipe / Integrantes adicionais</th>
+                      <th scope="col">Resumo da missão e do turno</th>
+                      <th scope="col">Turno</th>
+                      <th scope="col">Ações</th>
+                    </tr>
+                    -->
+                    <!-- Cabeçalho completo anterior preservado por segurança.
+                    <tr>
+                      <th scope="col">Código da ativação</th>
+                      <th scope="col">Tipo de policiamento</th>
+                      <th scope="col">Viatura / recurso</th>
+                      <th scope="col">Tipo de serviço</th>
+                      <th scope="col">Ordem de Serviço (OS)</th>
+                      <th scope="col">Resumo da missão e do turno</th>
+                      <th scope="col">Posto / graduação</th>
+                      <th scope="col">Nome de guerra</th>
+                      <th scope="col">RG</th>
+                      <th scope="col">Telefone</th>
+                      <th scope="col">Integrantes adicionais</th>
+                      <th scope="col">Momento da ativação</th>
+                      <th scope="col">Turno</th>
+                      <th scope="col">Ações</th>
+                    </tr>
+                    -->
+                    <!-- Cabeçalho anterior de nove colunas preservado.
+                    <tr>
+                      <th scope="col">Código</th>
+                      <th scope="col">Tipo de policiamento</th>
+                      <th scope="col">Viatura / recurso</th>
+                      <th scope="col">Tipo de serviço</th>
+                      <th scope="col">Ordem de Serviço (OS)</th>
+                      <th scope="col">Posto / graduação</th>
+                      <th scope="col">Nome de guerra</th>
+                      <th scope="col">Telefone</th>
+                      <th scope="col">Ações</th>
+                    </tr>
+                    -->
+                    <tr>
+                      <th scope="col">Código</th>
+                      <th scope="col">Viatura / recurso</th>
+                      <th scope="col">Tipo de serviço</th>
+                      <th scope="col">Ordem de Serviço (OS)</th>
+                      <th scope="col">Data</th>
+                      <th scope="col">Hora de início</th>
+                      <th scope="col">Hora de término</th>
+                      <th scope="col">Posto / graduação</th>
+                      <th scope="col">Nome de guerra</th>
+                      <th scope="col">Telefone</th>
+                      <th scope="col">Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody id="activationTableBody"></tbody>
+                </table>
+              </div>
+              <div class="activation-table-footer">
+                <span><i class="bi bi-database me-1" aria-hidden="true"></i>Dados operacionais armazenados neste navegador.</span>
+                <span id="activationVisibleCount" aria-live="polite">0 registros exibidos</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="modal fade" id="endTurnModal" tabindex="-1" aria-labelledby="endTurnModalLabel" aria-hidden="true">
+        <!-- Tamanho anterior preservado: modal-dialog modal-dialog-centered. -->
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+          <div class="modal-content">
+            <div class="modal-header">
+              <!-- Título anterior preservado: Encerrar turno. -->
+              <h2 class="modal-title fs-5" id="endTurnModalLabel">Detalhes da ativação</h2>
+              <button type="button" class="btn-close" id="endTurnModalClose" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+              <!-- Conteúdo resumido anterior preservado por segurança.
+              <div class="activation-modal-note mb-3">
+                <i class="bi bi-exclamation-triangle-fill mt-1" aria-hidden="true"></i>
+                <span>O horário de término será registrado agora e a ativação passará para a lista de encerradas.</span>
+              </div>
+              <p>Confirme os dados da guarnição antes de concluir o turno.</p>
+              <dl class="activation-modal-summary">
+                <div>
+                  <dt>Recurso</dt>
+                  <dd id="endTurnResource">Não informado</dd>
+                </div>
+                <div>
+                  <dt>Comandante</dt>
+                  <dd id="endTurnCommander">Não informado</dd>
+                </div>
+                <div>
+                  <dt>Início do turno</dt>
+                  <dd id="endTurnStartedAt">Não informado</dd>
+                </div>
+              </dl>
+              -->
+
+              <div class="activation-details-hero">
+                <div>
+                  <span class="activation-secondary-text mt-0">Código da ativação</span>
+                  <strong class="activation-details-code" id="endTurnCode">Não informado</strong>
+                </div>
+                <span id="endTurnStatus"></span>
+              </div>
+
+              <div class="activation-modal-note mb-3" id="endTurnNotice">
+                <i class="bi bi-info-circle-fill mt-1" id="endTurnNoticeIcon" aria-hidden="true"></i>
+                <span id="endTurnNoticeText">Confira as informações da ativação e utilize as ações disponíveis ao final.</span>
+              </div>
+
+              <div class="activation-details-grid">
+                <section class="activation-details-section" aria-labelledby="endTurnOperationalTitle">
+                  <h3 class="activation-details-title" id="endTurnOperationalTitle">
+                    <i class="bi bi-shield-check" aria-hidden="true"></i>
+                    Dados operacionais
+                  </h3>
+                  <dl class="activation-modal-summary">
+                    <div>
+                      <dt>Tipo de policiamento</dt>
+                      <dd id="endTurnPolicingType">Não informado</dd>
+                    </div>
+                    <div>
+                      <dt>Viatura / recurso</dt>
+                      <dd id="endTurnResource">Não informado</dd>
+                    </div>
+                    <div>
+                      <dt>Identificador de rádio</dt>
+                      <dd id="endTurnVehicleRadio">Não informado</dd>
+                    </div>
+                    <div>
+                      <dt>Tipo de serviço</dt>
+                      <dd id="endTurnService">Não informado</dd>
+                    </div>
+                    <div>
+                      <dt>Ordem de Serviço (OS)</dt>
+                      <dd id="endTurnServiceOrder">Não informado</dd>
+                    </div>
+                    <div>
+                      <dt>Resumo da missão e do turno</dt>
+                      <dd id="endTurnMission">Não informado</dd>
+                    </div>
+                  </dl>
+                </section>
+
+                <section class="activation-details-section" aria-labelledby="endTurnCommanderTitle">
+                  <h3 class="activation-details-title" id="endTurnCommanderTitle">
+                    <i class="bi bi-person-badge" aria-hidden="true"></i>
+                    Comandante da equipe
+                  </h3>
+                  <dl class="activation-modal-summary">
+                    <div>
+                      <dt>Posto / graduação</dt>
+                      <dd id="endTurnCommanderRank">Não informado</dd>
+                    </div>
+                    <div>
+                      <dt>Nome de guerra</dt>
+                      <dd id="endTurnCommander">Não informado</dd>
+                    </div>
+                    <div>
+                      <dt>RG</dt>
+                      <dd id="endTurnCommanderRg">Não informado</dd>
+                    </div>
+                    <div>
+                      <dt>Telefone</dt>
+                      <dd id="endTurnCommanderPhone">Não informado</dd>
+                    </div>
+                  </dl>
+                </section>
+
+                <section class="activation-details-section" aria-labelledby="endTurnScheduleTitle">
+                  <h3 class="activation-details-title" id="endTurnScheduleTitle">
+                    <i class="bi bi-clock-history" aria-hidden="true"></i>
+                    Ativação e turno
+                  </h3>
+                  <dl class="activation-modal-summary">
+                    <div>
+                      <dt>Momento da ativação</dt>
+                      <dd id="endTurnActivatedAt">Não informado</dd>
+                    </div>
+                    <div>
+                      <dt>Início do turno</dt>
+                      <dd id="endTurnStartedAt">Não informado</dd>
+                    </div>
+                    <div>
+                      <dt>Término do turno</dt>
+                      <dd id="endTurnEndedAt">Em andamento</dd>
+                    </div>
+                  </dl>
+                </section>
+
+                <section class="activation-details-section" aria-labelledby="endTurnMembersTitle">
+                  <h3 class="activation-details-title" id="endTurnMembersTitle">
+                    <i class="bi bi-people" aria-hidden="true"></i>
+                    Integrantes adicionais
+                  </h3>
+                  <div class="activation-details-members" id="endTurnMembers">Nenhum integrante adicional.</div>
+                </section>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <!-- Rótulo anterior preservado: Cancelar. -->
+              <!-- Fechamento automático anterior preservado: data-bs-dismiss="modal". -->
+              <button type="button" class="btn btn-secondary" id="cancelEndTurnButton">Fechar</button>
+              <button type="button" class="btn btn-danger" id="confirmEndTurnButton">
+                <i class="bi bi-stop-circle me-1" aria-hidden="true"></i>
+                <span id="endTurnActionLabel">Encerrar turno</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="footer">
+      <div class="footer-content">
+        <div class="footer-links">
+          <a href="#">Docs</a>
+          <a href="#">Privacidade</a>
+          <a href="#">Segurança</a>
+          <a href="#">Suporte</a>
+        </div>
+        <div class="footer-credits">
+          <div class="footer-copyright">&copy; 2026 <a href="index.html">Ordena</a></div>
+        </div>
+      </div>
+    </footer>
+  </main>
+
+  <section class="activation-print-sheet" id="activationPrintSheet" aria-hidden="true" aria-label="Ordem de Serviço e dados da ativação para impressão"></section>
+
+  <a href="#" class="back-to-top" aria-label="Voltar ao topo"><i class="bi bi-arrow-up" aria-hidden="true"></i></a>
+
+  <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="assets/js/theme.js"></script>
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/apps-sidebar-toggle.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const STORAGE_KEY = 'ordena.ativacoes.v1';
+      const SEQUENCE_KEY = 'ordena.ativacoes.sequence.v1';
+      const ACTIVATION_WRITE_LOCK = 'ordena.ativacoes.escrita.v1';
+      const SERVICE_ORDER_STORAGE_KEYS = ['ordena.ordens-servico.v1', 'ordensServico'];
+      const ACTIVE_STATUS = 'Ativa';
+      const CLOSED_STATUS = 'Encerrada';
+      const DEMO_ACTIVATION = {
+        id: '550e8400-e29b-41d4-a716-446655440000',
+        activationCode: '1',
+        status: ACTIVE_STATUS,
+        activatedAt: '2026-08-10T18:35:00.000Z',
+        startedAt: '2026-08-10T18:35:00.000Z',
+        endedAt: null,
+        policingType: 'Motorizado',
+        vehicle: {
+          id: 'vehicle-default-1',
+          type: 'Carro',
+          prefix: '80-9901',
+          plate: 'RJQ9A11',
+          radio: '990001'
+        },
+        service: {
+          id: 'service-type-default-routine',
+          name: 'ROTINA'
+        },
+        serviceOrder: {
+          id: 'service-order-default-1',
+          numero: 1,
+          nomeOS: 'PATRULHAMENTO OSTENSIVO - SETOR CENTRO',
+          inicioGeral: '08:00',
+          terminoGeral: '20:00'
+        },
+        commander: {
+          rank: '2º Sargento',
+          name: 'SILVA',
+          rg: '123456',
+          phone: '(21) 99000-0001'
+        },
+        members: [
+          {
+            rank: 'Cabo',
+            name: 'SOUZA',
+            rg: '234567',
+            phone: '(21) 99000-0002'
+          }
+        ],
+        mission: 'PATRULHAMENTO OSTENSIVO - SETOR CENTRO',
+        isDemo: true
+      };
+      const buttonProcessingState = new WeakMap();
+      // Sincronização automática antiga preservada, porém desativada.
+      // A tabela será atualizada ao abrir a página ou pelo botão Atualizar.
+      const AUTOMATIC_STORAGE_SYNC_ENABLED = false;
+
+      const elements = {
+        alert: document.getElementById('activationPageAlert'),
+        alertIcon: document.getElementById('activationPageAlertIcon'),
+        alertMessage: document.getElementById('activationPageAlertMessage'),
+        pageLoading: document.getElementById('activationPageLoading'),
+        dashboardContent: document.getElementById('activationDashboardContent'),
+        activeNowKpi: document.getElementById('activeNowKpi'),
+        deployedVehiclesKpi: document.getElementById('deployedVehiclesKpi'),
+        onDutyPersonnelKpi: document.getElementById('onDutyPersonnelKpi'),
+        footPatrolKpi: document.getElementById('footPatrolKpi'),
+        // Indicador anterior preservado; o card foi substituído por policiamento a pé.
+        // closedTodayKpi: document.getElementById('closedTodayKpi'),
+        recordCount: document.getElementById('activationRecordCount'),
+        // Contadores das abas anteriores preservados; os controles não fazem mais parte do painel.
+        // activeCount: document.getElementById('activeActivationCount'),
+        // closedCount: document.getElementById('closedActivationCount'),
+        visibleCount: document.getElementById('activationVisibleCount'),
+        updatedAt: document.getElementById('activationUpdatedAt'),
+        filters: Array.from(document.querySelectorAll('[data-activation-filter]')),
+        refreshButton: document.getElementById('refreshActivationsButton'),
+        table: document.getElementById('activationTable'),
+        tableBody: document.getElementById('activationTableBody'),
+        endTurnModal: document.getElementById('endTurnModal'),
+        endTurnModalLabel: document.getElementById('endTurnModalLabel'),
+        endTurnModalClose: document.getElementById('endTurnModalClose'),
+        cancelEndTurnButton: document.getElementById('cancelEndTurnButton'),
+        confirmEndTurnButton: document.getElementById('confirmEndTurnButton'),
+        endTurnActionLabel: document.getElementById('endTurnActionLabel'),
+        endTurnCode: document.getElementById('endTurnCode'),
+        endTurnStatus: document.getElementById('endTurnStatus'),
+        endTurnNotice: document.getElementById('endTurnNotice'),
+        endTurnNoticeIcon: document.getElementById('endTurnNoticeIcon'),
+        endTurnNoticeText: document.getElementById('endTurnNoticeText'),
+        endTurnPolicingType: document.getElementById('endTurnPolicingType'),
+        endTurnResource: document.getElementById('endTurnResource'),
+        endTurnVehicleRadio: document.getElementById('endTurnVehicleRadio'),
+        endTurnService: document.getElementById('endTurnService'),
+        endTurnServiceOrder: document.getElementById('endTurnServiceOrder'),
+        endTurnMission: document.getElementById('endTurnMission'),
+        endTurnCommanderRank: document.getElementById('endTurnCommanderRank'),
+        endTurnCommander: document.getElementById('endTurnCommander'),
+        endTurnCommanderRg: document.getElementById('endTurnCommanderRg'),
+        endTurnCommanderPhone: document.getElementById('endTurnCommanderPhone'),
+        endTurnActivatedAt: document.getElementById('endTurnActivatedAt'),
+        endTurnStartedAt: document.getElementById('endTurnStartedAt'),
+        endTurnEndedAt: document.getElementById('endTurnEndedAt'),
+        endTurnMembers: document.getElementById('endTurnMembers'),
+        printSheet: document.getElementById('activationPrintSheet')
+      };
+
+      if (!elements.table || !elements.tableBody || !elements.dashboardContent || !elements.printSheet) {
+        return;
+      }
+
+      const state = {
+        activations: [],
+        currentFilter: ACTIVE_STATUS,
+        selectedActivationId: null,
+        pendingActivationId: null,
+        modalMode: 'details',
+        lastEndTurnTrigger: null,
+        alertTimeout: null,
+        demoAvailable: false,
+        refreshing: false,
+        endingTurn: false,
+        printing: false
+      };
+
+      function safeString(value) {
+        if (typeof value === 'string' || typeof value === 'number') {
+          return String(value).trim();
+        }
+        return '';
+      }
+
+      function firstDefined() {
+        for (let index = 0; index < arguments.length; index += 1) {
+          const value = arguments[index];
+          if (value !== undefined && value !== null && value !== '') {
+            return value;
+          }
+        }
+        return '';
+      }
+
+      /* Implementação anterior do código alfanumérico preservada por segurança.
+      function normalizeActivationCode(value) {
+        return safeString(value).replace(/\s+/g, '').toLocaleUpperCase('pt-BR');
+      }
+
+      function activationCodeDatePart(value) {
+        const date = parseTimestamp(value);
+        if (!date) {
+          return '00000000';
+        }
+        return String(date.getUTCFullYear()) +
+          String(date.getUTCMonth() + 1).padStart(2, '0') +
+          String(date.getUTCDate()).padStart(2, '0');
+      }
+
+      function activationCodeToken(value) {
+        const normalized = safeString(value)
+          .replace(/[^a-z0-9]/gi, '')
+          .toLocaleUpperCase('pt-BR');
+        return normalized.slice(-12).padStart(12, '0');
+      }
+
+      function createUniqueActivationCode(id, activatedAt, usedCodes) {
+        const baseCode = 'ATV-' + activationCodeDatePart(activatedAt) + '-' + activationCodeToken(id);
+        let candidate = baseCode;
+        let duplicateIndex = 2;
+
+        while (usedCodes.has(candidate)) {
+          candidate = baseCode + '-' + String(duplicateIndex).padStart(2, '0');
+          duplicateIndex += 1;
+        }
+        usedCodes.add(candidate);
+        return candidate;
+      }
+
+      function prepareActivationCodes(records) {
+        const usedCodes = new Set();
+
+        records.forEach(function(record) {
+          if (!record || typeof record !== 'object' || Array.isArray(record)) {
+            return;
+          }
+          const existingCode = normalizeActivationCode(firstDefined(
+            record.activationCode,
+            record.codigoAtivacao,
+            record.code
+          ));
+          if (existingCode && !usedCodes.has(existingCode)) {
+            record.activationCode = existingCode;
+            usedCodes.add(existingCode);
+          } else {
+            record.activationCode = '';
+          }
+        });
+
+        records.forEach(function(record) {
+          if (!record || typeof record !== 'object' || Array.isArray(record) || record.activationCode) {
+            return;
+          }
+          const recordId = safeString(record.id);
+          if (!recordId) {
+            return;
+          }
+          record.activationCode = createUniqueActivationCode(
+            recordId,
+            firstDefined(record.activatedAt, record.dataAtivacao, record.startedAt, record.horaInicio),
+            usedCodes
+          );
+        });
+      }
+      */
+
+      function normalizeSequentialActivationCode(value) {
+        const normalized = safeString(value);
+        if (!/^\d+$/.test(normalized)) {
+          return 0;
+        }
+        const code = Number(normalized);
+        return Number.isSafeInteger(code) && code > 0 ? code : 0;
+      }
+
+      function readActivationSequence() {
+        const storedValue = window.localStorage.getItem(SEQUENCE_KEY);
+        if (storedValue === null || storedValue === '') {
+          return 0;
+        }
+        if (!/^\d+$/.test(String(storedValue).trim())) {
+          throw new Error('O contador de ativações está inválido.');
+        }
+        const storedSequence = Number(storedValue);
+        if (!Number.isSafeInteger(storedSequence) || storedSequence < 0) {
+          throw new Error('O contador de ativações excedeu o limite seguro.');
+        }
+        return storedSequence;
+      }
+
+      function activationSortTime(record) {
+        if (!record || typeof record !== 'object' || Array.isArray(record)) {
+          return 0;
+        }
+        const timestamp = parseTimestamp(firstDefined(
+          record.activatedAt,
+          record.dataAtivacao,
+          record.startedAt,
+          record.horaInicio
+        ));
+        return timestamp ? timestamp.getTime() : 0;
+      }
+
+      function prepareSequentialActivationCodes(records) {
+        const usedCodes = new Set();
+        const pendingRecords = [];
+        const storedSequence = readActivationSequence();
+        let lastSequence = storedSequence;
+        let changed = false;
+
+        const orderedRecords = records.map(function(record, index) {
+          return { record: record, index: index, time: activationSortTime(record) };
+        }).filter(function(item) {
+          return item.record && typeof item.record === 'object' && !Array.isArray(item.record);
+        }).sort(function(first, second) {
+          if (!first.time && second.time) {
+            return 1;
+          }
+          if (first.time && !second.time) {
+            return -1;
+          }
+          if (first.time !== second.time) {
+            return first.time - second.time;
+          }
+          return second.index - first.index;
+        });
+
+        orderedRecords.forEach(function(item) {
+          const record = item.record;
+          const index = item.index;
+          const currentCode = normalizeSequentialActivationCode(firstDefined(
+            record.activationCode,
+            record.codigoAtivacao,
+            record.code
+          ));
+          if (currentCode && !usedCodes.has(currentCode)) {
+            const normalizedCode = String(currentCode);
+            if (String(record.activationCode || '') !== normalizedCode) {
+              changed = true;
+            }
+            record.activationCode = normalizedCode;
+            usedCodes.add(currentCode);
+            lastSequence = Math.max(lastSequence, currentCode);
+            return;
+          }
+
+          const legacyCode = safeString(firstDefined(
+            record.activationCode,
+            record.codigoAtivacao,
+            record.code
+          ));
+          if (legacyCode && !record.legacyActivationCode) {
+            record.legacyActivationCode = legacyCode;
+            changed = true;
+          }
+          if (record.activationCode !== '') {
+            changed = true;
+          }
+          record.activationCode = '';
+          pendingRecords.push({ record: record, index: index, time: item.time });
+        });
+
+        pendingRecords.sort(function(first, second) {
+          if (!first.time && second.time) {
+            return 1;
+          }
+          if (first.time && !second.time) {
+            return -1;
+          }
+          if (first.time !== second.time) {
+            return first.time - second.time;
+          }
+          return second.index - first.index;
+        });
+
+        pendingRecords.forEach(function(item) {
+          do {
+            if (lastSequence >= Number.MAX_SAFE_INTEGER) {
+              throw new Error('Não há mais códigos sequenciais disponíveis.');
+            }
+            lastSequence += 1;
+          } while (usedCodes.has(lastSequence));
+          item.record.activationCode = String(lastSequence);
+          usedCodes.add(lastSequence);
+          changed = true;
+        });
+
+        return {
+          changed: changed,
+          lastSequence: lastSequence,
+          storedSequence: storedSequence
+        };
+      }
+
+      function pickText(value, keys) {
+        const directValue = safeString(value);
+        if (directValue) {
+          return directValue;
+        }
+        if (!value || typeof value !== 'object' || Array.isArray(value)) {
+          return '';
+        }
+        for (let index = 0; index < keys.length; index += 1) {
+          const selected = safeString(value[keys[index]]);
+          if (selected) {
+            return selected;
+          }
+        }
+        return '';
+      }
+
+      function parseTimestamp(value) {
+        if (value instanceof Date && !Number.isNaN(value.getTime())) {
+          return new Date(value.getTime());
+        }
+
+        if (typeof value === 'number' && Number.isFinite(value)) {
+          const numericDate = new Date(value < 100000000000 ? value * 1000 : value);
+          return Number.isNaN(numericDate.getTime()) ? null : numericDate;
+        }
+
+        if (value && typeof value === 'object' && !Array.isArray(value)) {
+          const seconds = Number(firstDefined(value.seconds, value._seconds));
+          if (Number.isFinite(seconds) && seconds > 0) {
+            const milliseconds = seconds * 1000 + Number(firstDefined(value.nanoseconds, value._nanoseconds, 0)) / 1000000;
+            const timestampDate = new Date(milliseconds);
+            return Number.isNaN(timestampDate.getTime()) ? null : timestampDate;
+          }
+        }
+
+        const textValue = safeString(value);
+        if (!textValue) {
+          return null;
+        }
+
+        const brazilianDate = textValue.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:[ ,T]+(\d{1,2}):(\d{2})(?::(\d{2}))?)?$/);
+        if (brazilianDate) {
+          const localDate = new Date(
+            Number(brazilianDate[3]),
+            Number(brazilianDate[2]) - 1,
+            Number(brazilianDate[1]),
+            Number(brazilianDate[4] || 0),
+            Number(brazilianDate[5] || 0),
+            Number(brazilianDate[6] || 0)
+          );
+          return Number.isNaN(localDate.getTime()) ? null : localDate;
+        }
+
+        const parsedDate = new Date(textValue);
+        return Number.isNaN(parsedDate.getTime()) ? null : parsedDate;
+      }
+
+      function normalizeTimestamp(value) {
+        const parsedDate = parseTimestamp(value);
+        return parsedDate ? parsedDate.toISOString() : '';
+      }
+
+      function normalizeStatus(value, endedAt) {
+        if (endedAt) {
+          return CLOSED_STATUS;
+        }
+        const comparable = safeString(value)
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .toLowerCase();
+
+        if (comparable.indexOf('encerr') === 0 || comparable.indexOf('finaliz') === 0 || comparable.indexOf('conclu') === 0) {
+          return CLOSED_STATUS;
+        }
+        if (comparable.indexOf('ativ') === 0 || comparable === 'em andamento') {
+          return ACTIVE_STATUS;
+        }
+        return null;
+      }
+
+      function normalizeActivation(rawActivation, index, usedIds) {
+        if (!rawActivation || typeof rawActivation !== 'object' || Array.isArray(rawActivation)) {
+          return null;
+        }
+
+        const activatedAt = normalizeTimestamp(firstDefined(rawActivation.activatedAt, rawActivation.dataAtivacao));
+        const startedAt = normalizeTimestamp(firstDefined(rawActivation.startedAt, rawActivation.horaInicio, activatedAt));
+        const endedAt = normalizeTimestamp(firstDefined(rawActivation.endedAt, rawActivation.horaFim));
+        const status = normalizeStatus(rawActivation.status, endedAt);
+        const baseId = safeString(rawActivation.id);
+        const activationCodeNumber = normalizeSequentialActivationCode(rawActivation.activationCode);
+        const activationCode = activationCodeNumber ? String(activationCodeNumber) : '';
+        const policingType = firstDefined(rawActivation.policingType, rawActivation.tipoPoliciamento);
+        const vehicle = firstDefined(rawActivation.vehicle, rawActivation.viatura);
+        const service = firstDefined(rawActivation.service, rawActivation.servico);
+        const serviceOrder = firstDefined(rawActivation.serviceOrder, rawActivation.ordemServico);
+        const commander = firstDefined(rawActivation.commander, rawActivation.comandante);
+        const mission = firstDefined(rawActivation.mission, rawActivation.missao);
+        // Marcador de demonstração anterior preservado; registros salvos são sempre reais.
+        // const isDemo = rawActivation.isDemo === true;
+        const hasService = Boolean(
+          pickText(service, ['name', 'nome', 'label', 'type', 'tipo']) ||
+          pickText(policingType, ['name', 'nome', 'label', 'type', 'tipo'])
+        );
+
+        if (!baseId || !activationCode || !(activatedAt || startedAt) || !status ||
+            !vehicleDetails(vehicle).informed ||
+            !pickText(commander, ['warName', 'nomeGuerra', 'name', 'nome', 'label']) ||
+            !hasService || !serviceOrderLabel(serviceOrder) ||
+            !pickText(mission, ['name', 'nome', 'label', 'description', 'descricao'])) {
+          return null;
+        }
+
+        let uniqueId = baseId;
+        let duplicateIndex = 2;
+
+        while (usedIds.has(uniqueId)) {
+          uniqueId = baseId + '-' + String(duplicateIndex);
+          duplicateIndex += 1;
+        }
+        usedIds.add(uniqueId);
+
+        return {
+          id: uniqueId,
+          activationCode: activationCode,
+          status: status,
+          activatedAt: activatedAt,
+          startedAt: startedAt,
+          endedAt: endedAt,
+          policingType: policingType,
+          vehicle: vehicle,
+          service: service,
+          serviceOrder: serviceOrder,
+          commander: commander,
+          members: firstDefined(rawActivation.members, rawActivation.integrantes, []),
+          mission: mission,
+          // isDemo: isDemo,
+          _raw: Object.assign({}, rawActivation)
+        };
+      }
+
+      function readActivations() {
+        try {
+          // Valida o contador mesmo quando ainda não existem registros reais.
+          readActivationSequence();
+          const storedValue = window.localStorage.getItem(STORAGE_KEY);
+          if (!storedValue) {
+            return { records: [], skipped: 0, error: null, isEmpty: true };
+          }
+          const parsedValue = JSON.parse(storedValue);
+          if (!Array.isArray(parsedValue)) {
+            throw new Error('Formato de armazenamento inválido.');
+          }
+
+          const sequenceState = prepareSequentialActivationCodes(parsedValue);
+          if (sequenceState.lastSequence > sequenceState.storedSequence) {
+            window.localStorage.setItem(SEQUENCE_KEY, String(sequenceState.lastSequence));
+          }
+          if (sequenceState.changed) {
+            window.localStorage.setItem(STORAGE_KEY, JSON.stringify(parsedValue));
+          }
+
+          const usedIds = new Set();
+          const records = [];
+          let skipped = 0;
+          parsedValue.forEach(function(item, index) {
+            const normalized = normalizeActivation(item, index, usedIds);
+            if (normalized) {
+              records.push(normalized);
+            } else {
+              skipped += 1;
+            }
+          });
+          return { records: records, skipped: skipped, error: null, isEmpty: parsedValue.length === 0 };
+        } catch (error) {
+          return { records: [], skipped: 0, error: error, isEmpty: false };
+        }
+      }
+
+      function readActivationsWithLock() {
+        return runWithActivationWriteLock(function() {
+          return readActivations();
+        });
+      }
+
+      function serializeActivation(activation) {
+        const storedActivation = Object.assign({}, activation._raw || {});
+        storedActivation.id = activation.id;
+        storedActivation.activationCode = activation.activationCode;
+        storedActivation.status = activation.status;
+        storedActivation.activatedAt = activation.activatedAt;
+        storedActivation.startedAt = activation.startedAt;
+        storedActivation.endedAt = activation.endedAt;
+        storedActivation.policingType = activation.policingType;
+        storedActivation.vehicle = activation.vehicle;
+        storedActivation.service = activation.service;
+        storedActivation.serviceOrder = activation.serviceOrder;
+        storedActivation.commander = activation.commander;
+        storedActivation.members = activation.members;
+        storedActivation.mission = activation.mission;
+        // Marcador visual anterior preservado, mas não persistido:
+        // storedActivation.isDemo = activation.isDemo === true;
+        return storedActivation;
+      }
+
+      function persistActivations(activations) {
+        try {
+          window.localStorage.setItem(STORAGE_KEY, JSON.stringify(activations
+            .filter(function(activation) { return activation.isDemo !== true; })
+            .map(serializeActivation)));
+          return true;
+        } catch (error) {
+          return false;
+        }
+      }
+
+      function vehicleDetails(vehicle) {
+        const directValue = safeString(vehicle);
+        if (directValue) {
+          return { primary: directValue, secondary: '', informed: true };
+        }
+        if (!vehicle || typeof vehicle !== 'object' || Array.isArray(vehicle)) {
+          return { primary: 'Viatura não informada', secondary: '', informed: false };
+        }
+
+        const prefix = pickText(vehicle, ['prefix', 'prefixo', 'code', 'codigo']);
+        const plate = pickText(vehicle, ['plate', 'placa']);
+        const name = pickText(vehicle, ['name', 'nome', 'label', 'identificacao']);
+        const type = pickText(vehicle, ['type', 'tipo', 'category', 'categoria']);
+        const primary = prefix || name || plate;
+        const secondaryParts = [];
+
+        [type, plate].forEach(function(part) {
+          if (part && part.toLowerCase() !== String(primary).toLowerCase() && secondaryParts.indexOf(part) === -1) {
+            secondaryParts.push(part);
+          }
+        });
+
+        return {
+          primary: primary || 'Viatura não informada',
+          secondary: secondaryParts.join(' • '),
+          informed: Boolean(primary)
+        };
+      }
+
+      function commanderDetails(commander) {
+        const directValue = safeString(commander);
+        if (directValue) {
+          return {
+            rank: '',
+            name: directValue,
+            rg: '',
+            phone: '',
+            display: directValue,
+            informed: true
+          };
+        }
+        if (!commander || typeof commander !== 'object' || Array.isArray(commander)) {
+          return {
+            rank: '',
+            name: '',
+            rg: '',
+            phone: '',
+            display: 'Comandante não informado',
+            informed: false
+          };
+        }
+
+        const rank = pickText(commander, ['rank', 'postoGraduacao', 'posto', 'graduacao']);
+        const name = pickText(commander, ['warName', 'nomeGuerra', 'name', 'nome', 'label']);
+        const rg = pickText(commander, ['rg', 'registroGeral', 'registration']);
+        const phone = pickText(commander, ['phone', 'telefone', 'celular']);
+        const display = [rank, name].filter(Boolean).join(' ');
+        return {
+          rank: rank,
+          name: name,
+          rg: rg,
+          phone: phone,
+          display: display || 'Comandante não informado',
+          informed: Boolean(display)
+        };
+      }
+
+      function memberCount(members) {
+        if (Array.isArray(members)) {
+          return members.filter(function(member) {
+            if (member && typeof member === 'object') {
+              return Object.keys(member).some(function(key) {
+                return Boolean(safeString(member[key]));
+              });
+            }
+            return Boolean(safeString(member));
+          }).length;
+        }
+
+        if (typeof members === 'number' && Number.isFinite(members)) {
+          return Math.max(0, Math.floor(members));
+        }
+
+        if (members && typeof members === 'object') {
+          const declaredCount = Number(firstDefined(members.count, members.total, members.length));
+          return Number.isFinite(declaredCount) ? Math.max(0, Math.floor(declaredCount)) : 0;
+        }
+
+        const textValue = safeString(members);
+        if (/^\d+$/.test(textValue)) {
+          return Number(textValue);
+        }
+        return textValue ? 1 : 0;
+      }
+
+      function personnelCount(activation) {
+        return memberCount(activation.members) + (commanderDetails(activation.commander).informed ? 1 : 0);
+      }
+
+      function serviceOrderLabel(serviceOrder) {
+        const selected = pickText(serviceOrder, ['number', 'numero', 'code', 'codigo', 'name', 'nome', 'label', 'id']);
+        if (!selected) {
+          return '';
+        }
+        return /^os\b/i.test(selected) ? selected : 'OS ' + selected;
+      }
+
+      function serviceOrderNumber(serviceOrder) {
+        const selected = pickText(serviceOrder, ['number', 'numero', 'code', 'codigo']);
+        if (!selected) {
+          return 'Não informado';
+        }
+        return selected.replace(/^os\s*(?:n[º°o.]?\s*)?/i, '').trim() || selected;
+      }
+
+      function serviceDetails(activation) {
+        const service = pickText(activation.service, ['name', 'nome', 'label', 'type', 'tipo', 'description', 'descricao']);
+        const policingType = pickText(activation.policingType, ['name', 'nome', 'label', 'type', 'tipo']);
+        const order = serviceOrderLabel(activation.serviceOrder);
+        const primary = service || policingType || 'Serviço não informado';
+        const secondaryParts = [];
+
+        if (policingType && policingType.toLowerCase() !== primary.toLowerCase()) {
+          secondaryParts.push(policingType);
+        }
+        if (order) {
+          secondaryParts.push(order);
+        }
+
+        return { primary: primary, secondary: secondaryParts.join(' • ') };
+      }
+
+      function formatServiceOrderMoment(value) {
+        const textValue = safeString(value);
+        if (/^\d{2}:\d{2}$/.test(textValue)) {
+          return textValue;
+        }
+        return formatDateTime(value);
+      }
+
+      function serviceOrderDetails(serviceOrder) {
+        const number = serviceOrderLabel(serviceOrder) || 'Ordem de Serviço não informada';
+        const summary = pickText(serviceOrder, ['nomeOS', 'name', 'nome', 'label', 'description', 'descricao']);
+        const start = firstDefined(
+          serviceOrder && serviceOrder.inicioGeral,
+          serviceOrder && serviceOrder.start,
+          serviceOrder && serviceOrder.inicio
+        );
+        const end = firstDefined(
+          serviceOrder && serviceOrder.terminoGeral,
+          serviceOrder && serviceOrder.end,
+          serviceOrder && serviceOrder.termino
+        );
+        const period = start || end
+          ? 'Período previsto da OS: ' + formatServiceOrderMoment(start) + ' a ' + formatServiceOrderMoment(end)
+          : '';
+        return { number: number, summary: summary, period: period };
+      }
+
+      function memberDetails(member) {
+        const directValue = safeString(member);
+        if (directValue) {
+          return { rank: '', name: directValue, rg: '', phone: '', informed: true };
+        }
+        if (!member || typeof member !== 'object' || Array.isArray(member)) {
+          return { rank: '', name: '', rg: '', phone: '', informed: false };
+        }
+        const rank = pickText(member, ['rank', 'postoGraduacao', 'posto', 'graduacao']);
+        const name = pickText(member, ['warName', 'nomeGuerra', 'name', 'nome', 'label']);
+        const rg = pickText(member, ['rg', 'registroGeral', 'registration']);
+        const phone = pickText(member, ['phone', 'telefone', 'celular']);
+        return {
+          rank: rank,
+          name: name,
+          rg: rg,
+          phone: phone,
+          informed: Boolean(rank || name || rg || phone)
+        };
+      }
+
+      function createMembersSummary(members) {
+        const container = document.createElement('div');
+        container.className = 'activation-members-summary';
+
+        if (!Array.isArray(members)) {
+          const total = memberCount(members);
+          container.appendChild(createTextStack(
+            total > 0 ? total + (total === 1 ? ' integrante informado' : ' integrantes informados') : 'Nenhum integrante adicional',
+            total > 0 ? 'Detalhes não disponíveis neste registro.' : 'Somente o comandante informado.'
+          ));
+          return container;
+        }
+
+        const informedMembers = members.map(memberDetails).filter(function(member) {
+          return member.informed;
+        });
+        if (!informedMembers.length) {
+          container.appendChild(createTextStack('Nenhum integrante adicional', 'Somente o comandante informado.'));
+          return container;
+        }
+
+        informedMembers.forEach(function(member) {
+          const primary = [member.rank, member.name].filter(Boolean).join(' ') || 'Integrante sem identificação';
+          const secondaryParts = [];
+          if (member.rg) {
+            secondaryParts.push('RG ' + member.rg);
+          }
+          if (member.phone) {
+            secondaryParts.push(member.phone);
+          }
+          const summary = createTextStack(primary, secondaryParts.join(' • ') || 'Dados complementares não informados');
+          summary.classList.add('activation-member-summary');
+          container.appendChild(summary);
+        });
+        return container;
+      }
+
+      function formatDateTime(value) {
+        const date = parseTimestamp(value);
+        if (!date) {
+          return 'Não informado';
+        }
+        return new Intl.DateTimeFormat('pt-BR', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        }).format(date);
+      }
+
+      function formatDate(value) {
+        const date = parseTimestamp(value);
+        if (!date) {
+          return 'Não informado';
+        }
+        return new Intl.DateTimeFormat('pt-BR', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric'
+        }).format(date);
+      }
+
+      function formatServiceOrderTime(value) {
+        const textValue = safeString(value);
+        const timeMatch = textValue.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
+        if (timeMatch) {
+          const hours = Number(timeMatch[1]);
+          const minutes = Number(timeMatch[2]);
+          if (hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59) {
+            return String(hours).padStart(2, '0') + ':' + String(minutes).padStart(2, '0');
+          }
+        }
+
+        const date = parseTimestamp(value);
+        if (!date) {
+          return 'Não informado';
+        }
+        return new Intl.DateTimeFormat('pt-BR', {
+          hour: '2-digit',
+          minute: '2-digit'
+        }).format(date);
+      }
+
+      function formatUpdateTime(value) {
+        return new Intl.DateTimeFormat('pt-BR', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit'
+        }).format(value);
+      }
+
+      function formatDuration(startValue, endValue) {
+        const start = parseTimestamp(startValue);
+        const end = parseTimestamp(endValue);
+        if (!start || !end || end.getTime() < start.getTime()) {
+          return '';
+        }
+        const totalMinutes = Math.floor((end.getTime() - start.getTime()) / 60000);
+        const hours = Math.floor(totalMinutes / 60);
+        const minutes = totalMinutes % 60;
+        if (hours > 0) {
+          return hours + 'h ' + String(minutes).padStart(2, '0') + 'min';
+        }
+        return minutes + 'min';
+      }
+
+      function readStoredArrayForPrint(key) {
+        try {
+          const storedValue = window.localStorage.getItem(key);
+          if (!storedValue) {
+            return [];
+          }
+          const parsedValue = JSON.parse(storedValue);
+          return Array.isArray(parsedValue) ? parsedValue.filter(function(item) {
+            return item && typeof item === 'object' && !Array.isArray(item);
+          }) : [];
+        } catch (error) {
+          return [];
+        }
+      }
+
+      function isObjectRecord(value) {
+        return Boolean(value && typeof value === 'object' && !Array.isArray(value));
+      }
+
+      function comparableServiceOrderNumber(value) {
+        const digits = safeString(value).replace(/\D/g, '');
+        if (!digits) {
+          return '';
+        }
+        const numericValue = Number(digits);
+        return Number.isFinite(numericValue) ? String(numericValue) : digits;
+      }
+
+      function hasFullServiceOrderData(order) {
+        if (!isObjectRecord(order)) {
+          return false;
+        }
+        return Array.isArray(firstDefined(order.atividades, order.activities)) ||
+          Object.prototype.hasOwnProperty.call(order, 'prescricoesDiversas') ||
+          Object.prototype.hasOwnProperty.call(order, 'prescricoes') ||
+          Object.prototype.hasOwnProperty.call(order, 'prescriptions') ||
+          Object.prototype.hasOwnProperty.call(order, 'orientacoesGerais') ||
+          Object.prototype.hasOwnProperty.call(order, 'observacoesGerais') ||
+          Boolean(firstDefined(order.tipoOrdem, order.tipoServicoId, order.tipoRecurso, order.criadoEm));
+      }
+
+      function resolveServiceOrderForPrint(activation) {
+        const embeddedOrder = isObjectRecord(activation.serviceOrder) ? activation.serviceOrder : {};
+        const rawActivation = isObjectRecord(activation._raw) ? activation._raw : {};
+        const snapshotCandidate = firstDefined(
+          rawActivation.serviceOrderSnapshot,
+          rawActivation.ordemServicoSnapshot
+        );
+        const fullSnapshot = isObjectRecord(snapshotCandidate) ? snapshotCandidate : null;
+        const linkedId = firstDefined(
+          pickText(fullSnapshot, ['id', 'serviceOrderId', 'ordemServicoId']),
+          pickText(embeddedOrder, ['id', 'serviceOrderId', 'ordemServicoId'])
+        );
+        const linkedNumber = comparableServiceOrderNumber(firstDefined(
+          pickText(fullSnapshot, ['numero', 'number', 'code', 'codigo']),
+          pickText(embeddedOrder, ['numero', 'number', 'code', 'codigo']),
+          pickText(activation.serviceOrder, ['numero', 'number', 'code', 'codigo'])
+        ));
+        const storedOrders = [];
+
+        SERVICE_ORDER_STORAGE_KEYS.forEach(function(key) {
+          readStoredArrayForPrint(key).forEach(function(order) {
+            storedOrders.push(order);
+          });
+        });
+
+        let linkedOrder = null;
+        if (linkedId) {
+          linkedOrder = storedOrders.find(function(order) {
+            return safeString(firstDefined(order.id, order.serviceOrderId, order.ordemServicoId)) === linkedId;
+          }) || null;
+        }
+        if (!linkedOrder && linkedNumber) {
+          linkedOrder = storedOrders.find(function(order) {
+            return comparableServiceOrderNumber(firstDefined(
+              order.numero,
+              order.number,
+              order.code,
+              order.codigo
+            )) === linkedNumber;
+          }) || null;
+        }
+
+        const printableOrder = Object.assign(
+          {},
+          linkedOrder || {},
+          embeddedOrder,
+          fullSnapshot || {}
+        );
+        return {
+          order: printableOrder,
+          hasFullOrder: hasFullServiceOrderData(fullSnapshot) ||
+            hasFullServiceOrderData(linkedOrder) ||
+            hasFullServiceOrderData(embeddedOrder)
+        };
+      }
+
+      function activityDisplayName(type) {
+        const names = {
+          Baseamento: 'Baseamento (Ponto Fixo)',
+          Patrulhamento: 'Patrulhamento (Ronda)',
+          Intervalo: 'Intervalo / Refeição',
+          'Retorno Base': 'Retorno à Base'
+        };
+        const normalizedType = safeString(type);
+        return names[normalizedType] || normalizedType || 'Atividade';
+      }
+
+      function activityAddress(activity) {
+        const road = pickText(activity, ['rua', 'road']);
+        const number = pickText(activity, ['numero', 'number']);
+        const district = pickText(activity, ['bairro', 'district']);
+        const city = pickText(activity, ['cidade', 'city']);
+        const stateCode = pickText(activity, ['estado', 'state']);
+        const roadAndNumber = road && road !== '-'
+          ? road + (number && number !== '-' ? ', ' + number : '')
+          : '';
+        const cityAndState = [city && city !== '-' ? city : '', stateCode].filter(Boolean).join(' - ');
+        return [roadAndNumber, district && district !== '-' ? district : '', cityAndState]
+          .filter(Boolean)
+          .join(' · ');
+      }
+
+      function activityGpsSummary(activity) {
+        const gps = activity && activity.gps;
+        if (!isObjectRecord(gps)) {
+          return '';
+        }
+        const coordinates = Array.isArray(gps.coordenadas) ? gps.coordenadas : [];
+        if (coordinates.length) {
+          const coordinateText = coordinates.map(function(coordinate) {
+            if (Array.isArray(coordinate) && coordinate.length >= 2) {
+              return safeString(coordinate[0]) + ', ' + safeString(coordinate[1]);
+            }
+            if (isObjectRecord(coordinate)) {
+              const latitude = firstDefined(coordinate.latitude, coordinate.lat);
+              const longitude = firstDefined(coordinate.longitude, coordinate.lng);
+              if (latitude !== '' && longitude !== '') {
+                return safeString(latitude) + ', ' + safeString(longitude);
+              }
+            }
+            return '';
+          }).filter(Boolean);
+          return 'Área geográfica com ' + coordinates.length +
+            (coordinates.length === 1 ? ' vértice' : ' vértices') +
+            (coordinateText.length ? ': ' + coordinateText.join(' | ') : '');
+        }
+        const latitudeValue = firstDefined(gps.lat, gps.latitude);
+        const longitudeValue = firstDefined(gps.lng, gps.longitude);
+        if (latitudeValue === '' || longitudeValue === '') {
+          return '';
+        }
+        const latitude = Number(latitudeValue);
+        const longitude = Number(longitudeValue);
+        if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+          return '';
+        }
+        return 'GPS ' + latitude.toFixed(6) + ', ' + longitude.toFixed(6);
+      }
+
+      function serviceOrderOrigin(order) {
+        const sourceNumber = safeString(firstDefined(order.origemCopia, order.copySource, order.sourceNumber));
+        return sourceNumber ? 'Cópia da OS nº ' + sourceNumber : 'Planejamento original';
+      }
+
+      function createPrintMeta(label, value) {
+        const item = document.createElement('div');
+        const labelNode = document.createElement('span');
+        const valueNode = document.createElement('strong');
+        labelNode.textContent = label;
+        valueNode.textContent = safeString(value) || '—';
+        item.append(labelNode, valueNode);
+        return item;
+      }
+
+      function createPrintSection(title, breakable) {
+        const section = document.createElement('section');
+        const heading = document.createElement('h2');
+        section.className = 'activation-print-section' + (breakable ? ' is-breakable' : '');
+        heading.className = 'activation-print-section-title';
+        heading.textContent = title;
+        section.appendChild(heading);
+        return section;
+      }
+
+      function createPrintTable(headers, rows, emptyMessage) {
+        const table = document.createElement('table');
+        const tableHead = document.createElement('thead');
+        const headRow = document.createElement('tr');
+        const tableBody = document.createElement('tbody');
+        table.className = 'activation-print-table';
+
+        headers.forEach(function(label) {
+          const headerCell = document.createElement('th');
+          headerCell.scope = 'col';
+          headerCell.textContent = label;
+          headRow.appendChild(headerCell);
+        });
+        tableHead.appendChild(headRow);
+
+        if (!rows.length) {
+          const emptyRow = document.createElement('tr');
+          const emptyCell = document.createElement('td');
+          emptyCell.colSpan = headers.length;
+          emptyCell.textContent = emptyMessage;
+          emptyRow.appendChild(emptyCell);
+          tableBody.appendChild(emptyRow);
+        } else {
+          rows.forEach(function(values) {
+            const row = document.createElement('tr');
+            values.forEach(function(value) {
+              const cell = document.createElement('td');
+              cell.textContent = safeString(value) || '—';
+              row.appendChild(cell);
+            });
+            tableBody.appendChild(row);
+          });
+        }
+
+        table.append(tableHead, tableBody);
+        return table;
+      }
+
+      function buildActivationPrintSheet(activation) {
+        const orderResolution = resolveServiceOrderForPrint(activation);
+        const order = orderResolution.order;
+        const vehicleRecord = isObjectRecord(activation.vehicle) ? activation.vehicle : {};
+        const serviceOrderRecord = isObjectRecord(activation.serviceOrder) ? activation.serviceOrder : {};
+        const vehicle = vehicleDetails(activation.vehicle);
+        const commander = commanderDetails(activation.commander);
+        const policingType = pickText(activation.policingType, ['name', 'nome', 'label', 'type', 'tipo']);
+        const serviceName = pickText(activation.service, ['name', 'nome', 'label', 'type', 'tipo', 'description', 'descricao']);
+        const mission = pickText(activation.mission, ['name', 'nome', 'label', 'description', 'descricao']);
+        const orderNumber = pickText(order, ['numero', 'number', 'code', 'codigo']) || serviceOrderNumber(activation.serviceOrder);
+        const orderName = pickText(order, ['nomeOS', 'name', 'nome', 'label', 'mission', 'missao']) || mission || 'Ordem de Serviço';
+        const orderType = pickText(order, ['tipoOrdem', 'tipoServico', 'serviceType']) || serviceName;
+        const orderResource = pickText(order, ['tipoRecurso', 'recurso', 'resourceType']) || policingType;
+        const orderStatus = pickText(order, ['status', 'situacao']) || 'Não informado';
+        const orderStart = firstDefined(order.inicioGeral, order.inicio, order.start);
+        const orderEnd = firstDefined(order.terminoGeral, order.termino, order.end);
+        const orderCreatedAt = firstDefined(order.criadoEm, order.createdAt, order.dataCriacao);
+        const prescriptions = pickText(order, [
+          'prescricoesDiversas',
+          'prescricoes',
+          'prescriptions',
+          'orientacoesGerais',
+          'observacoesGerais'
+        ]);
+        const activitiesSource = firstDefined(order.atividades, order.activities, []);
+        const activities = Array.isArray(activitiesSource) ? activitiesSource.filter(isObjectRecord) : [];
+        const activationMoment = activation.activatedAt || activation.startedAt;
+        const startMoment = activation.startedAt || activation.activatedAt;
+        const duration = activation.endedAt ? formatDuration(startMoment, activation.endedAt) : '';
+
+        elements.printSheet.replaceChildren();
+
+        const header = document.createElement('header');
+        const brand = document.createElement('div');
+        const headerMeta = document.createElement('div');
+        const headerOrder = document.createElement('strong');
+        const headerActivation = document.createElement('span');
+        const title = document.createElement('h1');
+        header.className = 'activation-print-header';
+        brand.className = 'activation-print-brand';
+        headerMeta.className = 'activation-print-header-meta';
+        brand.textContent = 'ORDENA';
+        headerOrder.textContent = 'ORDEM DE SERVIÇO Nº ' + (orderNumber || '—');
+        headerActivation.textContent = 'Ativação nº ' + (activation.activationCode || activation.id) + ' · ' + activation.status;
+        headerMeta.append(headerOrder, headerActivation);
+        header.append(brand, headerMeta);
+
+        title.className = 'activation-print-title';
+        title.textContent = orderName;
+
+        const orderSection = createPrintSection('Dados da Ordem de Serviço');
+        const orderMeta = document.createElement('div');
+        orderMeta.className = 'activation-print-meta';
+        orderMeta.append(
+          createPrintMeta('Número da OS', orderNumber),
+          createPrintMeta('Situação da OS', orderStatus),
+          createPrintMeta('Tipo de serviço', orderType || 'Não informado'),
+          createPrintMeta('Tipo de recurso / patrulhamento', orderResource || 'Não informado'),
+          createPrintMeta('Início previsto', formatServiceOrderTime(orderStart)),
+          createPrintMeta('Término previsto', formatServiceOrderTime(orderEnd)),
+          createPrintMeta('Criada em', formatDateTime(orderCreatedAt)),
+          createPrintMeta('Origem', serviceOrderOrigin(order)),
+          createPrintMeta('Versão', firstDefined(order.versao, order.version, '1')),
+          createPrintMeta('Atividades planejadas', String(activities.length))
+        );
+        orderSection.appendChild(orderMeta);
+
+        const prescriptionsSection = createPrintSection('Prescrições diversas', true);
+        const prescriptionsText = document.createElement('p');
+        prescriptionsText.className = 'activation-print-prescriptions';
+        prescriptionsText.textContent = prescriptions || 'Nenhuma prescrição diversa informada.';
+        prescriptionsSection.appendChild(prescriptionsText);
+
+        const activityRows = activities.map(function(activity) {
+          const location = pickText(activity, ['local', 'location']);
+          const operation = pickText(activity, ['operacao', 'operation']);
+          const locationDetails = [
+            location || 'Sem local específico',
+            operation ? 'OP: ' + operation : '',
+            pickText(activity, ['localTipo']) ? 'Tipo: ' + pickText(activity, ['localTipo']) : ''
+          ].filter(Boolean).join(' · ');
+          const registeredDuration = Number(firstDefined(activity.duracaoMinutos, activity.durationMinutes));
+          const details = [
+            activityAddress(activity),
+            pickText(activity, ['detalhes', 'detail', 'obs']),
+            activityGpsSummary(activity),
+            pickText(activity, ['localId']) ? 'ID do local: ' + pickText(activity, ['localId']) : '',
+            pickText(activity, ['operacaoId']) ? 'ID da operação: ' + pickText(activity, ['operacaoId']) : '',
+            Number.isFinite(registeredDuration) && registeredDuration > 0 ? 'Duração registrada: ' + registeredDuration + ' min' : '',
+            pickText(activity, ['id']) ? 'Registro: ' + pickText(activity, ['id']) : ''
+          ].filter(function(value) {
+            return value && value !== '-';
+          }).join(' · ');
+          return [
+            activityDisplayName(firstDefined(activity.tipo, activity.type)),
+            (safeString(firstDefined(activity.inicio, activity.start)) || '—') + ' – ' +
+              (safeString(firstDefined(activity.fim, activity.end)) || '—'),
+            locationDetails,
+            details || '—'
+          ];
+        });
+        const activitiesSection = createPrintSection('Atividades da Ordem de Serviço', true);
+        activitiesSection.appendChild(createPrintTable(
+          ['Atividade', 'Horário', 'Local / Operação', 'Endereço / Detalhes'],
+          activityRows,
+          'Nenhuma atividade registrada nesta Ordem de Serviço.'
+        ));
+
+        const activationSection = createPrintSection('Dados registrados na ativação');
+        const activationMeta = document.createElement('div');
+        activationMeta.className = 'activation-print-meta';
+        activationMeta.append(
+          createPrintMeta('Código da ativação', activation.activationCode || activation.id),
+          createPrintMeta('Situação da ativação', activation.status),
+          createPrintMeta('Momento da ativação', formatDateTime(activationMoment)),
+          createPrintMeta('Início do turno', formatDateTime(startMoment)),
+          createPrintMeta('Término do turno', activation.endedAt
+            ? formatDateTime(activation.endedAt) + (duration ? ' · ' + duration : '')
+            : 'Em andamento'),
+          createPrintMeta('Tipo de policiamento', policingType || 'Não informado'),
+          createPrintMeta('Tipo de serviço selecionado', serviceName || 'Não informado'),
+          createPrintMeta('Missão registrada', mission || orderName)
+        );
+        activationSection.appendChild(activationMeta);
+
+        const vehicleSection = createPrintSection('Viatura / recurso empregado');
+        const vehicleMeta = document.createElement('div');
+        vehicleMeta.className = 'activation-print-meta';
+        vehicleMeta.append(
+          createPrintMeta('Identificação', vehicle.primary),
+          createPrintMeta('Tipo', pickText(vehicleRecord, ['type', 'tipo', 'category', 'categoria']) || 'Não informado'),
+          createPrintMeta('Prefixo', pickText(vehicleRecord, ['prefix', 'prefixo', 'code', 'codigo']) || 'Não informado'),
+          createPrintMeta('Placa', pickText(vehicleRecord, ['plate', 'placa']) || 'Não informado'),
+          createPrintMeta('Identificador de rádio', pickText(vehicleRecord, ['radio', 'identificadorRadio', 'radioCode', 'codigoRadio']) || 'Não informado'),
+          createPrintMeta('Complemento', vehicle.secondary || 'Não informado')
+        );
+        vehicleSection.appendChild(vehicleMeta);
+
+        const commanderSection = createPrintSection('Comandante da equipe');
+        const commanderMeta = document.createElement('div');
+        commanderMeta.className = 'activation-print-meta';
+        commanderMeta.append(
+          createPrintMeta('Posto / graduação', commander.rank || 'Não informado'),
+          createPrintMeta('Nome de guerra', commander.name || 'Não informado'),
+          createPrintMeta('RG', commander.rg || 'Não informado'),
+          createPrintMeta('Telefone', commander.phone || 'Não informado')
+        );
+        commanderSection.appendChild(commanderMeta);
+
+        const memberRows = Array.isArray(activation.members) ? activation.members.map(memberDetails)
+          .filter(function(member) { return member.informed; })
+          .map(function(member) {
+            return [member.rank, member.name, member.rg, member.phone];
+          }) : [];
+        const membersWithoutDetails = !Array.isArray(activation.members) ? memberCount(activation.members) : 0;
+        const membersSection = createPrintSection('Integrantes adicionais', true);
+        membersSection.appendChild(createPrintTable(
+          ['Posto / graduação', 'Nome de guerra', 'RG', 'Telefone'],
+          memberRows,
+          membersWithoutDetails > 0
+            ? membersWithoutDetails + (membersWithoutDetails === 1
+              ? ' integrante adicional informado, sem dados detalhados disponíveis.'
+              : ' integrantes adicionais informados, sem dados detalhados disponíveis.')
+            : 'Nenhum integrante adicional registrado nesta ativação.'
+        ));
+
+        const identifiersSection = createPrintSection('Identificadores dos registros');
+        const identifiersMeta = document.createElement('div');
+        identifiersMeta.className = 'activation-print-meta activation-print-identifiers';
+        identifiersMeta.append(
+          createPrintMeta('ID da ativação', activation.id),
+          createPrintMeta('ID da Ordem de Serviço', pickText(order, ['id']) || pickText(serviceOrderRecord, ['id']) || 'Não informado'),
+          createPrintMeta('ID da viatura / recurso', pickText(vehicleRecord, ['id']) || 'Não informado'),
+          createPrintMeta('ID do tipo de serviço', pickText(activation.service, ['id']) || pickText(order, ['tipoServicoId']) || 'Não informado')
+        );
+        identifiersSection.appendChild(identifiersMeta);
+
+        const footer = document.createElement('footer');
+        footer.className = 'activation-print-footer';
+        footer.textContent = 'Documento gerado pelo Ordena em ' + formatDateTime(new Date()) + '.';
+
+        elements.printSheet.append(
+          header,
+          title,
+          orderSection,
+          prescriptionsSection,
+          activitiesSection,
+          activationSection,
+          vehicleSection,
+          commanderSection,
+          membersSection,
+          identifiersSection,
+          footer
+        );
+        elements.printSheet.setAttribute('aria-hidden', 'false');
+
+        return {
+          hasFullOrder: orderResolution.hasFullOrder,
+          orderNumber: orderNumber
+        };
+      }
+
+      async function printActivationOrder(activation, triggerButton) {
+        if (!activation || state.printing || state.refreshing || state.endingTurn) {
+          return;
+        }
+
+        const startedAt = Date.now();
+        let printWasRequested = false;
+        state.printing = true;
+        beginButtonProcessing(triggerButton, 'Preparando...', [elements.refreshButton]);
+
+        try {
+          const printResult = buildActivationPrintSheet(activation);
+          await waitForMinimumFeedback(startedAt, 360);
+          endButtonProcessing(triggerButton);
+          await new Promise(function(resolve) {
+            window.requestAnimationFrame(resolve);
+          });
+
+          if (typeof window.print !== 'function') {
+            throw new Error('Recurso de impressão indisponível.');
+          }
+
+          const previousTitle = document.title;
+          document.title = 'OS-' + (printResult.orderNumber || 'sem-numero') + '-ativacao-' +
+            (activation.activationCode || activation.id);
+          printWasRequested = true;
+          try {
+            window.print();
+          } finally {
+            document.title = previousTitle;
+          }
+
+          if (!printResult.hasFullOrder && activation.isDemo !== true) {
+            showAlert('Impressão preparada com os dados disponíveis. As atividades ou prescrições completas da OS não foram encontradas no navegador.', 'warning');
+          } else {
+            showAlert('Ordem de Serviço e dados da ativação preparados para impressão com sucesso.', 'success');
+          }
+        } catch (error) {
+          console.error('Não foi possível preparar a impressão da ativação.', error);
+          elements.printSheet.setAttribute('aria-hidden', 'true');
+          showAlert('Não foi possível preparar a impressão da Ordem de Serviço. Tente novamente.', 'danger');
+        } finally {
+          endButtonProcessing(triggerButton);
+          state.printing = false;
+          if (!printWasRequested) {
+            elements.printSheet.setAttribute('aria-hidden', 'true');
+          }
+        }
+      }
+
+      function isToday(value) {
+        const date = parseTimestamp(value);
+        if (!date) {
+          return false;
+        }
+        const today = new Date();
+        return date.getFullYear() === today.getFullYear()
+          && date.getMonth() === today.getMonth()
+          && date.getDate() === today.getDate();
+      }
+
+      function showAlert(message, type) {
+        const safeType = ['success', 'danger', 'warning', 'info'].indexOf(type) >= 0 ? type : 'info';
+        const icons = {
+          success: 'bi-check-circle-fill',
+          danger: 'bi-exclamation-octagon-fill',
+          warning: 'bi-exclamation-triangle-fill',
+          info: 'bi-info-circle-fill'
+        };
+
+        window.clearTimeout(state.alertTimeout);
+        elements.alert.className = 'alert activation-page-alert alert-' + safeType;
+        elements.alert.setAttribute('role', safeType === 'danger' ? 'alert' : 'status');
+        elements.alert.setAttribute('aria-live', safeType === 'danger' ? 'assertive' : 'polite');
+        elements.alertIcon.className = 'bi mt-1 ' + icons[safeType];
+        elements.alertMessage.textContent = message;
+
+        if (safeType === 'success' || safeType === 'info') {
+          state.alertTimeout = window.setTimeout(function() {
+            elements.alert.classList.add('d-none');
+          }, 7000);
+        }
+      }
+
+      function createGrowingDots() {
+        const dots = document.createElement('span');
+        dots.className = 'activation-growing-dots';
+        dots.setAttribute('aria-hidden', 'true');
+        for (let index = 0; index < 3; index += 1) {
+          const dot = document.createElement('span');
+          dot.className = 'spinner-grow spinner-grow-sm';
+          dot.style.animationDelay = String(index * 0.15) + 's';
+          dots.appendChild(dot);
+        }
+        return dots;
+      }
+
+      function beginButtonProcessing(button, label, relatedControls) {
+        if (!button || buttonProcessingState.has(button)) {
+          return false;
+        }
+
+        const processingContent = document.createElement('span');
+        const processingLabel = document.createElement('span');
+        processingContent.className = 'activation-processing-content';
+        processingLabel.textContent = label || 'Processando...';
+        processingContent.append(createGrowingDots(), processingLabel);
+
+        const controls = Array.from(relatedControls || []).filter(function(control) {
+          return control && control !== button && typeof control.disabled === 'boolean';
+        });
+        buttonProcessingState.set(button, {
+          disabled: button.disabled,
+          ariaBusy: button.getAttribute('aria-busy'),
+          controls: controls.map(function(control) {
+            return { control: control, disabled: control.disabled };
+          })
+        });
+
+        controls.forEach(function(control) {
+          control.disabled = true;
+        });
+        button.disabled = true;
+        button.setAttribute('aria-busy', 'true');
+        button.appendChild(processingContent);
+        button.classList.add('activation-action-processing');
+        return true;
+      }
+
+      function endButtonProcessing(button) {
+        const previousState = buttonProcessingState.get(button);
+        if (!button || !previousState) {
+          return;
+        }
+
+        const processingContent = button.querySelector('.activation-processing-content');
+        if (processingContent) {
+          processingContent.remove();
+        }
+        button.classList.remove('activation-action-processing');
+        button.disabled = previousState.disabled;
+        if (previousState.ariaBusy === null) {
+          button.removeAttribute('aria-busy');
+        } else {
+          button.setAttribute('aria-busy', previousState.ariaBusy);
+        }
+        previousState.controls.forEach(function(item) {
+          item.control.disabled = item.disabled;
+        });
+        buttonProcessingState.delete(button);
+      }
+
+      function waitForMinimumFeedback(startedAt, minimumMilliseconds) {
+        const elapsed = Date.now() - startedAt;
+        return new Promise(function(resolve) {
+          window.setTimeout(resolve, Math.max(0, minimumMilliseconds - elapsed));
+        });
+      }
+
+      function runWithActivationWriteLock(operation) {
+        if (window.navigator.locks && typeof window.navigator.locks.request === 'function') {
+          return window.navigator.locks.request(ACTIVATION_WRITE_LOCK, { mode: 'exclusive' }, operation);
+        }
+        return Promise.resolve().then(operation);
+      }
+
+      function createTextStack(primary, secondary) {
+        const container = document.createElement('div');
+        const primaryElement = document.createElement('span');
+        primaryElement.className = 'activation-primary-text';
+        primaryElement.textContent = primary;
+        container.appendChild(primaryElement);
+        if (secondary) {
+          const secondaryElement = document.createElement('span');
+          secondaryElement.className = 'activation-secondary-text';
+          secondaryElement.textContent = secondary;
+          container.appendChild(secondaryElement);
+        }
+        return container;
+      }
+
+      function createStatusBadge(status) {
+        const badge = document.createElement('span');
+        const icon = document.createElement('i');
+        const isActive = status === ACTIVE_STATUS;
+        badge.className = 'activation-status ' + (isActive ? 'is-active' : 'is-closed');
+        icon.className = 'bi ' + (isActive ? 'bi-broadcast' : 'bi-check2-circle');
+        icon.setAttribute('aria-hidden', 'true');
+        badge.append(icon, document.createTextNode(status));
+        return badge;
+      }
+
+      function createEmptyState() {
+        const row = document.createElement('tr');
+        const cell = document.createElement('td');
+        const content = document.createElement('div');
+        const icon = document.createElement('span');
+        const title = document.createElement('h3');
+        const description = document.createElement('p');
+        const isActiveFilter = state.currentFilter === ACTIVE_STATUS;
+
+        // Quantidades anteriores preservadas:
+        // cell.colSpan = 7;
+        // cell.colSpan = 14;
+        // cell.colSpan = 9;
+        // Quantidade anterior preservada: cell.colSpan = 8;
+        cell.colSpan = 11;
+        cell.className = 'activation-empty-state';
+        content.className = 'activation-empty-content';
+        icon.className = 'activation-empty-icon';
+        icon.setAttribute('aria-hidden', 'true');
+        icon.appendChild(document.createElement('i'));
+        icon.firstChild.className = 'bi ' + (isActiveFilter ? 'bi-shield-check' : 'bi-clock-history');
+        title.className = 'activation-empty-title';
+        title.textContent = isActiveFilter ? 'Nenhuma guarnição ativa no momento' : 'Nenhum turno encerrado';
+        description.className = 'activation-empty-description';
+        // Texto anterior preservado; a atualização entre abas deixou de ser automática.
+        // description.textContent = isActiveFilter
+        //   ? 'Quando uma guarnição iniciar o turno, os dados operacionais aparecerão automaticamente neste painel.'
+        //   : 'As ativações concluídas aparecerão aqui com os respectivos horários de início e término.';
+        description.textContent = isActiveFilter
+          ? 'Clique em “Atualizar” para carregar as guarnições salvas neste navegador.'
+          : 'Clique em “Atualizar” para carregar os turnos encerrados salvos neste navegador.';
+        content.append(icon, title, description);
+
+        /* Ação de nova ativação anterior preservada; o painel agora é somente consulta operacional.
+        if (isActiveFilter) {
+          const action = document.createElement('a');
+          const actionIcon = document.createElement('i');
+          action.className = 'btn btn-sm btn-primary';
+          action.href = 'ativacao.html';
+          actionIcon.className = 'bi bi-plus-lg me-1';
+          actionIcon.setAttribute('aria-hidden', 'true');
+          action.append(actionIcon, document.createTextNode('Nova ativação'));
+          content.appendChild(action);
+        }
+        */
+
+        cell.appendChild(content);
+        row.appendChild(cell);
+        return row;
+      }
+
+      function createActivationRow(activation) {
+        const row = document.createElement('tr');
+        const codeCell = document.createElement('td');
+        const policingTypeCell = document.createElement('td');
+        const activationCell = document.createElement('td');
+        const activationDate = document.createElement('div');
+        const resourceCell = document.createElement('td');
+        const resource = document.createElement('div');
+        const resourceIcon = document.createElement('span');
+        const serviceCell = document.createElement('td');
+        const serviceOrderCell = document.createElement('td');
+        const serviceDateCell = document.createElement('td');
+        const serviceOrderStartCell = document.createElement('td');
+        const serviceOrderEndCell = document.createElement('td');
+        const commanderRankCell = document.createElement('td');
+        const commanderNameCell = document.createElement('td');
+        const commanderRgCell = document.createElement('td');
+        const commanderPhoneCell = document.createElement('td');
+        const membersCell = document.createElement('td');
+        // Célula agregada anterior preservada: const crewCell = document.createElement('td');
+        const missionCell = document.createElement('td');
+        const turnCell = document.createElement('td');
+        const actionsCell = document.createElement('td');
+        const actions = document.createElement('div');
+        const vehicle = vehicleDetails(activation.vehicle);
+        // Extração anterior preservada; o rádio é utilizado somente no modal de detalhes.
+        // const vehicleRadio = pickText(activation.vehicle, ['radio', 'identificadorRadio', 'radioCode', 'codigoRadio']);
+        const commander = commanderDetails(activation.commander);
+        const order = serviceOrderDetails(activation.serviceOrder);
+        const policingType = pickText(activation.policingType, ['name', 'nome', 'label', 'type', 'tipo']);
+        const serviceName = pickText(activation.service, ['name', 'nome', 'label', 'type', 'tipo', 'description', 'descricao']);
+        const mission = pickText(activation.mission, ['name', 'nome', 'label', 'description', 'descricao']);
+        // Dados agregados anteriores preservados:
+        // const effective = personnelCount(activation);
+        // const service = serviceDetails(activation);
+        const activationMoment = activation.activatedAt || activation.startedAt;
+        const startMoment = activation.startedAt || activation.activatedAt;
+
+        row.className = 'activation-row';
+        row.tabIndex = 0;
+        row.dataset.activationRow = activation.id;
+        row.setAttribute('aria-label', 'Abrir detalhes da ativação ' + (activation.activationCode || activation.id));
+        row.setAttribute('aria-haspopup', 'dialog');
+        row.setAttribute('aria-controls', 'endTurnModal');
+
+        codeCell.appendChild(createTextStack(
+          activation.activationCode || activation.id,
+          activation.isDemo ? 'Exemplo preenchido' : ''
+        ));
+        codeCell.className = 'activation-code-text';
+        codeCell.title = 'Identificador técnico: ' + activation.id;
+
+        policingTypeCell.appendChild(createTextStack(policingType || 'Tipo não informado', ''));
+
+        activationDate.className = 'activation-date-text';
+        activationDate.textContent = formatDateTime(activationMoment);
+        activationCell.append(activationDate, createStatusBadge(activation.status));
+
+        resource.className = 'activation-resource';
+        resourceIcon.className = 'activation-resource-icon';
+        resourceIcon.setAttribute('aria-hidden', 'true');
+        resourceIcon.appendChild(document.createElement('i'));
+        resourceIcon.firstChild.className = 'bi bi-car-front-fill';
+        resource.append(resourceIcon, createTextStack(vehicle.primary, vehicle.secondary));
+        resourceCell.appendChild(resource);
+
+        // Apresentação agregada anterior preservada:
+        // serviceCell.appendChild(createTextStack(service.primary, service.secondary));
+        // crewCell.appendChild(createTextStack(
+        //   commander.display,
+        //   effective > 0 ? 'Efetivo informado: ' + effective : 'Efetivo não informado'
+        // ));
+        serviceCell.appendChild(createTextStack(serviceName || 'Serviço não informado', ''));
+        // Apresentação anterior preservada: serviceOrderCell.appendChild(createTextStack(order.number, order.summary));
+        serviceOrderCell.appendChild(createTextStack(serviceOrderNumber(activation.serviceOrder), ''));
+
+        serviceDateCell.className = 'activation-date-text';
+        serviceDateCell.textContent = formatDate(activationMoment);
+        serviceDateCell.title = 'Data operacional da ativação';
+        serviceOrderStartCell.className = 'activation-date-text';
+        serviceOrderStartCell.textContent = formatServiceOrderTime(firstDefined(
+          activation.serviceOrder && activation.serviceOrder.inicioGeral,
+          activation.serviceOrder && activation.serviceOrder.start,
+          activation.serviceOrder && activation.serviceOrder.inicio
+        ));
+        serviceOrderStartCell.title = 'Horário de início previsto na Ordem de Serviço';
+        serviceOrderEndCell.className = 'activation-date-text';
+        serviceOrderEndCell.textContent = formatServiceOrderTime(firstDefined(
+          activation.serviceOrder && activation.serviceOrder.terminoGeral,
+          activation.serviceOrder && activation.serviceOrder.end,
+          activation.serviceOrder && activation.serviceOrder.termino
+        ));
+        serviceOrderEndCell.title = 'Horário de término previsto na Ordem de Serviço';
+
+        commanderRankCell.appendChild(createTextStack(commander.rank || 'Não informado', ''));
+        commanderNameCell.appendChild(createTextStack(commander.name || 'Não informado', ''));
+        commanderRgCell.className = 'activation-identity-text';
+        commanderRgCell.textContent = commander.rg || 'Não informado';
+        commanderPhoneCell.className = 'activation-contact-text';
+        commanderPhoneCell.textContent = commander.phone || 'Não informado';
+        membersCell.appendChild(createMembersSummary(activation.members));
+
+        missionCell.className = 'activation-mission';
+        // Conteúdo anterior preservado:
+        // missionCell.textContent = pickText(activation.mission, ['name', 'nome', 'label', 'description', 'descricao']) || 'Missão não informada';
+        missionCell.appendChild(createTextStack(mission || order.summary || 'Missão não informada', order.period));
+
+        const turnState = document.createElement('span');
+        const turnStateIcon = document.createElement('i');
+        const turnStart = document.createElement('span');
+        const turnEnd = document.createElement('span');
+        const isActive = activation.status === ACTIVE_STATUS;
+        turnState.className = 'activation-turn-state' + (isActive ? '' : ' is-closed');
+        turnStateIcon.className = 'bi ' + (isActive ? 'bi-play-circle-fill' : 'bi-stop-circle-fill');
+        turnStateIcon.setAttribute('aria-hidden', 'true');
+        turnState.append(turnStateIcon, document.createTextNode(isActive ? 'Em andamento' : 'Encerrado'));
+        turnStart.className = 'activation-secondary-text';
+        turnStart.textContent = 'Início: ' + formatDateTime(startMoment);
+        turnCell.append(turnState, turnStart);
+        if (!isActive) {
+          const duration = formatDuration(startMoment, activation.endedAt);
+          turnEnd.className = 'activation-secondary-text';
+          turnEnd.textContent = 'Término: ' + formatDateTime(activation.endedAt) + (duration ? ' • ' + duration : '');
+          turnCell.appendChild(turnEnd);
+        }
+
+        actions.className = 'table-actions';
+        if (isActive && !activation.isDemo) {
+          const endButton = document.createElement('button');
+          const endIcon = document.createElement('i');
+          endButton.type = 'button';
+          endButton.className = 'btn btn-sm btn-outline-danger';
+          endButton.dataset.activationAction = 'end-turn';
+          endButton.dataset.activationId = activation.id;
+          endButton.setAttribute('aria-label', 'Encerrar turno de ' + vehicle.primary);
+          endIcon.className = 'bi bi-stop-circle me-1';
+          endIcon.setAttribute('aria-hidden', 'true');
+          endButton.append(endIcon, document.createTextNode('Encerrar'));
+          actions.appendChild(endButton);
+        } else {
+          const closedLabel = document.createElement('span');
+          closedLabel.className = 'text-muted small';
+          closedLabel.textContent = activation.isDemo ? 'Demonstração' : 'Turno concluído';
+          actions.appendChild(closedLabel);
+        }
+        actionsCell.appendChild(actions);
+
+        const detailsButton = document.createElement('button');
+        const detailsIcon = document.createElement('i');
+        detailsButton.type = 'button';
+        detailsButton.className = 'btn btn-sm btn-outline-primary';
+        detailsButton.dataset.activationAction = 'view-details';
+        detailsButton.dataset.activationId = activation.id;
+        detailsButton.setAttribute('aria-label', 'Ver detalhes da ativação ' + (activation.activationCode || activation.id));
+        detailsIcon.className = 'bi bi-eye me-1';
+        detailsIcon.setAttribute('aria-hidden', 'true');
+        detailsButton.append(detailsIcon, document.createTextNode('Detalhes'));
+
+        const printButton = document.createElement('button');
+        const printIcon = document.createElement('i');
+        printButton.type = 'button';
+        printButton.className = 'btn btn-sm btn-outline-info';
+        printButton.dataset.activationAction = 'print-order';
+        printButton.dataset.activationId = activation.id;
+        printButton.setAttribute('aria-label', 'Imprimir Ordem de Serviço e dados da ativação ' + (activation.activationCode || activation.id));
+        printIcon.className = 'bi bi-printer me-1';
+        printIcon.setAttribute('aria-hidden', 'true');
+        printButton.append(printIcon, document.createTextNode('Imprimir'));
+
+        // Inserção anterior preservada; a impressão agora aparece ao lado de Detalhes.
+        // actions.prepend(detailsButton);
+        actions.prepend(detailsButton, printButton);
+
+        // Ordem agregada anterior preservada:
+        // row.append(activationCell, resourceCell, serviceCell, crewCell, missionCell, turnCell, actionsCell);
+        // Ordem completa anterior preservada:
+        // row.append(
+        //   codeCell, policingTypeCell, resourceCell, serviceCell, serviceOrderCell,
+        //   missionCell, commanderRankCell, commanderNameCell, commanderRgCell,
+        //   commanderPhoneCell, membersCell, activationCell, turnCell, actionsCell
+        // );
+        // Ordem anterior de nove colunas preservada:
+        // row.append(
+        //   codeCell,
+        //   policingTypeCell,
+        //   resourceCell,
+        //   serviceCell,
+        //   serviceOrderCell,
+        //   commanderRankCell,
+        //   commanderNameCell,
+        //   commanderPhoneCell,
+        //   actionsCell
+        // );
+        row.append(
+          codeCell,
+          resourceCell,
+          serviceCell,
+          serviceOrderCell,
+          serviceDateCell,
+          serviceOrderStartCell,
+          serviceOrderEndCell,
+          commanderRankCell,
+          commanderNameCell,
+          commanderPhoneCell,
+          actionsCell
+        );
+        return row;
+      }
+
+      /* Atualização das abas anteriores preservada; encerradas agora ficam no histórico.
+      function updateFilterButtons(activeTotal, closedTotal) {
+        elements.activeCount.textContent = String(activeTotal);
+        elements.closedCount.textContent = String(closedTotal);
+        elements.filters.forEach(function(button) {
+          const isSelected = button.dataset.activationFilter === state.currentFilter;
+          button.classList.toggle('btn-primary', isSelected);
+          button.classList.toggle('btn-outline-primary', !isSelected);
+          button.setAttribute('aria-pressed', String(isSelected));
+        });
+      }
+      */
+
+      function updateKpis() {
+        const activeRecords = state.activations.filter(function(activation) {
+          return activation.status === ACTIVE_STATUS;
+        });
+        const vehicleIds = new Set();
+        let onDutyPersonnel = 0;
+        let footPatrols = 0;
+
+        activeRecords.forEach(function(activation) {
+          const vehicle = vehicleDetails(activation.vehicle);
+          const policingType = pickText(activation.policingType, ['name', 'nome', 'label', 'type', 'tipo'])
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/\s+/g, ' ')
+            .trim()
+            .toLocaleLowerCase('pt-BR');
+          if (vehicle.informed) {
+            vehicleIds.add((vehicle.primary + '|' + vehicle.secondary).toLocaleLowerCase('pt-BR'));
+          }
+          onDutyPersonnel += personnelCount(activation);
+          if (policingType === 'a pe' || policingType === 'policiamento a pe') {
+            footPatrols += 1;
+          }
+        });
+
+        // Cálculo anterior preservado; o quarto indicador agora apresenta policiamento a pé.
+        // const closedToday = state.activations.filter(function(activation) {
+        //   return activation.status === CLOSED_STATUS && isToday(activation.endedAt);
+        // }).length;
+
+        elements.activeNowKpi.textContent = activeRecords.length.toLocaleString('pt-BR');
+        elements.onDutyPersonnelKpi.textContent = onDutyPersonnel.toLocaleString('pt-BR');
+        elements.deployedVehiclesKpi.textContent = vehicleIds.size.toLocaleString('pt-BR');
+        elements.footPatrolKpi.textContent = footPatrols.toLocaleString('pt-BR');
+        // elements.closedTodayKpi.textContent = closedToday.toLocaleString('pt-BR');
+      }
+
+      function renderActivations() {
+        const activeTotal = state.activations.filter(function(activation) {
+          return activation.status === ACTIVE_STATUS;
+        }).length;
+        // Total encerrado anterior preservado; a consulta agora está na página de histórico.
+        // const closedTotal = state.activations.length - activeTotal;
+        const visibleRecords = state.activations
+          .filter(function(activation) {
+            return activation.status === ACTIVE_STATUS;
+          })
+          .sort(function(first, second) {
+            const firstDate = parseTimestamp(first.activatedAt || first.startedAt);
+            const secondDate = parseTimestamp(second.activatedAt || second.startedAt);
+            return (secondDate ? secondDate.getTime() : 0) - (firstDate ? firstDate.getTime() : 0);
+          });
+        const showDemo = state.demoAvailable &&
+          state.activations.length === 0;
+
+        updateKpis();
+        // Atualização das abas anterior preservada; o painel agora é exclusivamente ativo.
+        // updateFilterButtons(activeTotal, closedTotal);
+        elements.table.setAttribute('aria-busy', 'true');
+        elements.table.classList.toggle('is-empty', visibleRecords.length === 0 && !showDemo);
+        elements.tableBody.replaceChildren();
+
+        if (showDemo) {
+          const nextExampleCode = readActivationSequence() + 1;
+          DEMO_ACTIVATION.activationCode = Number.isSafeInteger(nextExampleCode)
+            ? String(nextExampleCode)
+            : 'Exemplo';
+          elements.tableBody.appendChild(createActivationRow(DEMO_ACTIVATION));
+        } else if (visibleRecords.length === 0) {
+          elements.tableBody.appendChild(createEmptyState());
+        } else {
+          visibleRecords.forEach(function(activation) {
+            elements.tableBody.appendChild(createActivationRow(activation));
+          });
+        }
+
+        if (showDemo) {
+          elements.recordCount.textContent = 'Nenhuma ativação real • exemplo demonstrativo';
+        } else {
+          elements.recordCount.textContent = visibleRecords.length === 1
+            ? '1 ativação em andamento'
+            : visibleRecords.length + ' ativações em andamento';
+        }
+        elements.visibleCount.textContent = showDemo
+          ? '0 registros reais • 1 exemplo exibido'
+          : (visibleRecords.length === 1
+            ? '1 registro exibido'
+            : visibleRecords.length + ' registros exibidos');
+        elements.table.setAttribute('aria-busy', 'false');
+      }
+
+      function updateTimestamp() {
+        elements.updatedAt.textContent = 'Última atualização: ' + formatUpdateTime(new Date());
+      }
+
+      function consumeActivationSuccessFlag() {
+        try {
+          const currentUrl = new URL(window.location.href);
+          const activated = currentUrl.searchParams.get('ativada') === '1';
+          if (!activated) {
+            return false;
+          }
+          currentUrl.searchParams.delete('ativada');
+          const cleanUrl = currentUrl.pathname + (currentUrl.search ? currentUrl.search : '') + currentUrl.hash;
+          window.history.replaceState(window.history.state, document.title, cleanUrl);
+          return true;
+        } catch (error) {
+          return false;
+        }
+      }
+
+      async function initializePanel() {
+        // Espera artificial anterior preservada, mas desativada enquanto a fonte é
+        // o localStorage síncrono. O loader acompanhará a requisição real da futura API.
+        // const startedAt = Date.now();
+        const activatedSuccessfully = consumeActivationSuccessFlag();
+        const result = await readActivationsWithLock();
+        // await waitForMinimumFeedback(startedAt, 320);
+
+        elements.pageLoading.hidden = true;
+        elements.dashboardContent.hidden = false;
+
+        if (result.error) {
+          state.activations = [];
+          state.demoAvailable = false;
+          renderActivations();
+          updateTimestamp();
+          showAlert('Não foi possível carregar as ativações salvas. Verifique os dados do navegador e tente novamente.', 'danger');
+          return;
+        }
+
+        state.activations = result.records;
+        state.demoAvailable = result.isEmpty && result.skipped === 0;
+        renderActivations();
+        updateTimestamp();
+
+        if (activatedSuccessfully) {
+          showAlert('Guarnição ativada com sucesso. O painel operacional foi atualizado.', 'success');
+        } else if (result.skipped > 0) {
+          showAlert('Alguns registros incompatíveis não puderam ser exibidos. Os demais dados foram carregados normalmente.', 'warning');
+        }
+      }
+
+      async function refreshActivations() {
+        if (state.printing) {
+          return;
+        }
+        if (state.refreshing || state.endingTurn) {
+          return;
+        }
+
+        state.refreshing = true;
+        const startedAt = Date.now();
+        beginButtonProcessing(elements.refreshButton, 'Atualizando...', elements.filters);
+        elements.table.setAttribute('aria-busy', 'true');
+        const result = await readActivationsWithLock();
+        await waitForMinimumFeedback(startedAt, 420);
+
+        if (result.error) {
+          elements.table.setAttribute('aria-busy', 'false');
+          endButtonProcessing(elements.refreshButton);
+          state.refreshing = false;
+          showAlert('Erro ao atualizar o painel. Os dados exibidos anteriormente foram mantidos.', 'danger');
+          return;
+        }
+
+        state.activations = result.records;
+        state.demoAvailable = result.isEmpty && result.skipped === 0;
+        renderActivations();
+        updateTimestamp();
+        endButtonProcessing(elements.refreshButton);
+        state.refreshing = false;
+
+        if (result.skipped > 0) {
+          showAlert('Painel atualizado, mas alguns registros incompatíveis não puderam ser exibidos.', 'warning');
+        } else {
+          showAlert('Painel de ativações atualizado com sucesso.', 'success');
+        }
+      }
+
+      function findActivationForDetails(activationId) {
+        const storedActivation = state.activations.find(function(item) {
+          return String(item.id) === String(activationId);
+        });
+        if (storedActivation) {
+          return storedActivation;
+        }
+        if (state.demoAvailable && String(DEMO_ACTIVATION.id) === String(activationId)) {
+          return DEMO_ACTIVATION;
+        }
+        return null;
+      }
+
+      function canEndActivation(activation) {
+        return Boolean(activation && activation.status === ACTIVE_STATUS && activation.isDemo !== true);
+      }
+
+      function setActivationModalMode(activation, requestedMode) {
+        const canEndTurn = canEndActivation(activation);
+        const isConfirmMode = requestedMode === 'confirm-end' && canEndTurn;
+        const isClosed = activation.status === CLOSED_STATUS;
+        state.modalMode = isConfirmMode ? 'confirm-end' : 'details';
+        state.selectedActivationId = activation.id;
+        state.pendingActivationId = isConfirmMode ? activation.id : null;
+        elements.endTurnModalLabel.textContent = isConfirmMode ? 'Confirmar encerramento' : 'Detalhes da ativação';
+        elements.cancelEndTurnButton.textContent = isConfirmMode ? 'Voltar aos detalhes' : 'Fechar';
+        elements.endTurnActionLabel.textContent = isConfirmMode ? 'Confirmar encerramento' : 'Encerrar turno';
+        elements.confirmEndTurnButton.classList.toggle('d-none', !canEndTurn);
+        elements.confirmEndTurnButton.disabled = !canEndTurn;
+        elements.endTurnNotice.classList.toggle('is-closed', !canEndTurn);
+
+        if (activation.isDemo) {
+          elements.endTurnNoticeIcon.className = 'bi bi-info-circle-fill mt-1';
+          elements.endTurnNoticeText.textContent = 'Este é um exemplo preenchido para demonstrar o painel. Ele não será salvo nem poderá ser encerrado.';
+        } else if (isClosed) {
+          elements.endTurnNoticeIcon.className = 'bi bi-check-circle-fill mt-1';
+          elements.endTurnNoticeText.textContent = 'Este turno já foi encerrado. Os dados permanecem disponíveis somente para consulta.';
+        } else if (isConfirmMode) {
+          elements.endTurnNoticeIcon.className = 'bi bi-exclamation-triangle-fill mt-1';
+          elements.endTurnNoticeText.textContent = 'Confirme o encerramento. O horário de término será registrado agora e a ativação passará para a lista de encerradas.';
+        } else {
+          elements.endTurnNoticeIcon.className = 'bi bi-info-circle-fill mt-1';
+          elements.endTurnNoticeText.textContent = 'Confira as informações abaixo. Utilize “Encerrar turno” para iniciar a confirmação desta operação.';
+        }
+      }
+
+      function openEndTurnModal(activation, triggerButton, initialMode) {
+        if (!window.bootstrap || !window.bootstrap.Modal) {
+          showAlert('Não foi possível abrir os detalhes da ativação. Atualize a página e tente novamente.', 'danger');
+          return;
+        }
+
+        const vehicle = vehicleDetails(activation.vehicle);
+        const vehicleRadio = pickText(activation.vehicle, ['radio', 'identificadorRadio', 'radioCode', 'codigoRadio']);
+        const commander = commanderDetails(activation.commander);
+        const order = serviceOrderDetails(activation.serviceOrder);
+        const policingType = pickText(activation.policingType, ['name', 'nome', 'label', 'type', 'tipo']);
+        const serviceName = pickText(activation.service, ['name', 'nome', 'label', 'type', 'tipo', 'description', 'descricao']);
+        const mission = pickText(activation.mission, ['name', 'nome', 'label', 'description', 'descricao']);
+        const activationMoment = activation.activatedAt || activation.startedAt;
+        const startMoment = activation.startedAt || activation.activatedAt;
+        const isActive = activation.status === ACTIVE_STATUS;
+        const duration = isActive ? '' : formatDuration(startMoment, activation.endedAt);
+        // Seleção pendente anterior preservada; agora só é definida no modo de confirmação.
+        // state.pendingActivationId = activation.id;
+        state.lastEndTurnTrigger = triggerButton || null;
+        elements.endTurnCode.textContent = activation.activationCode || activation.id;
+        elements.endTurnStatus.replaceChildren(createStatusBadge(activation.status));
+        // Aviso anterior preservado; o conteúdo agora acompanha o modo detalhes/confirmação.
+        // elements.endTurnNotice.classList.toggle('is-closed', !isActive);
+        elements.endTurnPolicingType.textContent = policingType || 'Não informado';
+        elements.endTurnResource.textContent = vehicle.primary + (vehicle.secondary ? ' — ' + vehicle.secondary : '');
+        elements.endTurnVehicleRadio.textContent = vehicleRadio || 'Não informado';
+        elements.endTurnService.textContent = serviceName || 'Não informado';
+        elements.endTurnServiceOrder.textContent = order.number + (order.summary ? ' — ' + order.summary : '');
+        elements.endTurnMission.textContent = (mission || order.summary || 'Não informado') + (order.period ? ' — ' + order.period : '');
+        elements.endTurnCommanderRank.textContent = commander.rank || 'Não informado';
+        elements.endTurnCommander.textContent = commander.name || 'Não informado';
+        elements.endTurnCommanderRg.textContent = commander.rg || 'Não informado';
+        elements.endTurnCommanderPhone.textContent = commander.phone || 'Não informado';
+        elements.endTurnActivatedAt.textContent = formatDateTime(activationMoment);
+        elements.endTurnStartedAt.textContent = formatDateTime(startMoment);
+        elements.endTurnEndedAt.textContent = isActive
+          ? 'Em andamento'
+          : formatDateTime(activation.endedAt) + (duration ? ' • ' + duration : '');
+        elements.endTurnMembers.replaceChildren(createMembersSummary(activation.members));
+        setActivationModalMode(activation, initialMode || 'details');
+        window.bootstrap.Modal.getOrCreateInstance(elements.endTurnModal).show();
+      }
+
+      function closeStoredActivation(activationId) {
+        const result = {
+          feedbackMessage: '',
+          feedbackType: 'success',
+          updatedRecords: null
+        };
+        const latestResult = readActivations();
+        if (latestResult.error) {
+          result.feedbackMessage = 'Não foi possível acessar os dados da ativação. O turno não foi encerrado.';
+          result.feedbackType = 'danger';
+          return result;
+        }
+        if (latestResult.skipped > 0) {
+          result.feedbackMessage = 'Existem registros incompatíveis no armazenamento. O turno não foi encerrado para evitar perda de dados.';
+          result.feedbackType = 'danger';
+          return result;
+        }
+
+        const activation = latestResult.records.find(function(item) {
+          return String(item.id) === String(activationId);
+        });
+        if (!activation) {
+          result.feedbackMessage = 'A ativação não foi encontrada. Atualize o painel e tente novamente.';
+          result.feedbackType = 'warning';
+          result.updatedRecords = latestResult.records;
+          return result;
+        }
+        if (activation.status === CLOSED_STATUS) {
+          result.feedbackMessage = 'Este turno já havia sido encerrado. O painel foi sincronizado.';
+          result.feedbackType = 'info';
+          result.updatedRecords = latestResult.records;
+          return result;
+        }
+
+        activation.status = CLOSED_STATUS;
+        activation.endedAt = new Date().toISOString();
+        if (persistActivations(latestResult.records)) {
+          const resource = vehicleDetails(activation.vehicle);
+          result.feedbackMessage = 'Turno de ' + resource.primary + ' encerrado com sucesso.';
+          result.feedbackType = 'success';
+          result.updatedRecords = latestResult.records;
+        } else {
+          result.feedbackMessage = 'Não foi possível salvar o encerramento do turno. Tente novamente.';
+          result.feedbackType = 'danger';
+        }
+        return result;
+      }
+
+      async function endPendingTurn() {
+        if (state.printing) {
+          return;
+        }
+        if (!state.pendingActivationId || state.endingTurn || state.refreshing) {
+          return;
+        }
+        if (String(state.pendingActivationId) === String(DEMO_ACTIVATION.id)) {
+          state.pendingActivationId = null;
+          showAlert('O registro demonstrativo não pode ser encerrado.', 'warning');
+          return;
+        }
+
+        const activationId = state.pendingActivationId;
+        const startedAt = Date.now();
+        let feedbackMessage = '';
+        let feedbackType = 'success';
+        let updatedRecords = null;
+        state.endingTurn = true;
+        elements.endTurnModal.setAttribute('aria-busy', 'true');
+        elements.table.setAttribute('aria-busy', 'true');
+        beginButtonProcessing(elements.confirmEndTurnButton, 'Encerrando...', [
+          elements.cancelEndTurnButton,
+          elements.endTurnModalClose,
+          elements.refreshButton
+        ]);
+
+        /* Fluxo síncrono anterior preservado; a alteração agora ocorre dentro do
+           mesmo lock exclusivo utilizado ao criar uma ativação.
+        const latestResult = readActivations();
+        if (latestResult.error) {
+          feedbackMessage = 'Não foi possível acessar os dados da ativação. O turno não foi encerrado.';
+          feedbackType = 'danger';
+        } else if (latestResult.skipped > 0) {
+          feedbackMessage = 'Existem registros incompatíveis no armazenamento. O turno não foi encerrado para evitar perda de dados.';
+          feedbackType = 'danger';
+        } else {
+          const activation = latestResult.records.find(function(item) {
+            return String(item.id) === String(activationId);
+          });
+
+          if (!activation) {
+            feedbackMessage = 'A ativação não foi encontrada. Atualize o painel e tente novamente.';
+            feedbackType = 'warning';
+            updatedRecords = latestResult.records;
+          } else if (activation.status === CLOSED_STATUS) {
+            feedbackMessage = 'Este turno já havia sido encerrado. O painel foi sincronizado.';
+            feedbackType = 'info';
+            updatedRecords = latestResult.records;
+          } else {
+            activation.status = CLOSED_STATUS;
+            activation.endedAt = new Date().toISOString();
+            if (persistActivations(latestResult.records)) {
+              const resource = vehicleDetails(activation.vehicle);
+              feedbackMessage = 'Turno de ' + resource.primary + ' encerrado com sucesso.';
+              feedbackType = 'success';
+              updatedRecords = latestResult.records;
+            } else {
+              feedbackMessage = 'Não foi possível salvar o encerramento do turno. Tente novamente.';
+              feedbackType = 'danger';
+            }
+          }
+        }
+        */
+
+        try {
+          const mutationResult = await runWithActivationWriteLock(function() {
+            return closeStoredActivation(activationId);
+          });
+          feedbackMessage = mutationResult.feedbackMessage;
+          feedbackType = mutationResult.feedbackType;
+          updatedRecords = mutationResult.updatedRecords;
+        } catch (error) {
+          console.error('Não foi possível encerrar a ativação.', error);
+          feedbackMessage = 'Não foi possível salvar o encerramento do turno. Tente novamente.';
+          feedbackType = 'danger';
+        }
+
+        await waitForMinimumFeedback(startedAt, 480);
+        endButtonProcessing(elements.confirmEndTurnButton);
+        elements.endTurnModal.removeAttribute('aria-busy');
+        state.endingTurn = false;
+
+        if (updatedRecords) {
+          state.activations = updatedRecords;
+          renderActivations();
+          updateTimestamp();
+        } else {
+          elements.table.setAttribute('aria-busy', 'false');
+        }
+
+        state.pendingActivationId = null;
+        window.bootstrap.Modal.getOrCreateInstance(elements.endTurnModal).hide();
+        showAlert(feedbackMessage, feedbackType);
+      }
+
+      elements.filters.forEach(function(button) {
+        button.addEventListener('click', function() {
+          if (state.printing) {
+            return;
+          }
+          if (state.refreshing || state.endingTurn) {
+            return;
+          }
+          state.currentFilter = button.dataset.activationFilter === CLOSED_STATUS ? CLOSED_STATUS : ACTIVE_STATUS;
+          renderActivations();
+        });
+      });
+
+      elements.refreshButton.addEventListener('click', refreshActivations);
+
+      elements.tableBody.addEventListener('click', function(event) {
+        if (state.printing) {
+          return;
+        }
+        if (state.refreshing || state.endingTurn) {
+          return;
+        }
+        const actionButton = event.target.closest('[data-activation-action]');
+        const activationRow = event.target.closest('[data-activation-row]');
+        const activationId = actionButton
+          ? actionButton.dataset.activationId
+          : (activationRow ? activationRow.dataset.activationRow : '');
+        if (!activationId) {
+          return;
+        }
+        const activation = findActivationForDetails(activationId);
+        if (!activation) {
+          showAlert('A ativação selecionada não está mais disponível. Atualize o painel e tente novamente.', 'warning');
+          return;
+        }
+        if (actionButton && actionButton.dataset.activationAction === 'print-order') {
+          printActivationOrder(activation, actionButton);
+          return;
+        }
+        const initialMode = actionButton && actionButton.dataset.activationAction === 'end-turn'
+          ? 'confirm-end'
+          : 'details';
+        openEndTurnModal(activation, actionButton || activationRow, initialMode);
+      });
+
+      elements.tableBody.addEventListener('keydown', function(event) {
+        const activationRow = event.target.closest('[data-activation-row]');
+        if (state.printing) {
+          return;
+        }
+        if (!activationRow || event.target !== activationRow || state.refreshing || state.endingTurn) {
+          return;
+        }
+        if (event.key !== 'Enter' && event.key !== ' ') {
+          return;
+        }
+        event.preventDefault();
+        const activation = findActivationForDetails(activationRow.dataset.activationRow);
+        if (activation) {
+          openEndTurnModal(activation, activationRow, 'details');
+        }
+      });
+
+      elements.confirmEndTurnButton.addEventListener('click', function() {
+        if (state.modalMode === 'confirm-end') {
+          endPendingTurn();
+          return;
+        }
+        const activation = findActivationForDetails(state.selectedActivationId);
+        if (canEndActivation(activation)) {
+          setActivationModalMode(activation, 'confirm-end');
+        }
+      });
+
+      elements.cancelEndTurnButton.addEventListener('click', function() {
+        if (state.endingTurn) {
+          return;
+        }
+        if (state.modalMode === 'confirm-end') {
+          const activation = findActivationForDetails(state.selectedActivationId);
+          if (activation) {
+            setActivationModalMode(activation, 'details');
+          }
+          return;
+        }
+        window.bootstrap.Modal.getOrCreateInstance(elements.endTurnModal).hide();
+      });
+      elements.endTurnModal.addEventListener('hide.bs.modal', function(event) {
+        if (state.endingTurn) {
+          event.preventDefault();
+        }
+      });
+      elements.endTurnModal.addEventListener('hidden.bs.modal', function() {
+        if (!state.endingTurn) {
+          state.pendingActivationId = null;
+        }
+        state.selectedActivationId = null;
+        state.modalMode = 'details';
+        const trigger = state.lastEndTurnTrigger;
+        state.lastEndTurnTrigger = null;
+        window.requestAnimationFrame(function() {
+          if (trigger && trigger.isConnected && !trigger.disabled) {
+            trigger.focus();
+            return;
+          }
+          const selectedFilter = elements.filters.find(function(button) {
+            return button.dataset.activationFilter === state.currentFilter;
+          });
+          if (selectedFilter) {
+            selectedFilter.focus();
+            return;
+          }
+          if (elements.refreshButton && !elements.refreshButton.disabled) {
+            elements.refreshButton.focus();
+          }
+        });
+      });
+
+      window.addEventListener('afterprint', function() {
+        elements.printSheet.setAttribute('aria-hidden', 'true');
+      });
+
+      window.addEventListener('storage', async function(event) {
+        if (!AUTOMATIC_STORAGE_SYNC_ENABLED) {
+          return;
+        }
+
+        if (state.printing) {
+          return;
+        }
+        if (event.key !== STORAGE_KEY || state.refreshing || state.endingTurn) {
+          return;
+        }
+        const result = await readActivationsWithLock();
+        if (result.error) {
+          showAlert('Os dados foram alterados em outra janela, mas não foi possível sincronizar o painel.', 'warning');
+          return;
+        }
+        state.activations = result.records;
+        state.demoAvailable = result.isEmpty && result.skipped === 0;
+        renderActivations();
+        updateTimestamp();
+        showAlert('Painel sincronizado com as alterações de outra janela.', 'info');
+      });
+
+      initializePanel();
+    });
+  </script>
+</body>
+
+</html>

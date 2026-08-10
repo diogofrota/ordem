@@ -858,7 +858,7 @@
             <a class="nav-link" href="#" aria-expanded="false">
               <span class="nav-icon"><i class="ph-light ph-magnifying-glass"></i></span>
               <span class="nav-text">Consultas</span>
-              <span class="nav-badge">5</span>
+              <span class="nav-badge">6</span>
               <span class="nav-arrow"><i class="bi bi-chevron-right"></i></span>
             </a>
             <ul class="nav-submenu ">
@@ -867,6 +867,7 @@
               <li><a class="nav-link " href="consulta-locais-patrulhamento.html"><span class="nav-dot"></span>Locais de Patrulhamento</a></li>
               <li><a class="nav-link " href="consulta-tipos-servico.html"><span class="nav-dot"></span>Tipos de Serviço</a></li>
               <li><a class="nav-link " href="consulta-operacoes-especiais.html"><span class="nav-dot"></span>Operações Especiais</a></li>
+              <li><a class="nav-link " href="users.html"><span class="nav-dot"></span>Ordens de Serviço</a></li>
             </ul>
           </li>
 
@@ -874,11 +875,13 @@
             <a class="nav-link" href="#" aria-expanded="false">
               <span class="nav-icon"><i class="ph-light ph-users-three"></i></span>
               <span class="nav-text">Ordens de Serviço</span>
-              <span class="nav-badge">2</span>
+              <span class="nav-badge">1</span>
               <span class="nav-arrow"><i class="bi bi-chevron-right"></i></span>
             </a>
             <ul class="nav-submenu ">
+              <!-- Link anterior preservado; a consulta agora pertence ao grupo Consultas.
               <li><a class="nav-link " href="users.html"><span class="nav-dot"></span>Consultar Ordens de Serviço</a></li>
+              -->
               <li><a class="nav-link " href="users-view.html"><span class="nav-dot"></span>Criar Ordem de Serviço</a></li>
             </ul>
           </li>
@@ -887,11 +890,12 @@
             <a class="nav-link" href="#" aria-expanded="false">
               <span class="nav-icon"><i class="ph-light ph-shield-check"></i></span>
               <span class="nav-text">Operação</span>
-              <span class="nav-badge">2</span>
+              <span class="nav-badge">3</span>
               <span class="nav-arrow"><i class="bi bi-chevron-right"></i></span>
             </a>
             <ul class="nav-submenu ">
-              <li><a class="nav-link " href="auth-login.html"><span class="nav-dot"></span>Ativação</a></li>
+              <li><a class="nav-link " href="ativacao.html"><span class="nav-dot"></span>Ativar Guarnição</a></li>
+              <li><a class="nav-link " href="painel-ativacoes.html"><span class="nav-dot"></span>Painel de Ativações</a></li>
               <li><a class="nav-link " href="auth-register.html"><span class="nav-dot"></span>Mapa Tático</a></li>
             </ul>
           </li>
@@ -1449,7 +1453,7 @@
               <div class="row g-3">
                 <div class="col-12">
                   <label for="serviceTypeName" class="form-label required">Nome do serviço</label>
-                  <input type="text" class="form-control text-uppercase" id="serviceTypeName" name="name" placeholder="Ex.: Ordinária" minlength="3" maxlength="80" aria-describedby="serviceTypeNameHelp serviceTypeNameFeedback" autocapitalize="characters" spellcheck="false" required>
+                  <input type="text" class="form-control text-uppercase" id="serviceTypeName" name="name" placeholder="Ex.: APREV 1" minlength="3" maxlength="80" aria-describedby="serviceTypeNameHelp serviceTypeNameFeedback" autocapitalize="characters" spellcheck="false" required>
                   <div class="invalid-feedback" id="serviceTypeNameFeedback">Informe um nome com 3 a 80 caracteres.</div>
                   <div class="form-text" id="serviceTypeNameHelp">Use um nome claro e diferente dos tipos já cadastrados.</div>
                 </div>

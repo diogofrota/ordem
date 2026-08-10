@@ -871,7 +871,7 @@
             <a class="nav-link" href="#" aria-expanded="false">
               <span class="nav-icon"><i class="ph-light ph-magnifying-glass"></i></span>
               <span class="nav-text">Consultas</span>
-              <span class="nav-badge">5</span>
+              <span class="nav-badge">6</span>
               <span class="nav-arrow"><i class="bi bi-chevron-right"></i></span>
             </a>
             <ul class="nav-submenu ">
@@ -880,6 +880,7 @@
               <li><a class="nav-link " href="consulta-locais-patrulhamento.html"><span class="nav-dot"></span>Locais de Patrulhamento</a></li>
               <li><a class="nav-link " href="consulta-tipos-servico.html"><span class="nav-dot"></span>Tipos de Serviço</a></li>
               <li><a class="nav-link " href="consulta-operacoes-especiais.html"><span class="nav-dot"></span>Operações Especiais</a></li>
+              <li><a class="nav-link " href="users.html"><span class="nav-dot"></span>Ordens de Serviço</a></li>
             </ul>
           </li>
 
@@ -887,11 +888,13 @@
             <a class="nav-link" href="#" aria-expanded="false">
               <span class="nav-icon"><i class="ph-light ph-users-three"></i></span>
               <span class="nav-text">Ordens de Serviço</span>
-              <span class="nav-badge">2</span>
+              <span class="nav-badge">1</span>
               <span class="nav-arrow"><i class="bi bi-chevron-right"></i></span>
             </a>
             <ul class="nav-submenu ">
+              <!-- Link anterior preservado; a consulta agora pertence ao grupo Consultas.
               <li><a class="nav-link " href="users.html"><span class="nav-dot"></span>Consultar Ordens de Serviço</a></li>
+              -->
               <li><a class="nav-link " href="users-view.html"><span class="nav-dot"></span>Criar Ordem de Serviço</a></li>
               <li class="d-none"><a class="nav-link " href="users-edit.html"><span class="nav-dot"></span>User Edit</a></li>
               <li class="d-none"><a class="nav-link " href="profile.html"><span class="nav-dot"></span>Profile</a></li>
@@ -914,11 +917,12 @@
             <a class="nav-link" href="#" aria-expanded="false">
               <span class="nav-icon"><i class="ph-light ph-shield-check"></i></span>
               <span class="nav-text">Operação</span>
-              <span class="nav-badge">2</span>
+              <span class="nav-badge">3</span>
               <span class="nav-arrow"><i class="bi bi-chevron-right"></i></span>
             </a>
             <ul class="nav-submenu ">
-              <li><a class="nav-link " href="auth-login.html"><span class="nav-dot"></span>Ativação</a></li>
+              <li><a class="nav-link " href="ativacao.html"><span class="nav-dot"></span>Ativar Guarnição</a></li>
+              <li><a class="nav-link " href="painel-ativacoes.html"><span class="nav-dot"></span>Painel de Ativações</a></li>
               <li><a class="nav-link " href="auth-register.html"><span class="nav-dot"></span>Mapa Tático</a></li>
               <li class="d-none"><a class="nav-link " href="auth-forgot-password.html"><span class="nav-dot"></span>Forgot Password</a></li>
               <li class="d-none"><a class="nav-link " href="auth-reset-password.html"><span class="nav-dot"></span>Reset Password</a></li>
@@ -1663,7 +1667,8 @@
               <span class="base-card-icon" aria-hidden="true"><i class="bi bi-geo-alt"></i></span>
               <div>
                 <h2 class="card-title" id="baseFormTitle">Cadastrar novo ponto de baseamento</h2>
-                <p class="card-subtitle">Clique no mapa ou arraste o pino para preencher endereço e coordenadas automaticamente.</p>
+                <!-- Texto anterior preservado: Clique no mapa ou arraste o pino para preencher endereço e coordenadas automaticamente. -->
+                <p class="card-subtitle">Informe a identificação e a descrição; depois use o mapa para preencher endereço e coordenadas automaticamente.</p>
               </div>
             </div>
             <span class="base-required-note"><span class="text-danger">*</span> Campos obrigatórios</span>
@@ -1683,7 +1688,18 @@
                       <label for="basePointNickname" class="form-label required">Identificação tática</label>
                       <input type="text" class="form-control text-uppercase" id="basePointNickname" name="nickname" placeholder="Ex.: Base Operacional 01" minlength="3" maxlength="80" aria-describedby="basePointNicknameHelp basePointNicknameFeedback" required>
                       <div class="invalid-feedback" id="basePointNicknameFeedback">Informe uma identificação tática com pelo menos 3 caracteres.</div>
-                      <div class="form-text" id="basePointNicknameHelp">Este é o único campo digitado pelo usuário e será o apelido exibido na listagem.</div>
+                      <!-- Texto anterior preservado: Este é o único campo digitado pelo usuário e será o apelido exibido na listagem. -->
+                      <div class="form-text" id="basePointNicknameHelp">Este será o apelido exibido na listagem dos pontos cadastrados.</div>
+                    </div>
+
+                    <div class="col-12">
+                      <label for="basePointDescription" class="form-label required">Descrição</label>
+                      <textarea class="form-control" id="basePointDescription" name="description" placeholder="Descreva o ponto de baseamento..." minlength="3" maxlength="500" rows="3" aria-describedby="basePointDescriptionHelp basePointDescriptionFeedback" required></textarea>
+                      <div class="invalid-feedback" id="basePointDescriptionFeedback">Informe uma descrição com 3 a 500 caracteres.</div>
+                      <div class="form-text d-flex justify-content-between align-items-start gap-2" id="basePointDescriptionHelp">
+                        <span>Explique de forma objetiva as características e referências deste ponto.</span>
+                        <span class="font-monospace text-nowrap" id="basePointDescriptionCount" aria-live="polite">0/500</span>
+                      </div>
                     </div>
 
                     <div class="col-12 base-address-section">
@@ -2094,6 +2110,9 @@
       const codeInput = document.getElementById('basePointCode');
       const nicknameInput = document.getElementById('basePointNickname');
       const nicknameFeedback = document.getElementById('basePointNicknameFeedback');
+      const descriptionInput = document.getElementById('basePointDescription');
+      const descriptionFeedback = document.getElementById('basePointDescriptionFeedback');
+      const descriptionCount = document.getElementById('basePointDescriptionCount');
       const roadInput = document.getElementById('basePointRoad');
       const numberInput = document.getElementById('basePointNumber');
       const districtInput = document.getElementById('basePointDistrict');
@@ -2200,6 +2219,7 @@
               id: String(point.id || ('base-point-stored-' + index)),
               code: code,
               nickname: String(point.nickname || ''),
+              description: String(point.description || point.descricao || '').trim(),
               road: String(point.road || ''),
               number: String(point.number || 'S/N'),
               district: String(point.district || ''),
@@ -2646,9 +2666,15 @@
         districtInput.value = address.district;
         cityInput.value = address.city;
         stateInput.value = address.state;
-        submitButton.disabled = false;
+        // Habilitação anterior preservada: submitButton.disabled = false;
+        const formIsReady = updateSubmitState();
         setMapValidation(false);
-        setMapStatus('Endereço localizado e pronto para salvar', 'success');
+        setMapStatus(
+          formIsReady
+            ? 'Endereço localizado e pronto para salvar'
+            : 'Endereço localizado. Preencha os campos obrigatórios.',
+          'success'
+        );
       }
 
       function duplicateNickname(value) {
@@ -2657,6 +2683,10 @@
           return point.id !== editingId &&
             point.nickname.trim().toLocaleUpperCase('pt-BR') === normalizedValue;
         });
+      }
+
+      function normalizeDescription(value) {
+        return String(value || '').trim();
       }
 
       function updateNicknameState(isValid) {
@@ -2683,12 +2713,58 @@
         return nicknameInput.validity.valid;
       }
 
+      function updateDescriptionCount() {
+        descriptionCount.textContent = String(descriptionInput.value.length) + '/500';
+      }
+
+      function validateDescription() {
+        const value = normalizeDescription(descriptionInput.value);
+        const defaultMessage = 'Informe uma descrição com 3 a 500 caracteres.';
+        let message = '';
+
+        if (value.length < 3) {
+          message = defaultMessage;
+        } else if (value.length > 500) {
+          message = 'A descrição deve conter no máximo 500 caracteres.';
+        }
+
+        descriptionInput.setCustomValidity(message);
+        descriptionFeedback.textContent = message || defaultMessage;
+        descriptionInput.classList.toggle('is-valid', value !== '' && message === '');
+        descriptionInput.classList.toggle('is-invalid', value !== '' && message !== '');
+        descriptionInput.setAttribute('aria-invalid', String(message !== ''));
+        return message === '';
+      }
+
+      function updateSubmitState() {
+        const nickname = nicknameInput.value.trim();
+        const description = normalizeDescription(descriptionInput.value);
+        const nicknameIsReady = nickname.length >= 3 &&
+          nickname.length <= 80 &&
+          !duplicateNickname(nickname);
+        const descriptionIsReady = description.length >= 3 && description.length <= 500;
+        const formIsReady = Boolean(
+          selectedCoordinates &&
+          isResolvedAddressValid(resolvedAddress) &&
+          nicknameIsReady &&
+          descriptionIsReady
+        );
+
+        submitButton.disabled = !formIsReady;
+        return formIsReady;
+      }
+
       function clearValidationState() {
         form.classList.remove('was-validated');
         nicknameInput.classList.remove('is-valid', 'is-invalid');
         nicknameInput.setCustomValidity('');
         nicknameInput.removeAttribute('aria-invalid');
         nicknameFeedback.textContent = 'Informe uma identificação tática com pelo menos 3 caracteres.';
+        descriptionInput.classList.remove('is-valid', 'is-invalid');
+        descriptionInput.setCustomValidity('');
+        descriptionInput.removeAttribute('aria-invalid');
+        descriptionFeedback.textContent = 'Informe uma descrição com 3 a 500 caracteres.';
+        updateDescriptionCount();
         setMapValidation(false);
       }
 
@@ -2734,6 +2810,13 @@
       }
 
       function startEditing(pointId) {
+        // Regra atual: após o cadastro, o ponto só pode ser inativado ou reativado na consulta.
+        // O fluxo antigo permanece abaixo, preservado e inacessível por este retorno antecipado.
+        resetForm();
+        clearEditQueryParameter();
+        showPageAlert('Pontos de baseamento não podem ser editados após o cadastro. Use a consulta para inativar ou reativar.', 'warning');
+        return;
+
         const point = basePoints.find(function(item) {
           return item.id === pointId;
         });
@@ -2763,6 +2846,8 @@
         };
         codeInput.value = String(point.code);
         nicknameInput.value = point.nickname;
+        descriptionInput.value = point.description;
+        updateDescriptionCount();
         fillAddressFields(point);
         formTitle.textContent = 'Editar ponto de baseamento';
         submitButton.querySelector('span').textContent = 'Salvar alterações';
@@ -3019,8 +3104,27 @@
           nicknameInput.classList.contains('is-invalid')) {
           validateNickname();
         }
+        updateSubmitState();
       });
-      nicknameInput.addEventListener('blur', validateNickname);
+      nicknameInput.addEventListener('blur', function() {
+        validateNickname();
+        updateSubmitState();
+      });
+      descriptionInput.addEventListener('input', function() {
+        updateDescriptionCount();
+        if (form.classList.contains('was-validated') ||
+          descriptionInput.classList.contains('is-valid') ||
+          descriptionInput.classList.contains('is-invalid')) {
+          validateDescription();
+        }
+        updateSubmitState();
+      });
+      descriptionInput.addEventListener('blur', function() {
+        descriptionInput.value = normalizeDescription(descriptionInput.value);
+        updateDescriptionCount();
+        validateDescription();
+        updateSubmitState();
+      });
 
       filterButtons.forEach(function(button) {
         button.addEventListener('click', function() {
@@ -3075,13 +3179,23 @@
           codeInput.value = String(nextCode());
         }
         const nicknameIsValid = validateNickname();
+        const descriptionIsValid = validateDescription();
         const mapIsValid = Boolean(selectedCoordinates && resolvedAddress);
         setMapValidation(!mapIsValid);
 
-        if (!nicknameIsValid || !mapIsValid || !form.checkValidity()) {
-          showPageAlert('Informe a identificação tática e selecione um ponto válido no mapa antes de salvar.', 'danger');
+        if (!nicknameIsValid || !descriptionIsValid || !mapIsValid || !form.checkValidity()) {
+          showPageAlert(
+            !nicknameIsValid
+              ? nicknameFeedback.textContent
+              : (!descriptionIsValid
+                ? descriptionFeedback.textContent
+                : 'Selecione um ponto válido no mapa antes de salvar.'),
+            'danger'
+          );
           if (!nicknameIsValid) {
             nicknameInput.focus();
+          } else if (!descriptionIsValid) {
+            descriptionInput.focus();
           } else {
             registrationMapElement.focus();
           }
@@ -3093,6 +3207,7 @@
         });
         const pointData = {
           nickname: nicknameInput.value.trim().toLocaleUpperCase('pt-BR'),
+          description: normalizeDescription(descriptionInput.value),
           road: resolvedAddress.road,
           number: resolvedAddress.number,
           district: resolvedAddress.district,
@@ -3105,6 +3220,7 @@
 
         if (existingPoint) {
           existingPoint.nickname = pointData.nickname;
+          existingPoint.description = pointData.description;
           existingPoint.road = pointData.road;
           existingPoint.number = pointData.number;
           existingPoint.district = pointData.district;
@@ -3120,6 +3236,7 @@
               : 'base-point-' + Date.now() + '-' + Math.random().toString(16).slice(2),
             code: nextCode(),
             nickname: pointData.nickname,
+            description: pointData.description,
             road: pointData.road,
             number: pointData.number,
             district: pointData.district,
