@@ -455,7 +455,10 @@
                     <select class="form-select" id="activationService" name="service" aria-describedby="activationServiceHelp activationServiceFeedback" required>
                       <option value="" selected disabled>Carregando tipos...</option>
                     </select>
+                    <!-- Mensagem anterior preservada enquanto o vínculo obrigatório entre tipo de serviço e OS estiver flexibilizado.
                     <div class="invalid-feedback" id="activationServiceFeedback">Selecione o tipo de serviço vinculado à OS.</div>
+                    -->
+                    <div class="invalid-feedback" id="activationServiceFeedback">Selecione um tipo de serviço.</div>
                     <div class="form-text activation-data-note" id="activationServiceHelp">
                       <i class="bi bi-database" aria-hidden="true"></i>
                       <span>Carregando tipos de serviço...</span>
@@ -1240,6 +1243,7 @@
         }) || null;
       }
 
+      /* Regra anterior preservada enquanto tipo de serviço e OS puderem ser escolhidos livremente.
       function serviceMatchesOrder(service, order) {
         if (!service || !order) {
           return false;
@@ -1248,6 +1252,7 @@
         const matchesName = order.tipoOrdem && service.name === order.tipoOrdem;
         return Boolean(matchesId || matchesName || (!order.tipoServicoId && !order.tipoOrdem));
       }
+      */
 
       function updateMissionSummary() {
         const order = selectedOrder();
@@ -1259,6 +1264,8 @@
         elements.missionSummary.value = order.nomeOS + '\nTurno: ' +
           formatTime(order.inicioGeral) + ' às ' + formatTime(order.terminoGeral);
 
+        /* Seleção automática anterior preservada. Durante a flexibilização, trocar a OS
+        não deve substituir o tipo de serviço escolhido pelo usuário.
         const matchingService = state.services.find(function(service) {
           return service.id === order.tipoServicoId ||
             (order.tipoOrdem && service.name === order.tipoOrdem);
@@ -1267,6 +1274,7 @@
           elements.service.value = matchingService.id;
           elements.service.setCustomValidity('');
         }
+        */
       }
 
       function updateMembersState() {
@@ -1354,11 +1362,17 @@
         const service = selectedService();
         const order = selectedOrder();
         const hasServiceOrder = Boolean(order);
-        const hasCompatibleService = Boolean(service && serviceMatchesOrder(service, order));
+        // Regra anterior preservada: o serviço precisava corresponder ao vínculo gravado na OS.
+        // const hasCompatibleService = Boolean(service && serviceMatchesOrder(service, order));
+        const hasSelectedService = Boolean(service);
         elements.vehicle.setCustomValidity(hasVehicle ? '' : 'invalid-vehicle');
-        elements.service.setCustomValidity(hasCompatibleService ? '' : 'invalid-service-order');
+        // Validação anterior preservada:
+        // elements.service.setCustomValidity(hasCompatibleService ? '' : 'invalid-service-order');
+        elements.service.setCustomValidity(hasSelectedService ? '' : 'invalid-service');
         elements.serviceOrder.setCustomValidity(hasServiceOrder ? '' : 'invalid-order');
-        return hasVehicle && hasCompatibleService && hasServiceOrder;
+        // Retorno anterior preservado:
+        // return hasVehicle && hasCompatibleService && hasServiceOrder;
+        return hasVehicle && hasSelectedService && hasServiceOrder;
       }
 
       function validateCrewNames() {

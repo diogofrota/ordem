@@ -350,6 +350,10 @@
       margin-bottom: var(--spacing-lg);
     }
 
+    .os-activity-sources .os-data-strip {
+      margin-bottom: 0;
+    }
+
     .os-data-source {
       display: flex;
       align-items: center;
@@ -390,6 +394,89 @@
       background: color-mix(in srgb, var(--accent-color), transparent 97%);
       border: 1px solid var(--border-color-light);
       border-radius: var(--radius-md);
+    }
+
+    .os-activity-flow-heading {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+      min-width: 0;
+    }
+
+    .os-activity-list-heading {
+      padding: var(--spacing-md) var(--spacing-lg);
+    }
+
+    .os-activity-contained-heading {
+      margin-bottom: var(--spacing-md);
+    }
+
+    .os-activity-flow-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      flex: 0 0 32px;
+      color: var(--accent-color);
+      background: color-mix(in srgb, var(--accent-color), transparent 90%);
+      border-radius: var(--radius-full);
+      font-size: 0.875rem;
+    }
+
+    .os-activity-flow-copy {
+      min-width: 0;
+      flex: 1 1 auto;
+    }
+
+    .os-activity-flow-title,
+    .os-activity-flow-description {
+      margin: 0;
+    }
+
+    .os-activity-flow-title {
+      color: var(--heading-color);
+      font-size: 0.875rem;
+      font-weight: 700;
+    }
+
+    .os-activity-flow-description {
+      margin-top: 2px;
+      color: var(--muted-color);
+      font-size: 0.75rem;
+    }
+
+    .os-activity-count {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      margin-left: auto;
+      padding: 3px 8px;
+      color: var(--accent-color);
+      background: color-mix(in srgb, var(--accent-color), transparent 90%);
+      border-radius: var(--radius-full);
+      font-size: 0.6875rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .os-activity-list-region {
+      max-height: clamp(260px, 52vh, 480px);
+      overflow: auto;
+      border-top: 1px solid var(--border-color-light);
+      overscroll-behavior: contain;
+      scrollbar-gutter: stable;
+    }
+
+    .os-activity-list-region .os-activity-table thead th {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+
+    .os-activity-footer .os-activity-contained-heading {
+      padding-bottom: var(--spacing-md);
+      border-bottom: 1px solid var(--border-color-light);
     }
 
     .os-builder-location[hidden] {
@@ -475,6 +562,27 @@
 
     .os-operation-row > td:first-child {
       box-shadow: inset 3px 0 0 var(--info-color);
+    }
+
+    .os-activity-row-added > td:first-child {
+      box-shadow: inset 3px 0 0 var(--accent-color);
+    }
+
+    @keyframes os-activity-row-added {
+      0%,
+      65% {
+        background-color: color-mix(in srgb, var(--accent-color), transparent 90%);
+      }
+
+      100% {
+        background-color: transparent;
+      }
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .os-activity-row-added > td {
+        animation: os-activity-row-added 1.8s ease-out;
+      }
     }
 
     .os-empty-state {
@@ -791,6 +899,11 @@
         padding-left: var(--spacing-sm);
       }
 
+      .os-activity-list-heading {
+        padding-right: var(--spacing-md);
+        padding-left: var(--spacing-md);
+      }
+
       .os-order-table .table-actions .btn {
         width: 36px;
         height: 36px;
@@ -804,6 +917,19 @@
     }
 
     @media (max-width: 575px) {
+      .os-activity-flow-heading {
+        align-items: flex-start;
+        flex-wrap: wrap;
+      }
+
+      .os-activity-flow-copy {
+        flex-basis: calc(100% - 44px);
+      }
+
+      .os-activity-count {
+        margin-left: 44px;
+      }
+
       .os-confirm-review-header {
         align-items: flex-start;
         flex-direction: column;
@@ -2170,7 +2296,7 @@
             </div>
           </div>
 
-          <div class="card-body">
+          <div class="card-body os-activity-sources">
             <div class="os-data-strip" aria-label="Cadastros disponíveis para a ordem de serviço">
               <div class="os-data-source">
                 <i class="bi bi-pin-map" aria-hidden="true"></i>
@@ -2183,6 +2309,52 @@
               <div class="os-data-source">
                 <i class="bi bi-shield-check" aria-hidden="true"></i>
                 <div><strong id="operationSourceCount">0</strong><span>operações especiais ativas</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-body p-0 border-top os-activity-list-section" aria-labelledby="activityListTitle">
+            <div class="os-activity-flow-heading os-activity-list-heading">
+              <span class="os-activity-flow-icon" aria-hidden="true"><i class="bi bi-list-check"></i></span>
+              <div class="os-activity-flow-copy">
+                <h3 class="os-activity-flow-title" id="activityListTitle">Atividades incluídas</h3>
+                <p class="os-activity-flow-description">Confira a sequência do turno, organizada automaticamente pelo horário.</p>
+              </div>
+              <span class="os-activity-count" id="activityListCount">0 incluídas</span>
+            </div>
+
+            <div class="table-responsive os-activity-list-region" role="region" aria-labelledby="activityListTitle" tabindex="0">
+              <table class="table table-hover align-middle mb-0 os-activity-table">
+                <caption class="visually-hidden">Atividades adicionadas ao fracionamento da Ordem de Serviço</caption>
+                <thead>
+                  <tr>
+                    <th scope="col" style="width: 56px;">#</th>
+                    <th scope="col">Atividade</th>
+                    <th scope="col">Horário</th>
+                    <th scope="col">Local / Operação</th>
+                    <th scope="col" class="d-none d-lg-table-cell">Detalhes</th>
+                    <th scope="col" class="text-end">Ação</th>
+                  </tr>
+                </thead>
+                <tbody id="activityTableBody">
+                  <tr>
+                    <td colspan="6" class="os-empty-state">
+                      <i class="bi bi-list-check" aria-hidden="true"></i>
+                      <span>Nenhuma atividade incluída. Use o formulário abaixo para adicionar a primeira atividade do turno.</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Painel de inclusão existente preservado e reposicionado após as atividades incluídas. -->
+          <div class="card-body border-top os-activity-builder-section" aria-labelledby="activityBuilderTitle">
+            <div class="os-activity-flow-heading os-activity-contained-heading">
+              <span class="os-activity-flow-icon" aria-hidden="true"><i class="bi bi-plus-lg"></i></span>
+              <div class="os-activity-flow-copy">
+                <h3 class="os-activity-flow-title" id="activityBuilderTitle">Adicionar atividade</h3>
+                <p class="os-activity-flow-description">Informe a atividade e seu horário; o próximo início será sugerido com base no término anterior.</p>
               </div>
             </div>
 
@@ -2251,33 +2423,14 @@
             </div>
           </div>
 
-          <div class="card-body p-0 border-top">
-            <div class="table-responsive">
-              <table class="table table-hover align-middle mb-0 os-activity-table">
-                <caption class="visually-hidden">Atividades adicionadas ao fracionamento da Ordem de Serviço</caption>
-                <thead>
-                  <tr>
-                    <th scope="col" style="width: 56px;">#</th>
-                    <th scope="col">Atividade</th>
-                    <th scope="col">Horário</th>
-                    <th scope="col">Local / Operação</th>
-                    <th scope="col" class="d-none d-lg-table-cell">Detalhes</th>
-                    <th scope="col" class="text-end">Ação</th>
-                  </tr>
-                </thead>
-                <tbody id="activityTableBody">
-                  <tr>
-                    <td colspan="6" class="os-empty-state">
-                      <i class="bi bi-list-check" aria-hidden="true"></i>
-                      <span>Nenhuma atividade adicionada. Comece informando o primeiro intervalo do turno.</span>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+          <div class="card-footer os-activity-footer">
+            <div class="os-activity-flow-heading os-activity-contained-heading">
+              <span class="os-activity-flow-icon" aria-hidden="true"><i class="bi bi-arrow-right-circle"></i></span>
+              <div class="os-activity-flow-copy">
+                <h3 class="os-activity-flow-title">Resumo do fracionamento</h3>
+                <p class="os-activity-flow-description">Confira o planejamento e avance para as prescrições diversas da Ordem de Serviço.</p>
+              </div>
             </div>
-          </div>
-
-          <div class="card-footer">
             <div class="os-summary-bar">
               <div class="os-summary-metrics" aria-live="polite">
                 <div class="os-summary-metric"><span>Atividades</span><strong id="activityCountMetric">0</strong></div>
@@ -2292,7 +2445,7 @@
               -->
               <button type="button" class="btn btn-primary" id="continueToPrescriptionsButton" disabled>
                 <i class="bi bi-arrow-right-circle me-1" aria-hidden="true"></i>
-                Continuar para prescrições
+                Continuar para prescrições diversas
               </button>
             </div>
           </div>
@@ -2637,7 +2790,9 @@
         locationPreview: document.getElementById('activityLocationPreview'),
         operationSelect: document.getElementById('activityOperation'),
         openOperationButton: document.getElementById('openOperationModalButton'),
+        activityListRegion: document.querySelector('.os-activity-list-region'),
         activityTableBody: document.getElementById('activityTableBody'),
+        activityListCount: document.getElementById('activityListCount'),
         activityCountMetric: document.getElementById('activityCountMetric'),
         activityDurationMetric: document.getElementById('activityDurationMetric'),
         activityCoverageMetric: document.getElementById('activityCoverageMetric'),
@@ -2683,7 +2838,7 @@
         printSheet: document.getElementById('orderPrintSheet')
       };
 
-      if (!elements.headerForm || !elements.activityForm || !elements.prescriptionsForm || !elements.prescriptions || !elements.prescriptionsSection || !elements.continueToPrescriptionsButton || !elements.finishButton || !elements.stepPrescriptions || !elements.ordersTableBody || !elements.pageAlert || !elements.pageContent || !elements.pageLoading || !elements.operationStatus || !elements.orderCode || !elements.totalDuration) {
+      if (!elements.headerForm || !elements.activityForm || !elements.activityListRegion || !elements.activityListCount || !elements.prescriptionsForm || !elements.prescriptions || !elements.prescriptionsSection || !elements.continueToPrescriptionsButton || !elements.finishButton || !elements.stepPrescriptions || !elements.ordersTableBody || !elements.pageAlert || !elements.pageContent || !elements.pageLoading || !elements.operationStatus || !elements.orderCode || !elements.totalDuration) {
         return;
       }
 
@@ -3962,6 +4117,24 @@
         return [roadAndNumber, activity.bairro && activity.bairro !== '-' ? activity.bairro : '', cityAndState].filter(Boolean).join(' · ');
       }
 
+      function revealActivityInList(activityId) {
+        const activityRow = Array.from(elements.activityTableBody.rows).find(function(row) {
+          return String(row.dataset.activityRowId || '') === String(activityId);
+        });
+        if (!activityRow) {
+          return;
+        }
+
+        const centeredScrollPosition = activityRow.offsetTop - ((elements.activityListRegion.clientHeight - activityRow.offsetHeight) / 2);
+        elements.activityListRegion.scrollTop = Math.max(0, centeredScrollPosition);
+        activityRow.classList.add('os-activity-row-added');
+        window.setTimeout(function() {
+          if (activityRow.isConnected) {
+            activityRow.classList.remove('os-activity-row-added');
+          }
+        }, 1800);
+      }
+
       function renderActivities() {
         const sortedActivities = state.activities.slice().sort(function(first, second) {
           const firstRange = activityRange(first.inicio, first.fim);
@@ -3979,12 +4152,13 @@
           emptyCell.colSpan = 6;
           icon.className = 'bi bi-list-check';
           icon.setAttribute('aria-hidden', 'true');
-          text.textContent = 'Nenhuma atividade adicionada. Comece informando o primeiro intervalo do turno.';
+          text.textContent = 'Nenhuma atividade incluída. Use o formulário abaixo para adicionar a primeira atividade do turno.';
           emptyCell.append(icon, text);
           elements.activityTableBody.appendChild(emptyRow);
         } else {
           sortedActivities.forEach(function(activity, index) {
             const row = document.createElement('tr');
+            row.dataset.activityRowId = String(activity.id);
             if (activity.operacao) {
               row.classList.add('os-operation-row');
             }
@@ -4045,6 +4219,7 @@
         }, 0);
         const shiftMinutes = shiftDurationMinutes();
         const coverage = shiftMinutes ? Math.min(100, Math.round(totalMinutes / shiftMinutes * 100)) : 0;
+        elements.activityListCount.textContent = state.activities.length + (state.activities.length === 1 ? ' incluída' : ' incluídas');
         elements.activityCountMetric.textContent = String(state.activities.length);
         elements.activityDurationMetric.textContent = formatDuration(totalMinutes);
         elements.activityCoverageMetric.textContent = coverage + '%';
@@ -4816,6 +4991,7 @@
           elements.operationSelect.value = '';
           updateLocationPreview();
           renderActivities();
+          revealActivityInList(activityToAdd.id);
           showPageAlert('Atividade adicionada ao fracionamento.', 'success');
           elements.activityEnd.focus();
           return true;

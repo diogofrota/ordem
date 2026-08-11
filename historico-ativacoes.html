@@ -129,8 +129,13 @@
       outline-offset: -2px;
     }
 
+    /* Largura anterior preservada; o histórico agora segue a tabela compacta do painel operacional.
     .activation-history-card .table {
       min-width: 1370px;
+    }
+    */
+    .activation-history-card .table {
+      min-width: 1340px;
     }
 
     .activation-history-card .table th {
@@ -203,6 +208,68 @@
       border-radius: var(--radius-md);
       color: var(--accent-color);
       background: color-mix(in srgb, var(--accent-color), transparent 91%);
+    }
+
+    .activation-schedule {
+      display: flex;
+      min-width: 150px;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .activation-schedule-date,
+    .activation-schedule-window {
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .activation-schedule-date {
+      gap: 6px;
+      color: var(--heading-color);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.8125rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .activation-schedule-date i {
+      color: var(--accent-color);
+      font-size: 0.75rem;
+    }
+
+    .activation-schedule-window {
+      gap: 7px;
+      padding-left: 18px;
+      color: var(--muted-color);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.75rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .activation-schedule-window i {
+      color: color-mix(in srgb, var(--muted-color), transparent 18%);
+      font-size: 0.6875rem;
+    }
+
+    .activation-commander {
+      display: flex;
+      min-width: 165px;
+      align-items: center;
+      gap: var(--spacing-sm);
+    }
+
+    .activation-commander-icon {
+      display: inline-flex;
+      width: 34px;
+      height: 34px;
+      flex: 0 0 34px;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-md);
+      color: var(--info-color);
+      background: var(--info-color-light);
+      font-size: 0.875rem;
     }
 
     .activation-status {
@@ -652,6 +719,7 @@
                 <table class="table table-hover align-middle mb-0" id="activationHistoryTable" aria-busy="true">
                   <caption class="visually-hidden">Relação de ativações operacionais encerradas</caption>
                   <thead>
+                    <!-- Cabeçalho anterior de nove colunas preservado por segurança.
                     <tr>
                       <th scope="col">Código</th>
                       <th scope="col">Viatura / recurso</th>
@@ -660,6 +728,17 @@
                       <th scope="col">Posto / graduação</th>
                       <th scope="col">Nome de guerra</th>
                       <th scope="col">Telefone</th>
+                      <th scope="col">Encerrada em</th>
+                      <th scope="col">Ações</th>
+                    </tr>
+                    -->
+                    <tr>
+                      <th scope="col">Código</th>
+                      <th scope="col">Viatura / recurso</th>
+                      <th scope="col">Tipo de serviço</th>
+                      <th scope="col">OS</th>
+                      <th scope="col">Data / horário</th>
+                      <th scope="col">Comandante</th>
                       <th scope="col">Encerrada em</th>
                       <th scope="col">Ações</th>
                     </tr>
@@ -1254,6 +1333,14 @@
         return /^os\b/i.test(selected) ? selected : 'OS ' + selected;
       }
 
+      function serviceOrderNumber(serviceOrder) {
+        const selected = pickText(serviceOrder, ['number', 'numero', 'code', 'codigo']);
+        if (!selected) {
+          return 'Não informado';
+        }
+        return selected.replace(/^os\s*(?:n[º°o.]?\s*)?/i, '').trim() || selected;
+      }
+
       function serviceOrderDetails(serviceOrder) {
         const start = firstDefined(
           serviceOrder && serviceOrder.inicioGeral,
@@ -1292,6 +1379,39 @@
           day: '2-digit',
           month: '2-digit',
           year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        }).format(date);
+      }
+
+      function formatDate(value) {
+        const date = parseTimestamp(value);
+        if (!date) {
+          return 'Não informado';
+        }
+        return new Intl.DateTimeFormat('pt-BR', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric'
+        }).format(date);
+      }
+
+      function formatServiceOrderTime(value) {
+        const textValue = safeString(value);
+        const timeMatch = textValue.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
+        if (timeMatch) {
+          const hours = Number(timeMatch[1]);
+          const minutes = Number(timeMatch[2]);
+          if (hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59) {
+            return String(hours).padStart(2, '0') + ':' + String(minutes).padStart(2, '0');
+          }
+        }
+
+        const date = parseTimestamp(value);
+        if (!date) {
+          return 'Não informado';
+        }
+        return new Intl.DateTimeFormat('pt-BR', {
           hour: '2-digit',
           minute: '2-digit'
         }).format(date);
@@ -1430,7 +1550,8 @@
         const title = document.createElement('h3');
         const description = document.createElement('p');
         const iconElement = document.createElement('i');
-        cell.colSpan = 9;
+        // Quantidade anterior preservada: cell.colSpan = 9;
+        cell.colSpan = 8;
         cell.className = 'activation-history-empty';
         content.className = 'activation-history-empty-content';
         icon.className = 'activation-history-empty-icon';
@@ -1453,9 +1574,22 @@
         const resourceCell = document.createElement('td');
         const serviceCell = document.createElement('td');
         const serviceOrderCell = document.createElement('td');
+        const scheduleCell = document.createElement('td');
+        const schedule = document.createElement('div');
+        const scheduleDate = document.createElement('span');
+        const scheduleDateIcon = document.createElement('i');
+        const scheduleWindow = document.createElement('span');
+        const scheduleStart = document.createElement('span');
+        const scheduleSeparator = document.createElement('i');
+        const scheduleEnd = document.createElement('span');
+        /* Células separadas anteriores preservadas; o comandante agora é exibido de forma agrupada.
         const commanderRankCell = document.createElement('td');
         const commanderNameCell = document.createElement('td');
         const commanderPhoneCell = document.createElement('td');
+        */
+        const commanderCell = document.createElement('td');
+        const commanderSummary = document.createElement('div');
+        const commanderIcon = document.createElement('span');
         const endedAtCell = document.createElement('td');
         const actionsCell = document.createElement('td');
         const resource = document.createElement('div');
@@ -1465,9 +1599,11 @@
         const detailsIcon = document.createElement('i');
         const vehicle = vehicleDetails(activation.vehicle);
         const commander = commanderDetails(activation.commander);
-        const order = serviceOrderDetails(activation.serviceOrder);
+        // Detalhamento anterior da OS preservado; na listagem compacta aparece somente o número.
+        // const order = serviceOrderDetails(activation.serviceOrder);
         const serviceName = pickText(activation.service, ['name', 'nome', 'label', 'type', 'tipo', 'description', 'descricao']);
         const duration = formatDuration(activation.startedAt || activation.activatedAt, activation.endedAt);
+        const activationMoment = activation.activatedAt || activation.startedAt;
 
         row.className = 'activation-history-row';
         row.tabIndex = 0;
@@ -1477,7 +1613,8 @@
         row.setAttribute('aria-controls', 'activationHistoryDetailsModal');
 
         codeCell.className = 'activation-code-text';
-        codeCell.textContent = activation.activationCode;
+        // Apresentação anterior preservada: codeCell.textContent = activation.activationCode;
+        codeCell.appendChild(createTextStack(activation.activationCode, ''));
         codeCell.title = 'Identificador técnico: ' + activation.technicalId;
 
         resource.className = 'activation-resource';
@@ -1489,11 +1626,54 @@
         resourceCell.appendChild(resource);
 
         serviceCell.appendChild(createTextStack(serviceName || 'Serviço não informado', ''));
-        serviceOrderCell.appendChild(createTextStack(order.number, order.summary));
+        // Apresentação anterior preservada: serviceOrderCell.appendChild(createTextStack(order.number, order.summary));
+        serviceOrderCell.appendChild(createTextStack(serviceOrderNumber(activation.serviceOrder), ''));
+
+        schedule.className = 'activation-schedule';
+        scheduleDate.className = 'activation-schedule-date';
+        scheduleDateIcon.className = 'bi bi-calendar3';
+        scheduleDateIcon.setAttribute('aria-hidden', 'true');
+        scheduleDate.append(scheduleDateIcon, document.createTextNode(formatDate(activationMoment)));
+        scheduleWindow.className = 'activation-schedule-window';
+        scheduleStart.textContent = formatServiceOrderTime(firstDefined(
+          activation.serviceOrder && activation.serviceOrder.inicioGeral,
+          activation.serviceOrder && activation.serviceOrder.start,
+          activation.serviceOrder && activation.serviceOrder.inicio
+        ));
+        scheduleStart.title = 'Horário de início previsto na Ordem de Serviço';
+        scheduleSeparator.className = 'bi bi-arrow-right';
+        scheduleSeparator.setAttribute('aria-hidden', 'true');
+        scheduleEnd.textContent = formatServiceOrderTime(firstDefined(
+          activation.serviceOrder && activation.serviceOrder.terminoGeral,
+          activation.serviceOrder && activation.serviceOrder.end,
+          activation.serviceOrder && activation.serviceOrder.termino
+        ));
+        scheduleEnd.title = 'Horário de término previsto na Ordem de Serviço';
+        scheduleWindow.setAttribute(
+          'aria-label',
+          'Início previsto ' + scheduleStart.textContent + '; término previsto ' + scheduleEnd.textContent
+        );
+        scheduleWindow.append(scheduleStart, scheduleSeparator, scheduleEnd);
+        schedule.append(scheduleDate, scheduleWindow);
+        scheduleCell.appendChild(schedule);
+
+        /* Apresentação anterior do comandante preservada por segurança.
         commanderRankCell.appendChild(createTextStack(commander.rank || 'Não informado', ''));
         commanderNameCell.appendChild(createTextStack(commander.name || 'Não informado', ''));
         commanderPhoneCell.className = 'activation-contact-text';
         commanderPhoneCell.textContent = commander.phone || 'Não informado';
+        */
+        commanderSummary.className = 'activation-commander';
+        commanderIcon.className = 'activation-commander-icon';
+        commanderIcon.setAttribute('aria-hidden', 'true');
+        commanderIcon.appendChild(document.createElement('i'));
+        commanderIcon.firstChild.className = 'bi bi-person-badge';
+        commanderSummary.append(
+          commanderIcon,
+          createTextStack(commander.rank || 'Posto não informado', commander.name || 'Nome não informado')
+        );
+        commanderCell.appendChild(commanderSummary);
+
         endedAtCell.appendChild(createTextStack(formatDateTime(activation.endedAt), duration ? 'Duração: ' + duration : 'Duração não informada'));
         endedAtCell.classList.add('activation-date-text');
 
@@ -1509,6 +1689,7 @@
         actions.appendChild(detailsButton);
         actionsCell.appendChild(actions);
 
+        /* Ordem anterior de nove colunas preservada por segurança.
         row.append(
           codeCell,
           resourceCell,
@@ -1517,6 +1698,17 @@
           commanderRankCell,
           commanderNameCell,
           commanderPhoneCell,
+          endedAtCell,
+          actionsCell
+        );
+        */
+        row.append(
+          codeCell,
+          resourceCell,
+          serviceCell,
+          serviceOrderCell,
+          scheduleCell,
+          commanderCell,
           endedAtCell,
           actionsCell
         );

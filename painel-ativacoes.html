@@ -20,6 +20,9 @@
   <link href="assets/vendor/phosphor-icons/phosphor-icons.css" rel="stylesheet">
   <link href="assets/css/main.css" rel="stylesheet">
 
+  <!-- Leaflet reutilizado do padrão de mapas já existente no projeto. -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+
   <style>
     .activation-page-intro {
       max-width: 720px;
@@ -118,6 +121,146 @@
       font-size: 0.75rem;
     }
 
+    .activation-stage-summary {
+      display: grid;
+      min-width: 0;
+      grid-column: 1 / -1;
+      grid-template-columns: 190px minmax(0, 1fr);
+      margin-bottom: 0;
+      overflow: hidden;
+      border-color: var(--card-border);
+      box-shadow: var(--card-shadow);
+    }
+
+    .activation-stage-summary-heading {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+      padding: var(--spacing-md) var(--spacing-lg);
+      border-right: 1px solid var(--border-color-light);
+      background: color-mix(in srgb, var(--background-color), transparent 32%);
+    }
+
+    .activation-stage-summary-heading > span {
+      display: inline-flex;
+      width: 36px;
+      height: 36px;
+      flex: 0 0 36px;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-md);
+      color: var(--accent-color);
+      background: color-mix(in srgb, var(--accent-color), transparent 90%);
+      font-size: 1rem;
+    }
+
+    .activation-stage-summary-heading strong,
+    .activation-stage-summary-heading small {
+      display: block;
+    }
+
+    .activation-stage-summary-heading strong {
+      color: var(--heading-color);
+      font-size: 0.8125rem;
+      font-weight: 700;
+    }
+
+    .activation-stage-summary-heading small {
+      margin-top: 1px;
+      color: var(--muted-color);
+      font-size: 0.6875rem;
+      line-height: 1.3;
+    }
+
+    .activation-stage-summary-scroll {
+      min-width: 0;
+      overflow-x: auto;
+      outline: none;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border-color-dark) transparent;
+    }
+
+    .activation-stage-summary-scroll:focus-visible {
+      outline: 2px solid color-mix(in srgb, var(--accent-color), transparent 45%);
+      outline-offset: -2px;
+    }
+
+    .activation-stage-summary-grid {
+      display: grid;
+      min-width: 660px;
+      height: 100%;
+      grid-template-columns: repeat(6, minmax(100px, 1fr));
+    }
+
+    .activation-stage-metric {
+      position: relative;
+      display: grid;
+      min-height: 76px;
+      grid-template-columns: 30px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      border-right: 1px solid var(--border-color-light);
+      color: var(--default-color);
+      background: var(--card-bg);
+    }
+
+    .activation-stage-metric:last-child {
+      border-right: 0;
+    }
+
+    .activation-stage-metric-icon {
+      display: inline-flex;
+      width: 30px;
+      height: 30px;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-sm);
+      color: var(--muted-color);
+      background: var(--border-color-light);
+      font-size: 0.8125rem;
+    }
+
+    .activation-stage-metric[data-stage="prelecao"] .activation-stage-metric-icon,
+    .activation-stage-metric[data-stage="deslocamento"] .activation-stage-metric-icon {
+      color: var(--info-color);
+      background: var(--info-color-light);
+    }
+
+    .activation-stage-metric[data-stage="baseamento"] .activation-stage-metric-icon {
+      color: var(--success-color);
+      background: var(--success-color-light);
+    }
+
+    .activation-stage-metric[data-stage="patrulhamento"] .activation-stage-metric-icon {
+      color: var(--accent-color);
+      background: color-mix(in srgb, var(--accent-color), transparent 90%);
+    }
+
+    .activation-stage-metric[data-stage="intervalo"] .activation-stage-metric-icon {
+      color: var(--warning-color);
+      background: var(--warning-color-light);
+    }
+
+    .activation-stage-metric-label {
+      min-width: 0;
+      overflow: hidden;
+      color: var(--muted-color);
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .activation-stage-metric-value {
+      margin: 0;
+      color: var(--heading-color);
+      font-family: "Nunito Sans", sans-serif;
+      font-size: 1.125rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+
     .activation-list-card .card-header {
       align-items: flex-start;
     }
@@ -194,8 +337,8 @@
     }
     */
     .activation-list-card .table {
-      /* Larguras anteriores preservadas: min-width: 1450px; min-width: 1280px; */
-      min-width: 1580px;
+      /* Larguras anteriores preservadas: min-width: 1450px; min-width: 1280px; min-width: 1580px; */
+      min-width: 1340px;
     }
 
     .activation-list-card .table th {
@@ -244,12 +387,17 @@
     }
 
     .activation-code-text,
-    .activation-identity-text {
+    .activation-identity-text,
+    .activation-members-count-text {
       color: var(--heading-color);
       font-family: "JetBrains Mono", monospace;
       font-size: 0.8125rem;
       font-weight: 600;
       white-space: nowrap;
+    }
+
+    .activation-members-count-text {
+      text-align: center;
     }
 
     .activation-contact-text {
@@ -276,6 +424,162 @@
       border-radius: var(--radius-md);
       color: var(--accent-color);
       background: color-mix(in srgb, var(--accent-color), transparent 91%);
+    }
+
+    .activation-schedule {
+      display: flex;
+      min-width: 150px;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .activation-schedule-date,
+    .activation-schedule-window {
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .activation-schedule-date {
+      gap: 6px;
+      color: var(--heading-color);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.8125rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .activation-schedule-date i {
+      color: var(--accent-color);
+      font-size: 0.75rem;
+    }
+
+    .activation-schedule-window {
+      gap: 7px;
+      padding-left: 18px;
+      color: var(--muted-color);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.75rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .activation-schedule-window i {
+      color: color-mix(in srgb, var(--muted-color), transparent 18%);
+      font-size: 0.6875rem;
+    }
+
+    .activation-commander {
+      display: flex;
+      min-width: 165px;
+      align-items: center;
+      gap: var(--spacing-sm);
+    }
+
+    .activation-commander-icon {
+      display: inline-flex;
+      width: 34px;
+      height: 34px;
+      flex: 0 0 34px;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-md);
+      color: var(--info-color);
+      background: var(--info-color-light);
+      font-size: 0.875rem;
+    }
+
+    .activation-current-activity {
+      min-width: 220px;
+      max-width: 290px;
+    }
+
+    .activation-activity-badge {
+      display: inline-flex;
+      max-width: 100%;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 8px;
+      border-radius: var(--radius-full);
+      color: var(--muted-color);
+      background: var(--border-color-light);
+      font-size: 0.6875rem;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+
+    .activation-activity-badge span {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .activation-activity-badge.is-prelecao,
+    .activation-activity-badge.is-deslocamento {
+      color: color-mix(in srgb, var(--info-color), #000 24%);
+      background: var(--info-color-light);
+    }
+
+    .activation-activity-badge.is-baseamento {
+      color: color-mix(in srgb, var(--success-color), #000 34%);
+      background: var(--success-color-light);
+    }
+
+    .activation-activity-badge.is-patrulhamento {
+      color: color-mix(in srgb, var(--accent-color), #000 18%);
+      background: color-mix(in srgb, var(--accent-color), transparent 90%);
+    }
+
+    .activation-activity-badge.is-intervalo {
+      color: color-mix(in srgb, var(--warning-color), #000 38%);
+      background: var(--warning-color-light);
+    }
+
+    .activation-activity-badge.is-retorno {
+      color: var(--default-color);
+      background: var(--border-color-light);
+    }
+
+    .activation-activity-detail {
+      display: flex;
+      min-width: 0;
+      align-items: flex-start;
+      gap: 6px;
+      margin-top: 5px;
+      color: var(--muted-color);
+      font-size: 0.75rem;
+      line-height: 1.35;
+    }
+
+    .activation-activity-detail i {
+      flex: 0 0 auto;
+      margin-top: 1px;
+      color: color-mix(in srgb, var(--muted-color), transparent 12%);
+      font-size: 0.6875rem;
+    }
+
+    .activation-activity-detail span {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    [data-theme=dark] .activation-activity-badge.is-prelecao,
+    [data-theme=dark] .activation-activity-badge.is-deslocamento {
+      color: var(--info-color);
+    }
+
+    [data-theme=dark] .activation-activity-badge.is-baseamento {
+      color: var(--success-color);
+    }
+
+    [data-theme=dark] .activation-activity-badge.is-patrulhamento {
+      color: var(--accent-color);
+    }
+
+    [data-theme=dark] .activation-activity-badge.is-intervalo {
+      color: var(--warning-color);
     }
 
     .activation-status {
@@ -498,6 +802,181 @@
       font-weight: 700;
     }
 
+    .activation-details-title-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--spacing-sm);
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .activation-details-title-row .activation-details-title {
+      margin-bottom: 0;
+    }
+
+    .activation-order-points-count {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 3px 8px;
+      border-radius: var(--radius-full);
+      color: var(--accent-color);
+      background: color-mix(in srgb, var(--accent-color), transparent 90%);
+      font-size: 0.6875rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .activation-order-points {
+      overflow: hidden;
+      border: 1px solid var(--border-color-light);
+      border-radius: var(--radius-md);
+      background: var(--background-color);
+    }
+
+    .activation-order-point {
+      position: relative;
+      display: grid;
+      min-width: 0;
+      grid-template-columns: 30px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: var(--spacing-sm);
+      min-height: 62px;
+      padding: 10px var(--spacing-md);
+      background: var(--background-color);
+    }
+
+    .activation-order-point + .activation-order-point {
+      border-top: 1px solid var(--border-color-light);
+    }
+
+    .activation-order-point.is-current {
+      background: color-mix(in srgb, var(--accent-color), transparent 95%);
+      box-shadow: inset 3px 0 0 var(--accent-color);
+    }
+
+    .activation-order-point-index {
+      display: inline-flex;
+      width: 28px;
+      height: 28px;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-full);
+      color: var(--muted-color);
+      background: var(--card-bg);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.6875rem;
+      font-weight: 700;
+    }
+
+    .activation-order-point.is-current .activation-order-point-index {
+      color: var(--accent-color);
+      background: color-mix(in srgb, var(--accent-color), transparent 88%);
+    }
+
+    .activation-order-point-main {
+      min-width: 0;
+    }
+
+    .activation-order-point-name {
+      display: flex;
+      min-width: 0;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .activation-order-point-name > i {
+      flex: 0 0 auto;
+      color: var(--accent-color);
+      font-size: 0.8125rem;
+    }
+
+    .activation-order-point-name strong {
+      min-width: 0;
+      color: var(--heading-color);
+      font-size: 0.8125rem;
+      font-weight: 700;
+      line-height: 1.35;
+    }
+
+    .activation-order-point-current {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 7px;
+      border-radius: var(--radius-full);
+      color: color-mix(in srgb, var(--success-color), #000 30%);
+      background: var(--success-color-light);
+      font-size: 0.625rem;
+      font-weight: 800;
+      line-height: 1.35;
+      white-space: nowrap;
+    }
+
+    .activation-order-point-current::before {
+      width: 5px;
+      height: 5px;
+      border-radius: var(--radius-full);
+      background: var(--success-color);
+      content: "";
+    }
+
+    .activation-order-point-context {
+      display: flex;
+      min-width: 0;
+      flex-wrap: wrap;
+      gap: 3px 12px;
+      margin-top: 3px;
+      color: var(--muted-color);
+      font-size: 0.75rem;
+      line-height: 1.35;
+    }
+
+    .activation-order-point-context span {
+      display: inline-flex;
+      min-width: 0;
+      align-items: flex-start;
+      gap: 5px;
+    }
+
+    .activation-order-point-context i {
+      flex: 0 0 auto;
+      margin-top: 1px;
+      color: color-mix(in srgb, var(--muted-color), transparent 12%);
+      font-size: 0.6875rem;
+    }
+
+    .activation-order-point-time {
+      color: var(--heading-color);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.75rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .activation-order-points-empty {
+      display: flex;
+      min-height: 76px;
+      align-items: center;
+      justify-content: center;
+      gap: var(--spacing-sm);
+      padding: var(--spacing-md);
+      color: var(--muted-color);
+      font-size: 0.8125rem;
+      text-align: center;
+    }
+
+    .activation-order-points-empty i {
+      color: var(--accent-color);
+      font-size: 1rem;
+    }
+
+    [data-theme=dark] .activation-order-point-current {
+      color: var(--success-color);
+    }
+
     .activation-details-members {
       max-height: 220px;
       overflow-y: auto;
@@ -505,6 +984,80 @@
       border: 1px solid var(--border-color-light);
       border-radius: var(--radius-md);
       background: var(--background-color);
+    }
+
+    .activation-map-summary {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-xs);
+      margin: 4px 0 0;
+      color: var(--muted-color);
+      font-size: 0.8125rem;
+    }
+
+    .activation-map-summary i {
+      color: var(--accent-color);
+    }
+
+    .activation-map-notice {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--spacing-sm);
+      margin-bottom: var(--spacing-md);
+      padding: var(--spacing-md);
+      border: 1px solid color-mix(in srgb, var(--info-color), transparent 65%);
+      border-radius: var(--radius-md);
+      color: color-mix(in srgb, var(--info-color), #000 35%);
+      background: var(--info-color-light);
+      font-size: 0.8125rem;
+      line-height: 1.45;
+    }
+
+    [data-theme=dark] .activation-map-notice {
+      color: var(--info-color);
+    }
+
+    .activation-map-shell {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      background: var(--background-color);
+    }
+
+    #activationLocationMap {
+      width: 100%;
+      height: 430px;
+      background: var(--background-color);
+    }
+
+    #activationLocationMap .leaflet-control-attribution {
+      font-size: 10px;
+    }
+
+    .activation-map-loading {
+      position: absolute;
+      z-index: 700;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--spacing-sm);
+      padding: var(--spacing-lg);
+      color: var(--accent-color);
+      background: color-mix(in srgb, var(--card-bg), transparent 8%);
+      font-size: 0.875rem;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .activation-map-loading.is-error {
+      color: var(--danger-color);
+      background: color-mix(in srgb, var(--card-bg), transparent 2%);
+    }
+
+    .activation-map-loading .activation-growing-dots {
+      flex: 0 0 auto;
     }
 
     .activation-print-sheet {
@@ -553,6 +1106,17 @@
         opacity: 1;
         transform: scale(0.75);
         animation: none !important;
+      }
+    }
+
+    @media (max-width: 991px) {
+      .activation-stage-summary {
+        grid-template-columns: 1fr;
+      }
+
+      .activation-stage-summary-heading {
+        border-right: 0;
+        border-bottom: 1px solid var(--border-color-light);
       }
     }
 
@@ -615,6 +1179,18 @@
 
       .activation-details-section.is-wide {
         grid-column: auto;
+      }
+
+      .activation-order-point {
+        grid-template-columns: 30px minmax(0, 1fr);
+      }
+
+      .activation-order-point-time {
+        grid-column: 2;
+      }
+
+      #activationLocationMap {
+        height: 330px;
       }
     }
 
@@ -997,6 +1573,50 @@
               <span class="activation-kpi-note">Turnos concluídos na data atual</span>
             </article>
             -->
+
+            <div class="card activation-stage-summary" role="group" aria-label="Distribuição das guarnições por atividade atual">
+              <div class="activation-stage-summary-heading">
+                <span aria-hidden="true"><i class="bi bi-diagram-3"></i></span>
+                <div>
+                  <strong>Atividade atual</strong>
+                  <small>Etapa prevista na OS</small>
+                </div>
+              </div>
+              <div class="activation-stage-summary-scroll" role="region" aria-label="Etapas operacionais; deslize horizontalmente para ver todas" tabindex="0">
+                <div class="activation-stage-summary-grid">
+                  <article class="activation-stage-metric" data-stage="prelecao" aria-label="Guarnições em preleção">
+                    <span class="activation-stage-metric-icon" aria-hidden="true"><i class="bi bi-megaphone"></i></span>
+                    <span class="activation-stage-metric-label">Preleção</span>
+                    <strong class="activation-stage-metric-value" id="activationBriefingStageKpi">0</strong>
+                  </article>
+                  <article class="activation-stage-metric" data-stage="deslocamento" aria-label="Guarnições em deslocamento">
+                    <span class="activation-stage-metric-icon" aria-hidden="true"><i class="bi bi-arrow-right"></i></span>
+                    <span class="activation-stage-metric-label">Deslocamento</span>
+                    <strong class="activation-stage-metric-value" id="activationMovingStageKpi">0</strong>
+                  </article>
+                  <article class="activation-stage-metric" data-stage="baseamento" aria-label="Guarnições em baseamento">
+                    <span class="activation-stage-metric-icon" aria-hidden="true"><i class="bi bi-geo-alt"></i></span>
+                    <span class="activation-stage-metric-label">Baseamento</span>
+                    <strong class="activation-stage-metric-value" id="activationBaseStageKpi">0</strong>
+                  </article>
+                  <article class="activation-stage-metric" data-stage="patrulhamento" aria-label="Guarnições em patrulhamento">
+                    <span class="activation-stage-metric-icon" aria-hidden="true"><i class="bi bi-shield-check"></i></span>
+                    <span class="activation-stage-metric-label">Patrulhamento</span>
+                    <strong class="activation-stage-metric-value" id="activationPatrolStageKpi">0</strong>
+                  </article>
+                  <article class="activation-stage-metric" data-stage="intervalo" aria-label="Guarnições em intervalo">
+                    <span class="activation-stage-metric-icon" aria-hidden="true"><i class="bi bi-clock"></i></span>
+                    <span class="activation-stage-metric-label">Intervalo</span>
+                    <strong class="activation-stage-metric-value" id="activationBreakStageKpi">0</strong>
+                  </article>
+                  <article class="activation-stage-metric" data-stage="retorno" aria-label="Guarnições em retorno à base">
+                    <span class="activation-stage-metric-icon" aria-hidden="true"><i class="bi bi-arrow-up"></i></span>
+                    <span class="activation-stage-metric-label">Retorno base</span>
+                    <strong class="activation-stage-metric-value" id="activationReturnStageKpi">0</strong>
+                  </article>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -1092,17 +1712,37 @@
                       <th scope="col">Ações</th>
                     </tr>
                     -->
+                    <!-- Cabeçalho anterior de dez colunas preservado de forma inerte. -->
+                    <template id="legacyActivationTenColumnHeader">
                     <tr>
                       <th scope="col">Código</th>
                       <th scope="col">Viatura / recurso</th>
                       <th scope="col">Tipo de serviço</th>
-                      <th scope="col">Ordem de Serviço (OS)</th>
+                      <!-- Nome anterior preservado: Ordem de Serviço (OS). -->
+                      <th scope="col">OS</th>
                       <th scope="col">Data</th>
-                      <th scope="col">Hora de início</th>
-                      <th scope="col">Hora de término</th>
+                      <!-- Nomes anteriores preservados: Hora de início e Hora de término. -->
+                      <th scope="col">Início</th>
+                      <th scope="col">Término</th>
                       <th scope="col">Posto / graduação</th>
-                      <th scope="col">Nome de guerra</th>
-                      <th scope="col">Telefone</th>
+                      <!-- Nomes anteriores preservados: Nome de guerra; Nome. -->
+                      <th scope="col">CMD</th>
+                      <!-- Coluna removida da listagem para ampliar o espaço disponível: <th scope="col">Telefone</th> -->
+                      <th scope="col">Ações</th>
+                    </tr>
+                    </template>
+                    <tr>
+                      <!-- Coluna anterior preservada: <th scope="col">Código</th> -->
+                      <th scope="col">Viatura / recurso</th>
+                      <!-- Coluna anterior preservada; o tipo de serviço agora aparece junto da atividade atual.
+                      <th scope="col">Tipo de serviço</th>
+                      -->
+                      <th scope="col">OS</th>
+                      <th scope="col">Data / horário</th>
+                      <th scope="col">Comandante</th>
+                      <!-- Coluna anterior preservada: <th scope="col" class="text-center">Qtd. integrantes</th> -->
+                      <!-- Ordem anterior preservada: <th scope="col">Atividade atual / Tipo de serviço</th> -->
+                      <th scope="col">Tipo de serviço / Atividade atual</th>
                       <th scope="col">Ações</th>
                     </tr>
                   </thead>
@@ -1222,6 +1862,22 @@
                   </dl>
                 </section>
 
+                <section class="activation-details-section is-wide" aria-labelledby="endTurnServiceOrderPointsTitle">
+                  <div class="activation-details-title-row">
+                    <h3 class="activation-details-title" id="endTurnServiceOrderPointsTitle">
+                      <i class="bi bi-pin-map" aria-hidden="true"></i>
+                      Pontos e atividades previstos na OS
+                    </h3>
+                    <span class="activation-order-points-count" id="endTurnServiceOrderPointsCount" aria-live="polite">0 previstos</span>
+                  </div>
+                  <div class="activation-order-points" id="endTurnServiceOrderPoints" role="list" aria-label="Roteiro previsto na Ordem de Serviço">
+                    <div class="activation-order-points-empty">
+                      <i class="bi bi-list-check" aria-hidden="true"></i>
+                      <span>Nenhum ponto ou atividade previsto foi encontrado.</span>
+                    </div>
+                  </div>
+                </section>
+
                 <section class="activation-details-section" aria-labelledby="endTurnScheduleTitle">
                   <h3 class="activation-details-title" id="endTurnScheduleTitle">
                     <i class="bi bi-clock-history" aria-hidden="true"></i>
@@ -1264,6 +1920,48 @@
           </div>
         </div>
       </div>
+
+      <div class="modal fade" id="activationMapModal" tabindex="-1" aria-labelledby="activationMapModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <div>
+                <h2 class="modal-title fs-5" id="activationMapModalLabel">Posição prevista da atividade</h2>
+                <p class="activation-map-summary">
+                  <i class="bi bi-geo-alt" aria-hidden="true"></i>
+                  <span id="activationMapSummary">Localização não informada</span>
+                </p>
+              </div>
+              <button type="button" class="btn-close" id="activationMapModalClose" data-bs-dismiss="modal" aria-label="Fechar mapa"></button>
+            </div>
+            <div class="modal-body">
+              <div class="activation-map-notice" role="note">
+                <i class="bi bi-info-circle-fill mt-1" aria-hidden="true"></i>
+                <span><strong>Posição programada conforme a Ordem de Serviço.</strong> O mapa representa a atividade prevista para o horário atual e não corresponde a rastreamento GPS em tempo real.</span>
+              </div>
+              <div class="activation-map-shell">
+                <div id="activationLocationMap" role="region" aria-label="Mapa da posição prevista para a atividade atual"></div>
+                <div class="activation-map-loading" id="activationMapLoading" role="status" aria-live="polite">
+                  <span class="activation-growing-dots" id="activationMapLoadingDots" aria-hidden="true">
+                    <span class="spinner-grow spinner-grow-sm"></span>
+                    <span class="spinner-grow spinner-grow-sm" style="animation-delay: 0.15s;"></span>
+                    <span class="spinner-grow spinner-grow-sm" style="animation-delay: 0.3s;"></span>
+                  </span>
+                  <i class="bi bi-exclamation-triangle-fill d-none" id="activationMapErrorIcon" aria-hidden="true"></i>
+                  <span id="activationMapLoadingText">Carregando mapa...</span>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <a class="btn btn-outline-primary" id="activationMapExternalLink" href="https://www.openstreetmap.org/" target="_blank" rel="noopener">
+                <i class="bi bi-box-arrow-up-right me-1" aria-hidden="true"></i>
+                Abrir no OpenStreetMap
+              </a>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <footer class="footer">
@@ -1289,6 +1987,8 @@
   <script src="assets/js/theme.js"></script>
   <script src="assets/js/main.js"></script>
   <script src="assets/js/apps-sidebar-toggle.js"></script>
+  <!-- Leaflet: mesma versão estável utilizada nos cadastros e consultas de locais. -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -1298,6 +1998,10 @@
       const SERVICE_ORDER_STORAGE_KEYS = ['ordena.ordens-servico.v1', 'ordensServico'];
       const ACTIVE_STATUS = 'Ativa';
       const CLOSED_STATUS = 'Encerrada';
+      const mapConfiguration = window.ORDENA_MAP_CONFIG || {};
+      const MAP_TILE_URL = String(mapConfiguration.tileUrl || 'https://tile.openstreetmap.org/{z}/{x}/{y}.png');
+      const MAP_TILE_ATTRIBUTION = String(mapConfiguration.tileAttribution || '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors');
+      const MAP_LOADING_TIMEOUT = 10000;
       const DEMO_ACTIVATION = {
         id: '550e8400-e29b-41d4-a716-446655440000',
         activationCode: '1',
@@ -1322,7 +2026,15 @@
           numero: 1,
           nomeOS: 'PATRULHAMENTO OSTENSIVO - SETOR CENTRO',
           inicioGeral: '08:00',
-          terminoGeral: '20:00'
+          terminoGeral: '20:00',
+          atividades: [
+            {
+              tipo: 'Patrulhamento',
+              inicio: '08:00',
+              fim: '08:00',
+              local: 'Setor Centro'
+            }
+          ]
         },
         commander: {
           rank: '2º Sargento',
@@ -1356,6 +2068,12 @@
         deployedVehiclesKpi: document.getElementById('deployedVehiclesKpi'),
         onDutyPersonnelKpi: document.getElementById('onDutyPersonnelKpi'),
         footPatrolKpi: document.getElementById('footPatrolKpi'),
+        briefingStageKpi: document.getElementById('activationBriefingStageKpi'),
+        movingStageKpi: document.getElementById('activationMovingStageKpi'),
+        baseStageKpi: document.getElementById('activationBaseStageKpi'),
+        patrolStageKpi: document.getElementById('activationPatrolStageKpi'),
+        breakStageKpi: document.getElementById('activationBreakStageKpi'),
+        returnStageKpi: document.getElementById('activationReturnStageKpi'),
         // Indicador anterior preservado; o card foi substituído por policiamento a pé.
         // closedTodayKpi: document.getElementById('closedTodayKpi'),
         recordCount: document.getElementById('activationRecordCount'),
@@ -1393,10 +2111,28 @@
         endTurnStartedAt: document.getElementById('endTurnStartedAt'),
         endTurnEndedAt: document.getElementById('endTurnEndedAt'),
         endTurnMembers: document.getElementById('endTurnMembers'),
+        endTurnServiceOrderPointsCount: document.getElementById('endTurnServiceOrderPointsCount'),
+        endTurnServiceOrderPoints: document.getElementById('endTurnServiceOrderPoints'),
+        mapModal: document.getElementById('activationMapModal'),
+        mapModalLabel: document.getElementById('activationMapModalLabel'),
+        mapModalClose: document.getElementById('activationMapModalClose'),
+        mapSummary: document.getElementById('activationMapSummary'),
+        mapElement: document.getElementById('activationLocationMap'),
+        mapLoading: document.getElementById('activationMapLoading'),
+        mapLoadingDots: document.getElementById('activationMapLoadingDots'),
+        mapErrorIcon: document.getElementById('activationMapErrorIcon'),
+        mapLoadingText: document.getElementById('activationMapLoadingText'),
+        mapExternalLink: document.getElementById('activationMapExternalLink'),
         printSheet: document.getElementById('activationPrintSheet')
       };
 
-      if (!elements.table || !elements.tableBody || !elements.dashboardContent || !elements.printSheet) {
+      if (!elements.table || !elements.tableBody || !elements.dashboardContent || !elements.printSheet ||
+          !elements.briefingStageKpi || !elements.movingStageKpi || !elements.baseStageKpi ||
+          !elements.patrolStageKpi || !elements.breakStageKpi || !elements.returnStageKpi ||
+          !elements.endTurnServiceOrderPointsCount || !elements.endTurnServiceOrderPoints ||
+          !elements.mapModal || !elements.mapModalLabel || !elements.mapSummary || !elements.mapElement ||
+          !elements.mapLoading || !elements.mapLoadingDots || !elements.mapErrorIcon ||
+          !elements.mapLoadingText || !elements.mapExternalLink) {
         return;
       }
 
@@ -1409,9 +2145,19 @@
         lastEndTurnTrigger: null,
         alertTimeout: null,
         demoAvailable: false,
+        stageDataError: null,
+        operationalOrders: [],
         refreshing: false,
         endingTurn: false,
-        printing: false
+        printing: false,
+        mapInstance: null,
+        mapTileLayer: null,
+        mapPositionLayer: null,
+        mapData: null,
+        mapTrigger: null,
+        mapLoadingTimer: null,
+        mapTilesReady: false,
+        mapTileFailed: false
       };
 
       function safeString(value) {
@@ -2138,17 +2884,26 @@
         return minutes + 'min';
       }
 
-      function readStoredArrayForPrint(key) {
+      function readStoredArrayForPrint(key, throwOnError) {
         try {
           const storedValue = window.localStorage.getItem(key);
           if (!storedValue) {
             return [];
           }
           const parsedValue = JSON.parse(storedValue);
-          return Array.isArray(parsedValue) ? parsedValue.filter(function(item) {
+          if (!Array.isArray(parsedValue)) {
+            if (throwOnError) {
+              throw new Error('Formato de armazenamento inválido para “' + key + '”.');
+            }
+            return [];
+          }
+          return parsedValue.filter(function(item) {
             return item && typeof item === 'object' && !Array.isArray(item);
-          }) : [];
+          });
         } catch (error) {
+          if (throwOnError) {
+            throw error;
+          }
           return [];
         }
       }
@@ -2179,7 +2934,7 @@
           Boolean(firstDefined(order.tipoOrdem, order.tipoServicoId, order.tipoRecurso, order.criadoEm));
       }
 
-      function resolveServiceOrderForPrint(activation) {
+      function resolveServiceOrderForPrint(activation, storedOrdersSnapshot) {
         const embeddedOrder = isObjectRecord(activation.serviceOrder) ? activation.serviceOrder : {};
         const rawActivation = isObjectRecord(activation._raw) ? activation._raw : {};
         const snapshotCandidate = firstDefined(
@@ -2196,13 +2951,15 @@
           pickText(embeddedOrder, ['numero', 'number', 'code', 'codigo']),
           pickText(activation.serviceOrder, ['numero', 'number', 'code', 'codigo'])
         ));
-        const storedOrders = [];
+        const storedOrders = Array.isArray(storedOrdersSnapshot) ? storedOrdersSnapshot : [];
 
-        SERVICE_ORDER_STORAGE_KEYS.forEach(function(key) {
-          readStoredArrayForPrint(key).forEach(function(order) {
-            storedOrders.push(order);
+        if (!Array.isArray(storedOrdersSnapshot)) {
+          SERVICE_ORDER_STORAGE_KEYS.forEach(function(key) {
+            readStoredArrayForPrint(key).forEach(function(order) {
+              storedOrders.push(order);
+            });
           });
-        });
+        }
 
         let linkedOrder = null;
         if (linkedId) {
@@ -2296,6 +3053,153 @@
           return '';
         }
         return 'GPS ' + latitude.toFixed(6) + ', ' + longitude.toFixed(6);
+      }
+
+      function normalizeActivationMapCoordinate(coordinate, usesGeoJsonOrder) {
+        let rawLatitude = '';
+        let rawLongitude = '';
+
+        if (Array.isArray(coordinate) && coordinate.length >= 2) {
+          rawLatitude = coordinate[usesGeoJsonOrder ? 1 : 0];
+          rawLongitude = coordinate[usesGeoJsonOrder ? 0 : 1];
+        } else if (isObjectRecord(coordinate)) {
+          rawLatitude = firstDefined(coordinate.latitude, coordinate.lat);
+          rawLongitude = firstDefined(coordinate.longitude, coordinate.lng, coordinate.lon);
+        }
+
+        if (safeString(rawLatitude) === '' || safeString(rawLongitude) === '') {
+          return null;
+        }
+
+        const latitude = Number(rawLatitude);
+        const longitude = Number(rawLongitude);
+        if (!Number.isFinite(latitude) || !Number.isFinite(longitude) ||
+            latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
+          return null;
+        }
+        return [latitude, longitude];
+      }
+
+      function activationMapCoordinatesAreEqual(first, second) {
+        return Boolean(first && second && first[0] === second[0] && first[1] === second[1]);
+      }
+
+      function activationMapPolygonCenter(coordinates) {
+        const totals = coordinates.reduce(function(result, coordinate) {
+          result.latitude += coordinate[0];
+          result.longitude += coordinate[1];
+          return result;
+        }, { latitude: 0, longitude: 0 });
+        return [totals.latitude / coordinates.length, totals.longitude / coordinates.length];
+      }
+
+      function activationMapPositionFromActivity(activity) {
+        const gps = activity && activity.gps;
+        if (!isObjectRecord(gps)) {
+          return null;
+        }
+
+        const directPoint = normalizeActivationMapCoordinate(gps, false);
+        if (directPoint) {
+          return { type: 'point', point: directPoint, coordinates: [directPoint] };
+        }
+
+        const geometry = isObjectRecord(gps.geometry) ? gps.geometry : null;
+        if (geometry && safeString(geometry.type).toLocaleLowerCase('pt-BR') === 'point') {
+          const geometryPoint = normalizeActivationMapCoordinate(geometry.coordinates, true);
+          if (geometryPoint) {
+            return { type: 'point', point: geometryPoint, coordinates: [geometryPoint] };
+          }
+        }
+
+        let geoJsonCoordinates = null;
+        if (geometry && Array.isArray(geometry.coordinates)) {
+          if (safeString(geometry.type).toLocaleLowerCase('pt-BR') === 'multipolygon') {
+            geoJsonCoordinates = Array.isArray(geometry.coordinates[0])
+              ? geometry.coordinates[0][0]
+              : null;
+          } else {
+            geoJsonCoordinates = geometry.coordinates[0];
+          }
+        }
+
+        const sourceCoordinates = Array.isArray(geoJsonCoordinates)
+          ? geoJsonCoordinates
+          : firstDefined(gps.coordenadas, gps.coordinates, gps.vertices);
+        if (!Array.isArray(sourceCoordinates)) {
+          return null;
+        }
+
+        const coordinates = sourceCoordinates.reduce(function(validCoordinates, coordinate) {
+          const normalizedCoordinate = normalizeActivationMapCoordinate(
+            coordinate,
+            sourceCoordinates === geoJsonCoordinates
+          );
+          if (!normalizedCoordinate) {
+            return validCoordinates;
+          }
+          const isRepeated = validCoordinates.some(function(savedCoordinate) {
+            return activationMapCoordinatesAreEqual(savedCoordinate, normalizedCoordinate);
+          });
+          if (!isRepeated) {
+            validCoordinates.push(normalizedCoordinate);
+          }
+          return validCoordinates;
+        }, []);
+
+        if (coordinates.length > 3 && activationMapCoordinatesAreEqual(coordinates[0], coordinates[coordinates.length - 1])) {
+          coordinates.pop();
+        }
+        if (coordinates.length === 1) {
+          return { type: 'point', point: coordinates[0], coordinates: coordinates };
+        }
+        if (coordinates.length < 3) {
+          return null;
+        }
+        return {
+          type: 'polygon',
+          point: activationMapPolygonCenter(coordinates),
+          coordinates: coordinates
+        };
+      }
+
+      function activationMapData(activation) {
+        const currentActivity = findCurrentServiceOrderActivity(activation, state.operationalOrders);
+        if (!currentActivity) {
+          return {
+            available: false,
+            reason: 'Nenhuma atividade vigente neste horário'
+          };
+        }
+
+        const position = activationMapPositionFromActivity(currentActivity);
+        if (!position) {
+          return {
+            available: false,
+            reason: 'Atividade atual sem posição GPS prevista'
+          };
+        }
+
+        const activityType = pickText(currentActivity, ['tipo', 'type', 'name', 'nome']);
+        const directLocationValue = pickText(currentActivity, ['local', 'location', 'place', 'ponto']);
+        const directLocation = directLocationValue === '-' ? '' : directLocationValue;
+        const operationValue = pickText(currentActivity.operacao, ['name', 'nome', 'label']) ||
+          pickText(currentActivity, ['operation', 'nomeOperacao', 'operationName']);
+        const operation = operationValue === '-' ? '' : operationValue;
+
+        return {
+          available: true,
+          activity: currentActivity,
+          activityLabel: activityDisplayName(activityType),
+          location: directLocation || activityAddress(currentActivity) || operation || 'Localização prevista na OS',
+          position: position
+        };
+      }
+
+      function activationExternalMapUrl(position) {
+        return 'https://www.openstreetmap.org/#map=16/' +
+          encodeURIComponent(Number(position.point[0]).toFixed(6)) + '/' +
+          encodeURIComponent(Number(position.point[1]).toFixed(6));
       }
 
       function serviceOrderOrigin(order) {
@@ -2723,6 +3627,209 @@
         });
       }
 
+      function finishActivationMapLoading() {
+        if (state.mapLoadingTimer !== null) {
+          window.clearTimeout(state.mapLoadingTimer);
+          state.mapLoadingTimer = null;
+        }
+        if (state.mapTrigger) {
+          endButtonProcessing(state.mapTrigger);
+        }
+      }
+
+      function scheduleActivationMapTimeout() {
+        if (state.mapLoadingTimer !== null) {
+          window.clearTimeout(state.mapLoadingTimer);
+        }
+        state.mapLoadingTimer = window.setTimeout(function() {
+          state.mapTileFailed = true;
+          setActivationMapState(
+            'O mapa demorou para carregar. Use “Abrir no OpenStreetMap” para consultar a posição.',
+            'error'
+          );
+        }, MAP_LOADING_TIMEOUT);
+      }
+
+      function setActivationMapState(message, status) {
+        const currentStatus = status || 'loading';
+        elements.mapLoading.classList.remove('d-none', 'is-error');
+        elements.mapLoadingDots.classList.toggle('d-none', currentStatus === 'error');
+        elements.mapErrorIcon.classList.toggle('d-none', currentStatus !== 'error');
+        elements.mapLoadingText.textContent = message || '';
+
+        if (currentStatus === 'error') {
+          elements.mapLoading.classList.add('is-error');
+          finishActivationMapLoading();
+        } else if (currentStatus === 'ready') {
+          elements.mapLoading.classList.add('d-none');
+          finishActivationMapLoading();
+        }
+      }
+
+      function createSafeActivationMapText(value) {
+        const text = document.createElement('span');
+        text.textContent = safeString(value);
+        return text;
+      }
+
+      function createActivationMapTileLayer() {
+        const tileLayer = window.L.tileLayer(MAP_TILE_URL, {
+          maxZoom: 19,
+          updateWhenIdle: true,
+          attribution: MAP_TILE_ATTRIBUTION
+        });
+
+        tileLayer.on('loading', function() {
+          if (!state.mapData) {
+            return;
+          }
+          state.mapTilesReady = false;
+          state.mapTileFailed = false;
+          setActivationMapState('Carregando mapa...', 'loading');
+          scheduleActivationMapTimeout();
+        });
+        tileLayer.on('tileerror', function() {
+          if (!state.mapData) {
+            return;
+          }
+          state.mapTileFailed = true;
+          setActivationMapState(
+            'Não foi possível carregar todos os detalhes do mapa. Use “Abrir no OpenStreetMap”.',
+            'error'
+          );
+        });
+        tileLayer.on('load', function() {
+          if (!state.mapData) {
+            return;
+          }
+          state.mapTilesReady = !state.mapTileFailed;
+          setActivationMapState(
+            state.mapTileFailed ? 'Não foi possível carregar todos os detalhes do mapa. Use “Abrir no OpenStreetMap”.' : '',
+            state.mapTileFailed ? 'error' : 'ready'
+          );
+        });
+        return tileLayer;
+      }
+
+      function openActivationMap(activation, triggerButton) {
+        const mapData = activationMapData(activation);
+        if (!mapData.available) {
+          showAlert(mapData.reason + '.', 'warning');
+          return;
+        }
+
+        if (!beginButtonProcessing(triggerButton, 'Carregando...', [elements.refreshButton])) {
+          return;
+        }
+
+        const vehicle = vehicleDetails(activation.vehicle);
+        const externalUrl = activationExternalMapUrl(mapData.position);
+        state.mapData = mapData;
+        state.mapTrigger = triggerButton;
+        state.mapTileFailed = false;
+        elements.mapModalLabel.textContent = 'Mapa — ' + vehicle.primary;
+        elements.mapSummary.textContent = mapData.activityLabel + ' · ' + mapData.location;
+        elements.mapElement.setAttribute(
+          'aria-label',
+          'Mapa da posição prevista de ' + vehicle.primary + ' em ' + mapData.location
+        );
+        elements.mapExternalLink.href = externalUrl;
+        setActivationMapState('Carregando mapa...', 'loading');
+        scheduleActivationMapTimeout();
+
+        if (!window.L || !window.bootstrap) {
+          finishActivationMapLoading();
+          window.open(externalUrl, '_blank', 'noopener');
+          state.mapData = null;
+          state.mapTrigger = null;
+          showAlert('O mapa interativo não pôde ser carregado. A posição prevista foi aberta no OpenStreetMap.', 'warning');
+          return;
+        }
+
+        window.bootstrap.Modal.getOrCreateInstance(elements.mapModal).show();
+      }
+
+      function initializeActivationMap() {
+        if (!state.mapData || !window.L) {
+          setActivationMapState(
+            'Não foi possível preparar o mapa. Use “Abrir no OpenStreetMap”.',
+            'error'
+          );
+          return;
+        }
+
+        const position = state.mapData.position;
+        const mapLabel = state.mapData.activityLabel + ' — ' + state.mapData.location;
+
+        if (!state.mapInstance) {
+          state.mapInstance = window.L.map(elements.mapElement, {
+            zoomControl: true
+          });
+          state.mapTileLayer = createActivationMapTileLayer();
+          state.mapTileLayer.addTo(state.mapInstance);
+        } else if (state.mapTileLayer && typeof state.mapTileLayer.redraw === 'function') {
+          state.mapTileFailed = false;
+          state.mapTileLayer.redraw();
+        }
+
+        if (state.mapPositionLayer) {
+          state.mapInstance.removeLayer(state.mapPositionLayer);
+          state.mapPositionLayer = null;
+        }
+
+        if (position.type === 'polygon') {
+          state.mapPositionLayer = window.L.polygon(position.coordinates, {
+            color: '#4f46e5',
+            weight: 3,
+            opacity: 0.92,
+            fillColor: '#4f46e5',
+            fillOpacity: 0.2
+          }).addTo(state.mapInstance);
+          state.mapPositionLayer.bindTooltip(createSafeActivationMapText(mapLabel), {
+            sticky: true
+          });
+          state.mapInstance.fitBounds(state.mapPositionLayer.getBounds(), {
+            padding: [32, 32],
+            maxZoom: 17
+          });
+        } else {
+          state.mapPositionLayer = window.L.marker(position.point, {
+            keyboard: true,
+            title: mapLabel,
+            alt: mapLabel
+          }).addTo(state.mapInstance);
+          state.mapPositionLayer.bindTooltip(createSafeActivationMapText(mapLabel), {
+            direction: 'top',
+            offset: [0, -28]
+          });
+          state.mapInstance.setView(position.point, 17);
+        }
+
+        const layerElement = state.mapPositionLayer.getElement();
+        if (layerElement) {
+          layerElement.setAttribute('role', 'img');
+          layerElement.setAttribute('aria-label', mapLabel);
+        }
+
+        window.setTimeout(function() {
+          if (!state.mapInstance || !state.mapData) {
+            return;
+          }
+          state.mapInstance.invalidateSize();
+          if (state.mapData.position.type === 'polygon' && state.mapPositionLayer) {
+            state.mapInstance.fitBounds(state.mapPositionLayer.getBounds(), {
+              padding: [32, 32],
+              maxZoom: 17
+            });
+          } else {
+            state.mapInstance.setView(state.mapData.position.point, 17);
+          }
+          if (state.mapTilesReady && !state.mapTileFailed) {
+            setActivationMapState('', 'ready');
+          }
+        }, 120);
+      }
+
       function runWithActivationWriteLock(operation) {
         if (window.navigator.locks && typeof window.navigator.locks.request === 'function') {
           return window.navigator.locks.request(ACTIVATION_WRITE_LOCK, { mode: 'exclusive' }, operation);
@@ -2756,6 +3863,230 @@
         return badge;
       }
 
+      function operationalStageIcon(stage) {
+        const icons = {
+          prelecao: 'bi-megaphone',
+          deslocamento: 'bi-arrow-right',
+          baseamento: 'bi-geo-alt',
+          patrulhamento: 'bi-shield-check',
+          intervalo: 'bi-clock',
+          retorno: 'bi-arrow-up'
+        };
+        return icons[stage] || 'bi-activity';
+      }
+
+      function createActivityDetail(iconClass, text, title) {
+        const detail = document.createElement('span');
+        const icon = document.createElement('i');
+        const label = document.createElement('span');
+        detail.className = 'activation-activity-detail';
+        icon.className = 'bi ' + iconClass;
+        icon.setAttribute('aria-hidden', 'true');
+        label.textContent = text;
+        if (title) {
+          detail.title = title;
+        }
+        detail.append(icon, label);
+        return detail;
+      }
+
+      function createCurrentActivitySummary(activation, storedOrders, serviceName) {
+        const container = document.createElement('div');
+        const badge = document.createElement('span');
+        const badgeIcon = document.createElement('i');
+        const badgeLabel = document.createElement('span');
+        const serviceType = document.createElement('span');
+        const resolvedOrder = resolveServiceOrderForPrint(activation, storedOrders).order;
+        const activitiesSource = firstDefined(resolvedOrder.atividades, resolvedOrder.activities, []);
+        const activities = Array.isArray(activitiesSource) ? activitiesSource.filter(isObjectRecord) : [];
+        const currentActivity = findCurrentServiceOrderActivity(activation, storedOrders);
+
+        container.className = 'activation-current-activity';
+        badge.className = 'activation-activity-badge';
+        badge.classList.add('mt-1');
+        badgeIcon.setAttribute('aria-hidden', 'true');
+        serviceType.className = 'activation-secondary-text';
+        serviceType.textContent = 'Tipo de serviço: ' + (serviceName || 'Não informado');
+
+        if (!currentActivity) {
+          const hasDetailedSchedule = activities.length > 0;
+          badgeIcon.className = 'bi ' + (hasDetailedSchedule ? 'bi-clock-history' : 'bi-calendar-x');
+          badgeLabel.textContent = hasDetailedSchedule
+            ? 'Sem atividade vigente'
+            : 'OS sem programação detalhada';
+          badge.title = badgeLabel.textContent;
+          badge.append(badgeIcon, badgeLabel);
+          /* Detalhe complementar anterior preservado; a coluna exibe somente o tipo/status da atividade.
+          container.append(
+            badge,
+            createActivityDetail(
+              'bi-info-circle',
+              hasDetailedSchedule
+                ? 'Nenhuma faixa prevista para este horário'
+                : 'Atividades da OS não encontradas'
+            )
+          );
+          */
+          // Ordem anterior preservada: container.append(badge, serviceType);
+          container.append(serviceType, badge);
+          return container;
+        }
+
+        const activityType = pickText(currentActivity, ['tipo', 'type', 'name', 'nome']);
+        const stage = operationalStageKey(activityType);
+        const startValue = firstDefined(currentActivity.inicio, currentActivity.start);
+        const endValue = firstDefined(currentActivity.fim, currentActivity.end);
+        const startTime = startValue ? formatServiceOrderTime(startValue) : '';
+        const endTime = endValue ? formatServiceOrderTime(endValue) : '';
+        const activityWindow = startTime && endTime
+          ? (startTime === endTime ? 'Durante todo o turno' : startTime + ' às ' + endTime)
+          : (startTime ? 'A partir de ' + startTime : (endTime ? 'Até ' + endTime : ''));
+        const directLocationValue = pickText(currentActivity, ['local', 'location', 'place', 'ponto']);
+        const directLocation = directLocationValue === '-' ? '' : directLocationValue;
+        const activityOperationValue = pickText(currentActivity.operacao, ['name', 'nome', 'label']) ||
+          pickText(currentActivity, ['operation', 'nomeOperacao', 'operationName']);
+        const activityOperation = activityOperationValue === '-' ? '' : activityOperationValue;
+        const activityContext = directLocation || activityAddress(currentActivity) || activityOperation;
+        const activityLabel = activityDisplayName(activityType);
+
+        badge.className += stage ? ' is-' + stage : '';
+        badge.title = activityLabel;
+        badgeIcon.className = 'bi ' + operationalStageIcon(stage);
+        badgeLabel.textContent = activityLabel;
+        badge.append(badgeIcon, badgeLabel);
+        // Ordem anterior preservada: container.append(badge, serviceType);
+        container.append(serviceType, badge);
+        /* Detalhes complementares anteriores preservados; a coluna exibe somente o tipo da atividade.
+        if (activityWindow) {
+          container.appendChild(createActivityDetail('bi-clock', activityWindow, 'Horário previsto na Ordem de Serviço'));
+        }
+        if (activityContext) {
+          container.appendChild(createActivityDetail('bi-geo-alt', activityContext, activityContext));
+        }
+        */
+        return container;
+      }
+
+      function createOrderPointContext(iconClass, text) {
+        const item = document.createElement('span');
+        const icon = document.createElement('i');
+        const label = document.createElement('span');
+        icon.className = 'bi ' + iconClass;
+        icon.setAttribute('aria-hidden', 'true');
+        label.textContent = text;
+        item.append(icon, label);
+        return item;
+      }
+
+      function serviceOrderActivityWindow(activity) {
+        const startValue = firstDefined(activity && activity.inicio, activity && activity.start);
+        const endValue = firstDefined(activity && activity.fim, activity && activity.end);
+        const startTime = startValue ? formatServiceOrderTime(startValue) : '';
+        const endTime = endValue ? formatServiceOrderTime(endValue) : '';
+
+        if (startTime && endTime) {
+          return startTime === endTime ? 'Todo o turno' : startTime + ' – ' + endTime;
+        }
+        if (startTime) {
+          return 'Desde ' + startTime;
+        }
+        if (endTime) {
+          return 'Até ' + endTime;
+        }
+        return 'Sem horário';
+      }
+
+      function renderServiceOrderPoints(activation) {
+        const resolvedOrder = resolveServiceOrderForPrint(activation, state.operationalOrders).order;
+        const activitiesSource = firstDefined(resolvedOrder.atividades, resolvedOrder.activities, []);
+        const activities = Array.isArray(activitiesSource) ? activitiesSource.filter(isObjectRecord) : [];
+        const currentActivity = activation.status === ACTIVE_STATUS
+          ? findCurrentServiceOrderActivity(activation, state.operationalOrders)
+          : null;
+
+        elements.endTurnServiceOrderPointsCount.textContent = activities.length === 1
+          ? '1 previsto'
+          : activities.length + ' previstos';
+        elements.endTurnServiceOrderPoints.replaceChildren();
+
+        if (!activities.length) {
+          const emptyState = document.createElement('div');
+          const icon = document.createElement('i');
+          const message = document.createElement('span');
+          emptyState.className = 'activation-order-points-empty';
+          icon.className = 'bi bi-list-check';
+          icon.setAttribute('aria-hidden', 'true');
+          message.textContent = 'Os pontos e atividades completos desta OS não foram encontrados neste navegador.';
+          emptyState.append(icon, message);
+          elements.endTurnServiceOrderPoints.appendChild(emptyState);
+          return;
+        }
+
+        activities.forEach(function(activity, index) {
+          const row = document.createElement('div');
+          const indexBadge = document.createElement('span');
+          const main = document.createElement('div');
+          const nameRow = document.createElement('div');
+          const stageIcon = document.createElement('i');
+          const name = document.createElement('strong');
+          const context = document.createElement('div');
+          const time = document.createElement('span');
+          const activityType = pickText(activity, ['tipo', 'type', 'name', 'nome']);
+          const activityLabel = activityDisplayName(activityType);
+          const stage = operationalStageKey(activityType);
+          const directLocationValue = pickText(activity, ['local', 'location', 'place', 'ponto']);
+          const directLocation = directLocationValue === '-' ? '' : directLocationValue;
+          const address = activityAddress(activity);
+          const operationValue = pickText(activity.operacao, ['name', 'nome', 'label']) ||
+            pickText(activity, ['operation', 'nomeOperacao', 'operationName']);
+          const operation = operationValue === '-' ? '' : operationValue;
+          const primaryContext = directLocation || address || operation || 'Sem ponto ou local específico';
+          const isCurrent = activity === currentActivity;
+
+          row.className = 'activation-order-point' + (isCurrent ? ' is-current' : '');
+          row.setAttribute('role', 'listitem');
+          if (isCurrent) {
+            row.setAttribute('aria-current', 'step');
+            row.setAttribute('aria-label', 'Em realização agora: ' + activityLabel + ', ' + primaryContext);
+          }
+
+          indexBadge.className = 'activation-order-point-index';
+          indexBadge.textContent = String(index + 1).padStart(2, '0');
+          indexBadge.setAttribute('aria-hidden', 'true');
+
+          main.className = 'activation-order-point-main';
+          nameRow.className = 'activation-order-point-name';
+          stageIcon.className = 'bi ' + operationalStageIcon(stage);
+          stageIcon.setAttribute('aria-hidden', 'true');
+          name.textContent = activityLabel;
+          nameRow.append(stageIcon, name);
+
+          if (isCurrent) {
+            const currentBadge = document.createElement('span');
+            currentBadge.className = 'activation-order-point-current';
+            currentBadge.textContent = 'Em realização agora';
+            nameRow.appendChild(currentBadge);
+          }
+
+          context.className = 'activation-order-point-context';
+          context.appendChild(createOrderPointContext('bi-geo-alt', primaryContext));
+          if (address && directLocation && address !== directLocation) {
+            context.appendChild(createOrderPointContext('bi-signpost-2', address));
+          }
+          if (operation && operation !== primaryContext) {
+            context.appendChild(createOrderPointContext('bi-shield-check', 'OP: ' + operation));
+          }
+          main.append(nameRow, context);
+
+          time.className = 'activation-order-point-time';
+          time.textContent = serviceOrderActivityWindow(activity);
+          time.title = 'Horário previsto na Ordem de Serviço';
+
+          row.append(indexBadge, main, time);
+          elements.endTurnServiceOrderPoints.appendChild(row);
+        });
+      }
+
       function createEmptyState() {
         const row = document.createElement('tr');
         const cell = document.createElement('td');
@@ -2770,7 +4101,11 @@
         // cell.colSpan = 14;
         // cell.colSpan = 9;
         // Quantidade anterior preservada: cell.colSpan = 8;
-        cell.colSpan = 11;
+        // Quantidade anterior preservada: cell.colSpan = 11;
+        // Quantidade anterior preservada: cell.colSpan = 10;
+        // Quantidade anterior preservada: cell.colSpan = 7;
+        // A tabela atual possui seis colunas visíveis.
+        cell.colSpan = 6;
         cell.className = 'activation-empty-state';
         content.className = 'activation-empty-content';
         icon.className = 'activation-empty-icon';
@@ -2809,26 +4144,42 @@
 
       function createActivationRow(activation) {
         const row = document.createElement('tr');
-        const codeCell = document.createElement('td');
+        // Célula anterior preservada; o código não é mais exibido na listagem.
+        // const codeCell = document.createElement('td');
         const policingTypeCell = document.createElement('td');
         const activationCell = document.createElement('td');
         const activationDate = document.createElement('div');
         const resourceCell = document.createElement('td');
         const resource = document.createElement('div');
         const resourceIcon = document.createElement('span');
-        const serviceCell = document.createElement('td');
+        // Célula anterior preservada; o tipo de serviço agora integra a célula de atividade atual.
+        // const serviceCell = document.createElement('td');
         const serviceOrderCell = document.createElement('td');
         const serviceDateCell = document.createElement('td');
         const serviceOrderStartCell = document.createElement('td');
         const serviceOrderEndCell = document.createElement('td');
+        const scheduleCell = document.createElement('td');
+        const schedule = document.createElement('div');
+        const scheduleDate = document.createElement('span');
+        const scheduleDateIcon = document.createElement('i');
+        const scheduleWindow = document.createElement('span');
+        const scheduleStart = document.createElement('span');
+        const scheduleSeparator = document.createElement('i');
+        const scheduleEnd = document.createElement('span');
         const commanderRankCell = document.createElement('td');
         const commanderNameCell = document.createElement('td');
+        const commanderCell = document.createElement('td');
+        const commanderSummary = document.createElement('div');
+        const commanderIcon = document.createElement('span');
         const commanderRgCell = document.createElement('td');
-        const commanderPhoneCell = document.createElement('td');
+        // Célula de telefone removida da listagem para ampliar o espaço disponível.
+        // const commanderPhoneCell = document.createElement('td');
         const membersCell = document.createElement('td');
+        // Célula anterior preservada: const membersCountCell = document.createElement('td');
         // Célula agregada anterior preservada: const crewCell = document.createElement('td');
         const missionCell = document.createElement('td');
         const turnCell = document.createElement('td');
+        const currentActivityCell = document.createElement('td');
         const actionsCell = document.createElement('td');
         const actions = document.createElement('div');
         const vehicle = vehicleDetails(activation.vehicle);
@@ -2852,12 +4203,15 @@
         row.setAttribute('aria-haspopup', 'dialog');
         row.setAttribute('aria-controls', 'endTurnModal');
 
-        codeCell.appendChild(createTextStack(
-          activation.activationCode || activation.id,
-          activation.isDemo ? 'Exemplo preenchido' : ''
-        ));
-        codeCell.className = 'activation-code-text';
-        codeCell.title = 'Identificador técnico: ' + activation.id;
+        // Apresentação anterior preservada; a coluna agora exibe somente o código.
+        // codeCell.appendChild(createTextStack(
+        //   activation.activationCode || activation.id,
+        //   activation.isDemo ? 'Exemplo preenchido' : ''
+        // ));
+        // Conteúdo anterior preservado; o código permanece disponível nos detalhes da ativação.
+        // codeCell.appendChild(createTextStack(activation.activationCode || activation.id, ''));
+        // codeCell.className = 'activation-code-text';
+        // codeCell.title = 'Identificador técnico: ' + activation.id;
 
         policingTypeCell.appendChild(createTextStack(policingType || 'Tipo não informado', ''));
 
@@ -2879,7 +4233,8 @@
         //   commander.display,
         //   effective > 0 ? 'Efetivo informado: ' + effective : 'Efetivo não informado'
         // ));
-        serviceCell.appendChild(createTextStack(serviceName || 'Serviço não informado', ''));
+        // Conteúdo anterior preservado; agora exibido em createCurrentActivitySummary.
+        // serviceCell.appendChild(createTextStack(serviceName || 'Serviço não informado', ''));
         // Apresentação anterior preservada: serviceOrderCell.appendChild(createTextStack(order.number, order.summary));
         serviceOrderCell.appendChild(createTextStack(serviceOrderNumber(activation.serviceOrder), ''));
 
@@ -2901,18 +4256,54 @@
         ));
         serviceOrderEndCell.title = 'Horário de término previsto na Ordem de Serviço';
 
+        schedule.className = 'activation-schedule';
+        scheduleDate.className = 'activation-schedule-date';
+        scheduleDateIcon.className = 'bi bi-calendar3';
+        scheduleDateIcon.setAttribute('aria-hidden', 'true');
+        scheduleDate.append(scheduleDateIcon, document.createTextNode(formatDate(activationMoment)));
+        scheduleWindow.className = 'activation-schedule-window';
+        scheduleStart.textContent = serviceOrderStartCell.textContent;
+        scheduleStart.title = serviceOrderStartCell.title;
+        scheduleSeparator.className = 'bi bi-arrow-right';
+        scheduleSeparator.setAttribute('aria-hidden', 'true');
+        scheduleEnd.textContent = serviceOrderEndCell.textContent;
+        scheduleEnd.title = serviceOrderEndCell.title;
+        scheduleWindow.setAttribute(
+          'aria-label',
+          'Início previsto ' + serviceOrderStartCell.textContent + '; término previsto ' + serviceOrderEndCell.textContent
+        );
+        scheduleWindow.append(scheduleStart, scheduleSeparator, scheduleEnd);
+        schedule.append(scheduleDate, scheduleWindow);
+        scheduleCell.appendChild(schedule);
+
         commanderRankCell.appendChild(createTextStack(commander.rank || 'Não informado', ''));
         commanderNameCell.appendChild(createTextStack(commander.name || 'Não informado', ''));
+        commanderSummary.className = 'activation-commander';
+        commanderIcon.className = 'activation-commander-icon';
+        commanderIcon.setAttribute('aria-hidden', 'true');
+        commanderIcon.appendChild(document.createElement('i'));
+        commanderIcon.firstChild.className = 'bi bi-person-badge';
+        commanderSummary.append(
+          commanderIcon,
+          createTextStack(commander.rank || 'Posto não informado', commander.name || 'Nome não informado')
+        );
+        commanderCell.appendChild(commanderSummary);
         commanderRgCell.className = 'activation-identity-text';
         commanderRgCell.textContent = commander.rg || 'Não informado';
-        commanderPhoneCell.className = 'activation-contact-text';
-        commanderPhoneCell.textContent = commander.phone || 'Não informado';
+        // Telefone permanece disponível nos detalhes e na impressão.
+        // commanderPhoneCell.className = 'activation-contact-text';
+        // commanderPhoneCell.textContent = commander.phone || 'Não informado';
         membersCell.appendChild(createMembersSummary(activation.members));
+        // Conteúdo anterior da coluna de quantidade preservado.
+        // membersCountCell.className = 'activation-members-count-text';
+        // membersCountCell.textContent = String(memberCount(activation.members));
+        // membersCountCell.title = 'Quantidade de integrantes adicionais';
 
         missionCell.className = 'activation-mission';
         // Conteúdo anterior preservado:
         // missionCell.textContent = pickText(activation.mission, ['name', 'nome', 'label', 'description', 'descricao']) || 'Missão não informada';
         missionCell.appendChild(createTextStack(mission || order.summary || 'Missão não informada', order.period));
+        currentActivityCell.appendChild(createCurrentActivitySummary(activation, state.operationalOrders, serviceName));
 
         const turnState = document.createElement('span');
         const turnStateIcon = document.createElement('i');
@@ -2934,22 +4325,42 @@
         }
 
         actions.className = 'table-actions';
-        if (isActive && !activation.isDemo) {
+        // Condição anterior preservada: if (isActive && !activation.isDemo) {
+        if (isActive) {
           const endButton = document.createElement('button');
           const endIcon = document.createElement('i');
           endButton.type = 'button';
           endButton.className = 'btn btn-sm btn-outline-danger';
           endButton.dataset.activationAction = 'end-turn';
           endButton.dataset.activationId = activation.id;
-          endButton.setAttribute('aria-label', 'Encerrar turno de ' + vehicle.primary);
+          endButton.disabled = activation.isDemo === true;
+          endButton.setAttribute('aria-disabled', String(activation.isDemo === true));
+          endButton.setAttribute(
+            'aria-label',
+            activation.isDemo
+              ? 'Encerrar turno de ' + vehicle.primary + ' — indisponível no exemplo demonstrativo'
+              : 'Encerrar turno de ' + vehicle.primary
+          );
+          endButton.title = activation.isDemo
+            ? 'O exemplo demonstrativo não pode ser encerrado'
+            : 'Encerrar turno';
           endIcon.className = 'bi bi-stop-circle me-1';
           endIcon.setAttribute('aria-hidden', 'true');
           endButton.append(endIcon, document.createTextNode('Encerrar'));
           actions.appendChild(endButton);
+        }
+        /* Rótulo anterior preservado; a demonstração não deve mais aparecer nas ações.
         } else {
           const closedLabel = document.createElement('span');
           closedLabel.className = 'text-muted small';
           closedLabel.textContent = activation.isDemo ? 'Demonstração' : 'Turno concluído';
+          actions.appendChild(closedLabel);
+        }
+        */
+        if (!isActive && !activation.isDemo) {
+          const closedLabel = document.createElement('span');
+          closedLabel.className = 'text-muted small';
+          closedLabel.textContent = 'Turno concluído';
           actions.appendChild(closedLabel);
         }
         actionsCell.appendChild(actions);
@@ -2965,6 +4376,28 @@
         detailsIcon.setAttribute('aria-hidden', 'true');
         detailsButton.append(detailsIcon, document.createTextNode('Detalhes'));
 
+        const mapAvailability = activationMapData(activation);
+        const mapButton = document.createElement('button');
+        const mapIcon = document.createElement('i');
+        mapButton.type = 'button';
+        mapButton.className = 'btn btn-sm btn-outline-primary';
+        mapButton.dataset.activationAction = 'view-map';
+        mapButton.dataset.activationId = activation.id;
+        mapButton.disabled = !mapAvailability.available;
+        mapButton.setAttribute('aria-disabled', String(!mapAvailability.available));
+        mapButton.setAttribute(
+          'aria-label',
+          mapAvailability.available
+            ? 'Ver posição prevista de ' + vehicle.primary + ' no mapa'
+            : mapAvailability.reason
+        );
+        mapButton.title = mapAvailability.available
+          ? 'Ver posição prevista da atividade atual'
+          : mapAvailability.reason;
+        mapIcon.className = 'bi bi-map me-1';
+        mapIcon.setAttribute('aria-hidden', 'true');
+        mapButton.append(mapIcon, document.createTextNode('Mapa'));
+
         const printButton = document.createElement('button');
         const printIcon = document.createElement('i');
         printButton.type = 'button';
@@ -2976,9 +4409,23 @@
         printIcon.setAttribute('aria-hidden', 'true');
         printButton.append(printIcon, document.createTextNode('Imprimir'));
 
+        const supervisionButton = document.createElement('button');
+        const supervisionIcon = document.createElement('i');
+        supervisionButton.type = 'button';
+        supervisionButton.className = 'btn btn-sm btn-outline-secondary';
+        supervisionButton.disabled = true;
+        supervisionButton.dataset.activationPlaceholder = 'supervision';
+        supervisionButton.setAttribute('aria-disabled', 'true');
+        supervisionButton.setAttribute('aria-label', 'Supervisão da ativação ' + (activation.activationCode || activation.id) + ' — disponível em breve');
+        supervisionButton.title = 'Funcionalidade disponível em breve';
+        supervisionIcon.className = 'bi bi-person-badge me-1';
+        supervisionIcon.setAttribute('aria-hidden', 'true');
+        supervisionButton.append(supervisionIcon, document.createTextNode('Supervisão'));
+
         // Inserção anterior preservada; a impressão agora aparece ao lado de Detalhes.
         // actions.prepend(detailsButton);
-        actions.prepend(detailsButton, printButton);
+        // Inserção anterior preservada: actions.prepend(detailsButton, printButton);
+        actions.prepend(detailsButton, mapButton, printButton, supervisionButton);
 
         // Ordem agregada anterior preservada:
         // row.append(activationCell, resourceCell, serviceCell, crewCell, missionCell, turnCell, actionsCell);
@@ -3000,6 +4447,7 @@
         //   commanderPhoneCell,
         //   actionsCell
         // );
+        /* Ordem anterior de dez colunas preservada:
         row.append(
           codeCell,
           resourceCell,
@@ -3010,7 +4458,19 @@
           serviceOrderEndCell,
           commanderRankCell,
           commanderNameCell,
-          commanderPhoneCell,
+          // Coluna anterior preservada: commanderPhoneCell,
+          actionsCell
+        );
+        */
+        row.append(
+          // Célula anterior preservada: codeCell,
+          resourceCell,
+          // Célula anterior preservada: serviceCell,
+          serviceOrderCell,
+          scheduleCell,
+          commanderCell,
+          // Célula anterior preservada: membersCountCell,
+          currentActivityCell,
           actionsCell
         );
         return row;
@@ -3028,6 +4488,117 @@
         });
       }
       */
+
+      function parseOperationalTimeToMinutes(value) {
+        const match = safeString(value).match(/^(\d{1,2}):(\d{2})/);
+        if (!match) {
+          return null;
+        }
+        const hours = Number(match[1]);
+        const minutes = Number(match[2]);
+        if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+          return null;
+        }
+        return hours * 60 + minutes;
+      }
+
+      function minuteIsWithinOperationalRange(currentMinute, startMinute, endMinute) {
+        if (startMinute === null || endMinute === null) {
+          return false;
+        }
+        if (startMinute === endMinute) {
+          return true;
+        }
+        if (endMinute > startMinute) {
+          return currentMinute >= startMinute && currentMinute < endMinute;
+        }
+        return currentMinute >= startMinute || currentMinute < endMinute;
+      }
+
+      function readOperationalStageOrders() {
+        const storedOrders = [];
+        SERVICE_ORDER_STORAGE_KEYS.forEach(function(key) {
+          readStoredArrayForPrint(key, true).forEach(function(order) {
+            storedOrders.push(order);
+          });
+        });
+        return storedOrders;
+      }
+
+      function findCurrentServiceOrderActivity(activation, storedOrders) {
+        const resolvedOrder = resolveServiceOrderForPrint(activation, storedOrders).order;
+        const activities = Array.isArray(resolvedOrder.atividades)
+          ? resolvedOrder.atividades
+          : (Array.isArray(resolvedOrder.activities) ? resolvedOrder.activities : []);
+        const now = new Date();
+        const currentMinute = now.getHours() * 60 + now.getMinutes();
+
+        return activities.find(function(activity) {
+          return minuteIsWithinOperationalRange(
+            currentMinute,
+            parseOperationalTimeToMinutes(firstDefined(activity && activity.inicio, activity && activity.start)),
+            parseOperationalTimeToMinutes(firstDefined(activity && activity.fim, activity && activity.end))
+          );
+        }) || null;
+      }
+
+      function operationalStageKey(value) {
+        const comparable = safeString(value)
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .replace(/\s+/g, ' ')
+          .trim()
+          .toLocaleLowerCase('pt-BR');
+
+        if (comparable.indexOf('base') >= 0 && comparable.indexOf('retorno') < 0) return 'baseamento';
+        if (comparable.indexOf('patrul') >= 0 || comparable.indexOf('ronda') >= 0) return 'patrulhamento';
+        if (comparable.indexOf('desloc') >= 0) return 'deslocamento';
+        if (comparable.indexOf('interval') >= 0 || comparable.indexOf('refeic') >= 0) return 'intervalo';
+        if (comparable.indexOf('retorno') >= 0) return 'retorno';
+        if (comparable.indexOf('prelec') >= 0 || comparable.indexOf('brief') >= 0) return 'prelecao';
+        return '';
+      }
+
+      function updateOperationalStageKpis(activeRecords) {
+        // O exemplo visual da tabela não entra nos indicadores; os totais refletem somente ativações reais.
+        const stageCounts = {
+          prelecao: 0,
+          deslocamento: 0,
+          baseamento: 0,
+          patrulhamento: 0,
+          intervalo: 0,
+          retorno: 0
+        };
+        let storedOrders = [];
+
+        if (activeRecords.length > 0) {
+          try {
+            storedOrders = readOperationalStageOrders();
+          } catch (error) {
+            state.stageDataError = error;
+            return false;
+          }
+        }
+        state.operationalOrders = storedOrders;
+
+        activeRecords.forEach(function(activation) {
+          const currentActivity = findCurrentServiceOrderActivity(activation, storedOrders);
+          const activityType = pickText(currentActivity, ['tipo', 'type', 'name', 'nome']);
+          const stage = operationalStageKey(activityType);
+          if (Object.prototype.hasOwnProperty.call(stageCounts, stage)) {
+            stageCounts[stage] += 1;
+          }
+        });
+
+        state.stageDataError = null;
+        elements.briefingStageKpi.textContent = stageCounts.prelecao.toLocaleString('pt-BR');
+        elements.movingStageKpi.textContent = stageCounts.deslocamento.toLocaleString('pt-BR');
+        elements.baseStageKpi.textContent = stageCounts.baseamento.toLocaleString('pt-BR');
+        elements.patrolStageKpi.textContent = stageCounts.patrulhamento.toLocaleString('pt-BR');
+        elements.breakStageKpi.textContent = stageCounts.intervalo.toLocaleString('pt-BR');
+        elements.returnStageKpi.textContent = stageCounts.retorno.toLocaleString('pt-BR');
+        return true;
+      }
 
       function updateKpis() {
         const activeRecords = state.activations.filter(function(activation) {
@@ -3063,6 +4634,7 @@
         elements.onDutyPersonnelKpi.textContent = onDutyPersonnel.toLocaleString('pt-BR');
         elements.deployedVehiclesKpi.textContent = vehicleIds.size.toLocaleString('pt-BR');
         elements.footPatrolKpi.textContent = footPatrols.toLocaleString('pt-BR');
+        updateOperationalStageKpis(activeRecords);
         // elements.closedTodayKpi.textContent = closedToday.toLocaleString('pt-BR');
       }
 
@@ -3165,8 +4737,14 @@
         renderActivations();
         updateTimestamp();
 
-        if (activatedSuccessfully) {
+        if (activatedSuccessfully && state.stageDataError) {
+          showAlert('Guarnição ativada com sucesso, mas não foi possível atualizar as etapas previstas nas Ordens de Serviço. Tente atualizar o painel.', 'warning');
+        } else if (activatedSuccessfully) {
           showAlert('Guarnição ativada com sucesso. O painel operacional foi atualizado.', 'success');
+        } else if (result.skipped > 0 && state.stageDataError) {
+          showAlert('Alguns registros e as etapas previstas nas Ordens de Serviço não puderam ser carregados por completo. Tente atualizar o painel.', 'warning');
+        } else if (state.stageDataError) {
+          showAlert('Não foi possível atualizar as etapas previstas nas Ordens de Serviço. Os últimos totais exibidos foram mantidos.', 'warning');
         } else if (result.skipped > 0) {
           showAlert('Alguns registros incompatíveis não puderam ser exibidos. Os demais dados foram carregados normalmente.', 'warning');
         }
@@ -3202,7 +4780,11 @@
         endButtonProcessing(elements.refreshButton);
         state.refreshing = false;
 
-        if (result.skipped > 0) {
+        if (result.skipped > 0 && state.stageDataError) {
+          showAlert('Painel atualizado, mas alguns registros e as etapas previstas nas Ordens de Serviço não puderam ser carregados por completo.', 'warning');
+        } else if (state.stageDataError) {
+          showAlert('As ativações foram atualizadas, mas não foi possível atualizar as etapas previstas nas Ordens de Serviço. Os últimos totais foram mantidos.', 'warning');
+        } else if (result.skipped > 0) {
           showAlert('Painel atualizado, mas alguns registros incompatíveis não puderam ser exibidos.', 'warning');
         } else {
           showAlert('Painel de ativações atualizado com sucesso.', 'success');
@@ -3295,6 +4877,7 @@
           ? 'Em andamento'
           : formatDateTime(activation.endedAt) + (duration ? ' • ' + duration : '');
         elements.endTurnMembers.replaceChildren(createMembersSummary(activation.members));
+        renderServiceOrderPoints(activation);
         setActivationModalMode(activation, initialMode || 'details');
         window.bootstrap.Modal.getOrCreateInstance(elements.endTurnModal).show();
       }
@@ -3434,6 +5017,10 @@
           state.activations = updatedRecords;
           renderActivations();
           updateTimestamp();
+          if (state.stageDataError && feedbackType === 'success') {
+            feedbackMessage += ' As etapas previstas nas Ordens de Serviço não puderam ser atualizadas; tente atualizar o painel.';
+            feedbackType = 'warning';
+          }
         } else {
           elements.table.setAttribute('aria-busy', 'false');
         }
@@ -3465,6 +5052,9 @@
         if (state.refreshing || state.endingTurn) {
           return;
         }
+        if (event.target.closest('[data-activation-placeholder]')) {
+          return;
+        }
         const actionButton = event.target.closest('[data-activation-action]');
         const activationRow = event.target.closest('[data-activation-row]');
         const activationId = actionButton
@@ -3480,6 +5070,10 @@
         }
         if (actionButton && actionButton.dataset.activationAction === 'print-order') {
           printActivationOrder(activation, actionButton);
+          return;
+        }
+        if (actionButton && actionButton.dataset.activationAction === 'view-map') {
+          openActivationMap(activation, actionButton);
           return;
         }
         const initialMode = actionButton && actionButton.dataset.activationAction === 'end-turn'
@@ -3561,6 +5155,20 @@
         });
       });
 
+      elements.mapModal.addEventListener('shown.bs.modal', initializeActivationMap);
+      elements.mapModal.addEventListener('hidden.bs.modal', function() {
+        const trigger = state.mapTrigger;
+        finishActivationMapLoading();
+        state.mapData = null;
+        state.mapTrigger = null;
+        state.mapTileFailed = false;
+        window.requestAnimationFrame(function() {
+          if (trigger && trigger.isConnected && !trigger.disabled) {
+            trigger.focus();
+          }
+        });
+      });
+
       window.addEventListener('afterprint', function() {
         elements.printSheet.setAttribute('aria-hidden', 'true');
       });
@@ -3585,7 +5193,11 @@
         state.demoAvailable = result.isEmpty && result.skipped === 0;
         renderActivations();
         updateTimestamp();
-        showAlert('Painel sincronizado com as alterações de outra janela.', 'info');
+        if (state.stageDataError) {
+          showAlert('As ativações foram sincronizadas, mas as etapas previstas nas Ordens de Serviço não puderam ser atualizadas.', 'warning');
+        } else {
+          showAlert('Painel sincronizado com as alterações de outra janela.', 'info');
+        }
       });
 
       initializePanel();

@@ -631,6 +631,7 @@
         return cell;
       }
 
+      /* Edição anterior preservada. Operações especiais criadas não podem mais ser editadas pela consulta.
       function createEditLink(operation) {
         const link = document.createElement('a');
         const icon = document.createElement('i');
@@ -647,12 +648,14 @@
         link.append(icon, label);
         return link;
       }
+      */
 
       function createStatusButton(operation) {
         const button = document.createElement('button');
         const icon = document.createElement('i');
         const label = document.createElement('span');
-        const actionLabel = operation.active ? 'Inativar' : 'Ativar';
+        // Rótulo anterior preservado: const actionLabel = operation.active ? 'Inativar' : 'Ativar';
+        const actionLabel = operation.active ? 'Inativar' : 'Reativar';
 
         button.type = 'button';
         button.className = 'btn btn-sm d-inline-flex align-items-center gap-1 ' +
@@ -661,7 +664,8 @@
         button.dataset.operationId = operation.id;
         button.title = actionLabel + ' ' + operation.name;
         button.setAttribute('aria-label', actionLabel + ' operação especial ' + operation.name);
-        icon.className = 'bi ' + (operation.active ? 'bi-slash-circle' : 'bi-check-circle');
+        // Ícone anterior preservado: operation.active ? 'bi-slash-circle' : 'bi-check-circle'.
+        icon.className = 'bi ' + (operation.active ? 'bi-slash-circle' : 'bi-arrow-counterclockwise');
         icon.setAttribute('aria-hidden', 'true');
         label.className = 'd-none d-md-inline';
         label.textContent = actionLabel;
@@ -765,7 +769,8 @@
           row.appendChild(statusCell);
 
           actions.className = 'table-actions';
-          actions.append(createEditLink(operation), createStatusButton(operation));
+          // Ações anteriores preservadas: actions.append(createEditLink(operation), createStatusButton(operation));
+          actions.append(createStatusButton(operation));
           actionsCell.appendChild(actions);
           row.appendChild(actionsCell);
           tableBody.appendChild(row);
@@ -844,9 +849,10 @@
 
         renderOperations();
         focusCurrentFilter();
+        // Mensagem anterior preservada para reativação: 'Operação especial ' + operation.name + ' ativada com sucesso.'
         showPageAlert(
           operation.active
-            ? 'Operação especial ' + operation.name + ' ativada com sucesso.'
+            ? 'Operação especial ' + operation.name + ' reativada com sucesso.'
             : 'Operação especial ' + operation.name + ' inativada com sucesso. Data de término: ' + formatOperationDate(operation.endsAt) + '.',
           'success'
         );
